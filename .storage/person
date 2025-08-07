@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "minor_version": 1,
+  "key": "person",
+  "data": {
+    "items": [
+      {
+        "id": "mrpc2003",
+        "name": "김우현",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "device_trackers": [
+          "device_tracker.gimuhyeonyi_macbook_pro",
+          "device_tracker.paul_pad_pro_12_7",
+          "device_tracker.paul_s21",
+          "device_tracker.uhyeonyi_ipad_pro_2"
+        ],
+        "picture": null
+      },
+      {
+        "id": "gimyeji",
+        "name": "김예지",
+        "device_trackers": [],
+        "user_id": "122a1eb5326f43d88778643441753be3",
+        "picture": null
+      },
+      {
+        "id": "jeonyecan",
+        "name": "전예찬",
+        "device_trackers": [],
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "picture": null
+      },
+      {
+        "id": "iilhwan",
+        "name": "이일환",
+        "device_trackers": [],
+        "user_id": "f8440a206ac944d5978eb00566d5300e",
+        "picture": null
+      },
+      {
+        "id": "gimseonghyeog",
+        "name": "김성혁",
+        "device_trackers": [],
+        "user_id": "d5c29d5a4da74a46a49f6712c4320084",
+        "picture": null
+      }
+    ]
+  }
+}

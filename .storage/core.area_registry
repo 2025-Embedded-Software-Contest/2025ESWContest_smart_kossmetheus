@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "minor_version": 8,
+  "key": "core.area_registry",
+  "data": {
+    "areas": [
+      {
+        "aliases": [],
+        "floor_id": null,
+        "humidity_entity_id": null,
+        "icon": null,
+        "id": "geosil",
+        "labels": [],
+        "name": "거실",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2025-07-24T09:42:53.119065+00:00",
+        "modified_at": "2025-07-24T09:42:53.119083+00:00"
+      },
+      {
+        "aliases": [],
+        "floor_id": null,
+        "humidity_entity_id": null,
+        "icon": null,
+        "id": "jubang",
+        "labels": [],
+        "name": "주방",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2025-07-24T09:42:53.119612+00:00",
+        "modified_at": "2025-07-24T09:42:53.119620+00:00"
+      },
+      {
+        "aliases": [],
+        "floor_id": null,
+        "humidity_entity_id": null,
+        "icon": null,
+        "id": "uhyeonibang",
+        "labels": [],
+        "name": "우현이방",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2025-07-25T01:52:07.664506+00:00",
+        "modified_at": "2025-07-25T01:52:07.664525+00:00"
+      },
+      {
+        "aliases": [],
+        "floor_id": null,
+        "humidity_entity_id": null,
+        "icon": null,
+        "id": "bogdo_hwajangsil",
+        "labels": [],
+        "name": "복도 화장실",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2025-07-25T05:01:41.830741+00:00",
+        "modified_at": "2025-07-25T05:01:41.830761+00:00"
+      },
+      {
+        "aliases": [],
+        "floor_id": null,
+        "humidity_entity_id": null,
+        "icon": null,
+        "id": "ahyeonibang",
+        "labels": [],
+        "name": "아현이방",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2025-08-07T03:29:47.369871+00:00",
+        "modified_at": "2025-08-07T03:29:47.369890+00:00"
+      },
+      {
+        "aliases": [],
+        "floor_id": null,
+        "humidity_entity_id": null,
+        "icon": null,
+        "id": "anbang",
+        "labels": [],
+        "name": "안방",
+        "picture": null,
+        "temperature_entity_id": null,
+        "created_at": "2025-08-07T03:30:31.897298+00:00",
+        "modified_at": "2025-08-07T03:30:31.897316+00:00"
+      }
+    ]
+  }
+}

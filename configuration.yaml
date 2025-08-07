@@ -1,0 +1,39 @@
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+# frontend:
+#   themes: !include_dir_merge_named themes
+
+# ssh:
+# username: 전예찬
+# password: qwer1234!
+# authorized_keys: []
+
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+influxdb:
+  host: a0d7b954-influxdb
+  port: 8086
+  database: homeassistant
+  username: homeassistant
+  password: homeassistant
+  max_retries: 3
+  default_measurement: state
+  ssl: true
+  verify_ssl: true
+  # exclude:
+  #   entities:
+  #     - entity.id1
+  #     - entity.id2
+  #   domains:
+  #     - automation
+  include:
+    entities:
+      - entity.id3
+      - entity.id4
+  tags:
+    instance: prod
+    source: hass

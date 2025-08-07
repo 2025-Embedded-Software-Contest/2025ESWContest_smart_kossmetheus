@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "auth_provider.homeassistant",
+  "data": {
+    "users": [
+      {
+        "username": "mrpc2003",
+        "password": "JDJiJDEyJFVUNDE3N3RsLy5MaG95RjNrUTdQS3VtcmI3N3ZUMHdiYVVvN0lFZjd5VjNqeXZLL3NnYXhH"
+      },
+      {
+        "username": "김예지",
+        "password": "JDJiJDEyJDVySTVHTG5FY0s4WjdvWnF5RTFBRnV2SUM4empwM0JQbkZEaHllR2NIcG9OYW1Ddk1GNy9X"
+      },
+      {
+        "username": "전예찬",
+        "password": "JDJiJDEyJFJMdnlLTTFjU1hDNm1PdXlLT1UuNi5CWUgyNGNSbUxBdGZrVlhnWlpwWmFPV1l1TWd5SnZp"
+      },
+      {
+        "username": "이일환",
+        "password": "JDJiJDEyJEEyNlBHSklxNG45amg3ZFh0RE1XbmV0ai9Vd3FTRUI3Y0RyRm1LT0tBTk03RHRiVy5mVzZD"
+      },
+      {
+        "username": "김성혁",
+        "password": "JDJiJDEyJE9HNlBPYWpjSlE5WXdPM0FWNmF3TWVGeDNjVlNjYmYuZFFULm5hUm5DNHI2VHNsNk9vR2Rx"
+      }
+    ]
+  }
+}

@@ -1,0 +1,613 @@
+{
+  "version": 1,
+  "minor_version": 1,
+  "key": "auth",
+  "data": {
+    "users": [
+      {
+        "id": "0b23cf50d3c445b5ac3c0ba764594897",
+        "group_ids": [
+          "system-read-only"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "Home Assistant Content",
+        "system_generated": true,
+        "local_only": false
+      },
+      {
+        "id": "ede2ba057464421f91c104c117cbd995",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "Supervisor",
+        "system_generated": true,
+        "local_only": false
+      },
+      {
+        "id": "c05b045e49cd4e8eb25cc009f9738a3f",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "Home Assistant Cast",
+        "system_generated": true,
+        "local_only": false
+      },
+      {
+        "id": "b141e9d6e07f4fa6b3061eb7c8c25611",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "Home Assistant Cloud",
+        "system_generated": true,
+        "local_only": true
+      },
+      {
+        "id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": true,
+        "is_active": true,
+        "name": "김우현",
+        "system_generated": false,
+        "local_only": false
+      },
+      {
+        "id": "122a1eb5326f43d88778643441753be3",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "김예지",
+        "system_generated": false,
+        "local_only": false
+      },
+      {
+        "id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "전예찬",
+        "system_generated": false,
+        "local_only": false
+      },
+      {
+        "id": "f8440a206ac944d5978eb00566d5300e",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "이일환",
+        "system_generated": false,
+        "local_only": false
+      },
+      {
+        "id": "d5c29d5a4da74a46a49f6712c4320084",
+        "group_ids": [
+          "system-admin"
+        ],
+        "is_owner": false,
+        "is_active": true,
+        "name": "김성혁",
+        "system_generated": false,
+        "local_only": false
+      }
+    ],
+    "groups": [
+      {
+        "id": "system-admin",
+        "name": "Administrators"
+      },
+      {
+        "id": "system-users",
+        "name": "Users"
+      },
+      {
+        "id": "system-read-only",
+        "name": "Read Only"
+      }
+    ],
+    "credentials": [
+      {
+        "id": "0c322aecb0524a78afb21dffabbd1917",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "auth_provider_type": "homeassistant",
+        "auth_provider_id": null,
+        "data": {
+          "username": "mrpc2003"
+        }
+      },
+      {
+        "id": "1bc46fada114451fa9daed1493d0fba1",
+        "user_id": "122a1eb5326f43d88778643441753be3",
+        "auth_provider_type": "homeassistant",
+        "auth_provider_id": null,
+        "data": {
+          "username": "김예지"
+        }
+      },
+      {
+        "id": "9806f98346124e29ac29cee4bbbe9af3",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "auth_provider_type": "homeassistant",
+        "auth_provider_id": null,
+        "data": {
+          "username": "전예찬"
+        }
+      },
+      {
+        "id": "d21888e5e4e74a12bfe60142e780a8c4",
+        "user_id": "f8440a206ac944d5978eb00566d5300e",
+        "auth_provider_type": "homeassistant",
+        "auth_provider_id": null,
+        "data": {
+          "username": "이일환"
+        }
+      },
+      {
+        "id": "6bf97784803d43199a3373043cf08ac9",
+        "user_id": "d5c29d5a4da74a46a49f6712c4320084",
+        "auth_provider_type": "homeassistant",
+        "auth_provider_id": null,
+        "data": {
+          "username": "김성혁"
+        }
+      }
+    ],
+    "refresh_tokens": [
+      {
+        "id": "1512423620794b37a3b255584381412a",
+        "user_id": "0b23cf50d3c445b5ac3c0ba764594897",
+        "client_id": null,
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "system",
+        "created_at": "2025-07-24T09:31:14.415636+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "a038d45c5e7625652111551bc43765e591138c52723386a99e0e6c058f78ac3693090505396d9d4cbbc441946cdd9c7db2b97f3eeaafdd9ff74ef1ef1a448c12",
+        "jwt_key": "c7f9ea4db6705d0b797794e8205f19f0862101ef51186d8760306ec17737314d40ec5fbcf0b42f3a0ba1d4a0ba690e18df945c39bbf9c8063f93878f96c4ad91",
+        "last_used_at": null,
+        "last_used_ip": null,
+        "expire_at": null,
+        "credential_id": null,
+        "version": "2025.7.3"
+      },
+      {
+        "id": "3ed8e7eb283d44a8890c1c3f99a6ad22",
+        "user_id": "ede2ba057464421f91c104c117cbd995",
+        "client_id": null,
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "system",
+        "created_at": "2025-07-24T09:31:15.121163+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "04ffe6a86996a62bac72d23c8ab474b3e6af11c24e9f2f92d0eaaded67a6c20b33290f22975c112c4cc5b2ef7b61488112776742de04a04a28aa1797831f9820",
+        "jwt_key": "0363e6cbeab21dc3ef4d5e57f08e837a2368908742d931799474e135cd34571dc7f64bcc2f54a033165a2fed932767791481e4af180372f38cb257ccdf4f9c29",
+        "last_used_at": "2025-08-07T11:38:51.338508+00:00",
+        "last_used_ip": "172.30.32.2",
+        "expire_at": null,
+        "credential_id": null,
+        "version": "2025.7.3"
+      },
+      {
+        "id": "a9b948d317784d3db0e36be3aa064010",
+        "user_id": "c05b045e49cd4e8eb25cc009f9738a3f",
+        "client_id": null,
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "system",
+        "created_at": "2025-07-24T09:31:49.612003+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "eed90530e41b51a8ace1a221a7c5daeb8139d2ed22e6adecb7a6e057508735d85d1e53e1ce91de4b163c11abc39586ff7c6e798bfcdc060b6389114a5dd756bb",
+        "jwt_key": "a576880ffeb1ec31e44f2a2c46fd9214b50322fd428efd338ae09a93f780d210f9816e951850ad52d6be4561379cab4bf38bc9cb0c6dc5445d4181703fa5aa7b",
+        "last_used_at": null,
+        "last_used_ip": null,
+        "expire_at": null,
+        "credential_id": null,
+        "version": "2025.7.3"
+      },
+      {
+        "id": "3eb01027e3de4e4fa7b48098f2708cb4",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "http://homeassistant.local:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T09:44:19.693817+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "b2f6a8dd06250b0fe4b79a9d697e5215d2bf2d8a31cf881c0ee5772cb3e9efabe18e946d9a7ac17e8662431281e61394bf4d5f8e5c853031d30d7ab1dc23e454",
+        "jwt_key": "bfe78b735ec3e41a88ca1f7284d881eed4701b83cba95326eb5c1da363c8e9ad859914f982db655180ddc07691da002b424baf5a85883af58938401ba9a9f41f",
+        "last_used_at": "2025-07-24T10:31:46.973974+00:00",
+        "last_used_ip": "192.168.1.223",
+        "expire_at": 1761129106.973974,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "d99ed05ef2614f35a30c698462e46d9e",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "https://home-assistant.io/iOS",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T11:04:49.077282+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "2e7b58c88a4d39d293e484c6493c012c7305cc9a3f0f238ae83872eccdce7d47ab789ed994bb5c68f15d0fbaa88fa38cfb91b95a9f0f90c842d5e2900e781d6f",
+        "jwt_key": "cb0809f0be742654c09a437cb79721c1bb739a066447498fbf450bd1f1896c4fbad82d0d1ac1301471a54915d52a39efced7458e924b0d993bd2b87e339da751",
+        "last_used_at": "2025-07-24T13:34:38.327303+00:00",
+        "last_used_ip": "127.0.0.1",
+        "expire_at": 1761140078.327303,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "8a3b9cec4c1c44aba5daa2ad0d9af17b",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "http://192.168.1.142:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T11:07:38.319442+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "3f07406bcfe35ab2a9501818e2699cfa329cf042af32bbf8e687285b51faf8a1c7a8577f75ec43c2fbc4137c6e4f40a27b79230d52db60f06086e4fbec0a0183",
+        "jwt_key": "644640a5a8044f97b7772d199ac301922c152cd0bff5ff926c7905839c1dc869ce0a4270cd8099adc9be47a7b0b8e32cff1ea4723b67c622c2cf2f360ab96aaa",
+        "last_used_at": "2025-07-24T13:27:31.276067+00:00",
+        "last_used_ip": "192.168.1.223",
+        "expire_at": 1761139651.276067,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "1a2df0eed3a44159b66df6526c91b430",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "https://home-assistant.io/android",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T13:33:36.685648+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "118914a6e9a9b1ee1737427b89d0ef5f0264ce12091d0d3852cabc24de1fbf78be096e94d4379dab540bbb12e1de8b41fc97e8853d83fbdf709d6ac497a61678",
+        "jwt_key": "53515fd95f2d39e0de9f1f960958fb34edcb543c640d5ce6b4843b266bd0213c0c5bdc45b852262642b706b7829577e1b06aae3680fc9af19aa01fee18a71227",
+        "last_used_at": "2025-08-06T15:16:54.442196+00:00",
+        "last_used_ip": "192.168.1.1",
+        "expire_at": 1762269414.442196,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "6676dba310b84e20b6c5dbba14cd13e6",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "https://home-assistant.io/android",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T14:07:27.310990+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "649f0e3a40c71d4fe617b48a510de6306b7af7ecbcc169495a72f2638ccbb668ac58694f1c290952b7ca84e08f4e182865adcac97ef3bc3bc2351551f783ae65",
+        "jwt_key": "9569b17e98595709db20ff78b4fb77d3588beadb62c083b3dcc0f2e0cb897707b6b9e23aea7b7d8be02339eea398dcb9ab71098cfd3819eb1f9abbf44f48cfcb",
+        "last_used_at": "2025-08-05T12:05:42.357187+00:00",
+        "last_used_ip": "118.235.3.122",
+        "expire_at": 1762171542.357187,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "be82a7ea092d4831b80bf7277013b2b3",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "https://home-assistant.io/iOS",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-25T01:41:32.357410+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "8a4484f6b9e6462cd93fade0e2e2676bbef2a1bd0a274aa3a83e1d3f397a3f1d56865cf6a2516e631d86f28fca54c54e6df41c29294e2ca01e6a3c8973ecfb8e",
+        "jwt_key": "f28bdb6787abe672fd8e48c5b982b24bea4cb18caff1850806338c9e8a03a171493dd1244cd8849cc3ea48012202faf06ddc3ea51d82390188348baedb66fa52",
+        "last_used_at": "2025-08-07T06:00:08.242757+00:00",
+        "last_used_ip": "127.0.0.1",
+        "expire_at": 1762322408.242757,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "bc0bc42947b84b71b43c9429c6794abf",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-25T11:42:33.042030+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "b37e598b613eb2dacb5a75d8809545878b85564bd216547f9dc8debab6a3c538f1772a0ecd1d78d003c768166b57b5e967cdc2d8160f995accad17a8fae44c76",
+        "jwt_key": "a06db08ede98d15119af90e444947899c9398728a90f5ac579fe47bda5c9a532e9f4a0a9bd4b91c1d2b478e641b20a7c2242f2075403d82598c74e8b62c082d1",
+        "last_used_at": "2025-08-07T11:09:49.340356+00:00",
+        "last_used_ip": "192.168.1.1",
+        "expire_at": 1762340989.340356,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "e080c34024e8401caf3fe0eb117afb18",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "https://home-assistant.io/iOS",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-28T00:01:48.008500+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "071b0722baa7832c4bfb8c6657afb26782cea720c270b042bb4c41c88600bee3fafb578af4dfe8722dc27b41ebbbfd33af330969997874462fe9f7103ee7ba43",
+        "jwt_key": "07be119c46f94a5103e72fb16900efe32d1ab4b84be8eab86bf0892f517ce7ae392274eacc9f77f83532a241403adc71bfa6f9b8ae5431b65c55b9d73655423e",
+        "last_used_at": "2025-08-06T16:15:03.090153+00:00",
+        "last_used_ip": "192.168.1.214",
+        "expire_at": 1762272903.090153,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "810b805d7b404dbc9ba067c058ab790d",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "http://caredian.local:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-04T11:53:12.991137+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "d22c1274a1206b0e3188464ff33e01879cfee28cb38a759c0f28d415dec78f92679339cc27c846f3d0b9a1b66faf02bf5c71bf1203d22e72ddde2b7a79e4035c",
+        "jwt_key": "e366a0f13e6d1fb22d85e714fbc8c3b2de6352db09a0ce6e76ab04c91ba897372fd3f315216c3a9eccd5544eaf13485cc41143922ff6e0fdace5cbb4aaacf224",
+        "last_used_at": "2025-08-04T14:57:34.354482+00:00",
+        "last_used_ip": "192.168.1.223",
+        "expire_at": 1762095454.354482,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "eb83f2c56bec4e2e9ecdd33500d77d02",
+        "user_id": "6adaefdfdddc4adfa14cc4aa959c07b2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-06T13:50:00.533104+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "4e445b8fbd030692cb7bf18e5cedbd4d8289d2ecc63a88ab55dffa13be15fdea35508ba44539a71359cd9065a4a858c4790a9692240be728e72dab3fb51891e5",
+        "jwt_key": "6045cb5fba26ee98775b1adf370fdabfeec80626472b560edb099f7057ea79036abdfddc9a1db82ba3ec61492ca2df1721cc205f13ea04a461b9f951a6feb24e",
+        "last_used_at": "2025-08-06T13:50:00.533375+00:00",
+        "last_used_ip": "118.235.3.122",
+        "expire_at": 1762264200.533375,
+        "credential_id": "0c322aecb0524a78afb21dffabbd1917",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "21f1ed632a1c4d7cb975761cfa97d693",
+        "user_id": "122a1eb5326f43d88778643441753be3",
+        "client_id": "https://hbq4uxwyzj7jyvhpfhutzqratwbs0izb.ui.nabu.casa/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T11:52:43.511290+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "38c28b82a5fee86924dfbdc6e7bb95edb6ffeff1707abe4c3e2fb720c233118d784a825d584dac45e9bb26d0e4a3c25791b0e3090efe89ccb9e63a91d18ee209",
+        "jwt_key": "08e61a664ad8b4bca30e039ee762a579a9594785e2683781b97d7ae34684e5a937ff8ef853a80267e8a8930c33f2ce09795058835480d55f4eec998200c9cb3d",
+        "last_used_at": "2025-07-24T11:52:43.511712+00:00",
+        "last_used_ip": "127.0.0.1",
+        "expire_at": 1761133963.511712,
+        "credential_id": "1bc46fada114451fa9daed1493d0fba1",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "38688a86f96c4e1eacfabc8d30e34672",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "https://hbq4uxwyzj7jyvhpfhutzqratwbs0izb.ui.nabu.casa/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T11:51:51.126436+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "84b89f093ae8e0cf6ee4b347a272a515da2567daf8d58204c48726518dae3836ab4501ffc442e15b350e9b049673c9525d1178549a5e0998c1cbebdcaea975e1",
+        "jwt_key": "30b707339ceca015a81d2140815e9c71fdb2579c67f14049e612c387cecfa863c8ba3fc10ad8f2d4fa46603dfd4a9d86669460f564d9f20ff7afcdb804b0b435",
+        "last_used_at": "2025-07-24T11:51:51.126745+00:00",
+        "last_used_ip": "127.0.0.1",
+        "expire_at": 1761133911.126745,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "8f180bb3f89941a3a2e27558ef2d8eb3",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-31T16:19:14.768240+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "ec24216fbf85d9820943dfc93cd37ba81dd53fc312d2a90cca94ada57c390b5a0a29257682d5d1b429484aa780cdf7f562438b9ba0568a494ac829b7665adbbb",
+        "jwt_key": "b36553edaa1ddf35f6af5d8dff41493d188025aaf0a3dda8eb8683438072936ccd74f1e9da09816af6c466e6086d749a97d575ccf9964622cc2f57e735aa5bad",
+        "last_used_at": "2025-07-31T16:19:14.768622+00:00",
+        "last_used_ip": "223.131.217.75",
+        "expire_at": 1761754754.768622,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "a3f4d88f81004c4e853af8fd384cb00c",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-31T16:41:46.065950+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "97a2b80c50f84fc6575fd9c137724879b41905830f010770ee434398663046330fab9e43fc7812a9682039d3ccc01836e41667dcb3ba578148785672b5f1ae34",
+        "jwt_key": "394313c671ce5f30b4a0789b133df988626d1fd85bdfcc59ad0dbf8d1ac502e8a851349fa3cb624829c54f51509ed7421b17c1128193c8db8ca18d244483a923",
+        "last_used_at": "2025-07-31T16:41:46.066253+00:00",
+        "last_used_ip": "223.131.217.75",
+        "expire_at": 1761756106.066253,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "256b2a4bcb2e4a558dcdc7904871e26d",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-31T17:03:09.140582+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "1999c221d316a78876da3d2d11f4da96ea88f28c22f2aa1d8e3ea1ee34f5256ff59f3bc4419b9250f31691fd59071ae0a4c8be78a161c5ededdd06206ef55c2a",
+        "jwt_key": "13fd127f554631a344c73fe114581731d0b880b68fe44716d20cfb9808722884488fd6d0866cd481acff77b296636a27aec77586b343f9b0677a58c11047dbf1",
+        "last_used_at": "2025-07-31T17:03:09.140942+00:00",
+        "last_used_ip": "223.131.217.75",
+        "expire_at": 1761757389.140942,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "a2743f5cb42b4e2da81aa9f3b30f0342",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-31T17:06:29.220632+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "132c319470802739a5fa06012540543cb0e4af1583b9e3667a0eea234d5ceaaf9a946732046f10710ec5adc0dccc8bee26b6534bda3641218a60483b418d75ed",
+        "jwt_key": "589a5a0b869f9d69b42a222ab93e98153718f48792704a3ea1def0ce883fb8f43324261cde75e50e1c61705aa3798ff6b86d3e4e1bd9380cd79fcd7819d90116",
+        "last_used_at": "2025-07-31T17:06:29.220955+00:00",
+        "last_used_ip": "223.131.217.75",
+        "expire_at": 1761757589.220955,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "950e1dce812a4343bf3861597b0a3b31",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-02T14:11:40.695613+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "a9ae8545854bc89c389802c3e7553e066c7a00e5d8ac099a3e5c8efb8f95e43154e9e2326ddfc6b5256ce230b7d5182ac3ed928b5f4ebd8d1e32cd852cd93840",
+        "jwt_key": "ff91ca5b3cf7bf2cba02ca149c23516e81663b0b6d531fdc7155b5dc3256d7369025120f9530c9edcbd403c5b7baf9856663225c4745f965970ea8b9fc966546",
+        "last_used_at": "2025-08-02T14:11:40.695935+00:00",
+        "last_used_ip": "223.131.217.75",
+        "expire_at": 1761919900.695935,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "e5aa028f993f4ded8d261e5d47050175",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-04T04:08:21.495956+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "099a212137bc049a0eace55b1ddff9a61367beeaedd3727ff0de1a0d21437d5ffdda8c471106c80221efeb92bab7e0f19bebd97dfcf07ecd9efe9f242deee391",
+        "jwt_key": "760bbb066541acfd7d0d4191f7792d8371ecbb3cdb46d7c57403887986fe2f5f819f84bd04174306ca11bd3cc43522c69fffd57e319c28c4d0820e4cf8e396b4",
+        "last_used_at": "2025-08-04T04:08:21.496297+00:00",
+        "last_used_ip": "1.209.174.118",
+        "expire_at": 1762056501.496297,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "c2e2bc68e0064b8090ccda2937a81586",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-04T04:30:40.006313+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "e546a55fb9b048f600dc6968cf9825d2bd104fe106276cd88dbe31879ff823e28f11c87b496298c9d3be4507361c23d4e2dcd1cad5f96eaf763a804c48ec87f9",
+        "jwt_key": "e1fe67ed0e3164ba16f208c79a4ec8a5f6ec07992c7493d63b13ea23f611e7b8951efdbe402d17aacc9376fa9f70044afc6264ee20a69c9b378290b900c9cb9a",
+        "last_used_at": "2025-08-04T05:22:07.553318+00:00",
+        "last_used_ip": "1.209.174.118",
+        "expire_at": 1762060927.553318,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "0cc4cd920b074544a9a22de7e756cfb1",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-04T05:53:02.299199+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "69154910d123312ab79e04984942c7a71ba6b9953bf1a7d0b001930228140a05b317bbaed81ef13f9add56d5ae80dd074190d14ff7813e24e5190946ac3d9c05",
+        "jwt_key": "e35fac568a856ffdffb6402e23b32993ca9df4728c66dda4598eca4f28b9dd1b0e4be40805695680d673444946292fedcaf964888ef6543f86d9c87198a361ae",
+        "last_used_at": "2025-08-04T05:53:02.299575+00:00",
+        "last_used_ip": "1.209.174.118",
+        "expire_at": 1762062782.299575,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "662f2fc3685b42c693379c50839e48e3",
+        "user_id": "9f1f50b9802542f897ed4eeaa7d5e8f2",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-08-04T06:06:58.321124+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "d3955af3783f7010e5c1902a67b4a7066bb5c525f64558952228e80e44959a20cab64bb324b971688129b2962cf6b29186aeb6b16f7337c09984e78eb395e87d",
+        "jwt_key": "580a65b480e5e42962aaa38051af1d7c400cafa1761ba7e3a9cb8438186c410f9cd69c09d89d0a16f1256a2d8744e0f7cd620165191b7554cdced40ee46630aa",
+        "last_used_at": "2025-08-07T07:03:18.068012+00:00",
+        "last_used_ip": "1.209.175.116",
+        "expire_at": 1762326198.068012,
+        "credential_id": "9806f98346124e29ac29cee4bbbe9af3",
+        "version": "2025.7.4"
+      },
+      {
+        "id": "7d4192906c77439a8e69606c36b0ed6b",
+        "user_id": "f8440a206ac944d5978eb00566d5300e",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-24T14:12:00.893048+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "41b3ad870166210f54a438fc92a52e5038bcd166b0007416e3b9ba1aedb8b49ab8a3413b2e57e741aa4119a6e6ad0c9dbf1b1934fb5e18856a1dedcc60e1766e",
+        "jwt_key": "dd269937c6d92a1d1dc9564aa99d0af40d4e3bf2ac967e979fabcc0cfdaf658c07e9dc3ded10a98ff7c1e952cfa5277e9251398faceb3437ef72a122264b9036",
+        "last_used_at": "2025-07-27T04:46:35.304646+00:00",
+        "last_used_ip": "218.237.253.168",
+        "expire_at": 1761367595.304646,
+        "credential_id": "d21888e5e4e74a12bfe60142e780a8c4",
+        "version": "2025.7.3"
+      },
+      {
+        "id": "0c8d6295c48948c1959a00e5b3ee35cb",
+        "user_id": "d5c29d5a4da74a46a49f6712c4320084",
+        "client_id": "http://paulkim.asuscomm.com:8123/",
+        "client_name": null,
+        "client_icon": null,
+        "token_type": "normal",
+        "created_at": "2025-07-25T05:28:21.943218+00:00",
+        "access_token_expiration": 1800.0,
+        "token": "97b11fd2f8768b18a68ab50099f8389a8b0a9a25088aa46f3260beab301ee4c1000b266e853e9b917a5d99b03936927930df33f3f65275860105fa83c14a0087",
+        "jwt_key": "9dd383dcfe03ee0f8c2f34224a462a3841c9ad888e682e508bc0dde516b6994d3296251aefb3f9894239a754280074512a23abfcba01b1b45257f2e6b4273390",
+        "last_used_at": "2025-07-25T05:28:21.943573+00:00",
+        "last_used_ip": "116.46.119.126",
+        "expire_at": 1761197301.943573,
+        "credential_id": "6bf97784803d43199a3373043cf08ac9",
+        "version": "2025.7.3"
+      }
+    ]
+  }
+}
