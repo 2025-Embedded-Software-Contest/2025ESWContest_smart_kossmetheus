@@ -11,8 +11,14 @@ resources:
     type: module
   - url: /hacsfiles/lovelace-card-mod/card-mod.js
     type: module
+  - url: /hacsfiles/mushroom-cards/mushroom.js
+    type: module
+  - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+    type: module
+  - url: /hacsfiles/bar-card/bar-card.js
+    type: module
 
-button_card_templates: !include_dir_merge_named files/button_templates
+button_card_templates: !include_dir_merge_named files/templates
 
 title: CareDian 대시보드
 views:
@@ -20,27 +26,36 @@ views:
     path: home
     icon: mdi:home
     cards:
-      - type: grid
-        title: 빠른 카드
-        columns: 2
-        square: false
-        cards:
-          - type: custom:button-card
-            template: card_home
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: template
             entity: input_boolean.trigger_home_absence
-          - type: custom:button-card
-            template: card_lights
+            icon: |-
+              {{'mdi:shield-lock' if is_state(config.entity, 'on') else 'mdi:shield-lock-open-outline'}}
+            icon_color: |-
+              {{'red' if is_state(config.entity, 'on') else 'green'}}
+            tap_action:
+              action: call-service
+              service: input_boolean.toggle
+              service_data:
+                entity_id: input_boolean.trigger_home_absence
+          - type: entity
             entity: light.zigbee_dimmer
+          - type: entity
+            entity: climate.seutaendeuhyeong_eeokeon
 
       - type: thermostat
         entity: climate.seutaendeuhyeong_eeokeon
         name: 거실 에어컨
 
-      - type: entities
-        title: 온도/습도
-        entities:
-          - sensor.seutaendeuhyeong_eeokeon_temperature
-          - sensor.seutaendeuhyeong_eeokeon_humidity
+      - type: custom:mushroom-entity-card
+        entity: sensor.seutaendeuhyeong_eeokeon_temperature
+        name: 스탠드형 에어컨 온도
+        icon_color: blue
+      - type: custom:mushroom-entity-card
+        entity: sensor.seutaendeuhyeong_eeokeon_humidity
+        name: 스탠드형 에어컨 습도
+        icon_color: teal
 
       - type: glance
         title: 재실/근무
@@ -55,14 +70,6 @@ views:
         hours_to_show: 12
         points_per_hour: 2
         animate: true
-        card_mod:
-          style: |
-            .graph .graph__container .graph__container__svg svg g mask .line {
-              animation-duration: 5s !important;
-              animation-delay: 0s !important;
-              animation-timing-function: linear !important;
-              animation-iteration-count: infinite !important;
-            }
         entities:
           - entity: sensor.seutaendeuhyeong_eeokeon_power
             name: 에어컨
@@ -80,10 +87,9 @@ views:
     path: kitchen
     icon: mdi:silverware-fork-knife
     cards:
-      - type: light
+      - type: custom:mushroom-light-card
         entity: light.zigbee_dimmer
         name: 주방 조명
-
       - type: entities
         title: 식기세척기
         entities:
@@ -95,7 +101,6 @@ views:
           - sensor.jubang_siggiseceoggi_softening_level
           - sensor.jubang_siggiseceoggi_delayed_start
           - sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level
-
       - type: entities
         title: 김치냉장고 온도
         entities:
@@ -113,40 +118,23 @@ views:
         columns: 3
         square: false
         cards:
-          - type: custom:button-card
-            template: button_styles
-            name: 주방
+          - type: custom:mushroom-light-card
             entity: light.zigbee_dimmer
-            show_entity_picture: false
-            show_state: true
-          - type: custom:button-card
-            template: button_styles
-            name: 우현이방
+            name: 주방
+          - type: custom:mushroom-light-card
             entity: light.deseukeutab_jeonweon
-            show_entity_picture: false
-            show_state: true
-          - type: custom:button-card
-            template: button_styles
-            name: 스마트벌브
+            name: 우현이방
+          - type: custom:mushroom-light-card
             entity: light.smart_bulb
-            show_entity_picture: false
-            show_state: true
+            name: 스마트벌브
 
       - type: entities
         title: 방별 조명/전력
         entities:
-          - type: custom:multiple-entity-row
-            entity: light.deseukeutab_jeonweon
-            name: 우현이방 조명/전력
-            toggle: true
-            entities:
-              - entity: light.smart_bulb
-                name: 스마트벌브
-                toggle: true
-              - entity: sensor.deseukeutab_jeonweon_power
-                name: 전력(W)
-              - entity: sensor.deseukeutab_jeonweon_energy
-                name: 에너지(kWh)
+          - light.deseukeutab_jeonweon
+          - light.smart_bulb
+          - sensor.deseukeutab_jeonweon_power
+          - sensor.deseukeutab_jeonweon_energy
 
   - title: 에너지
     path: energy
@@ -159,7 +147,13 @@ views:
           - sensor.seutaendeuhyeong_eeokeon_energy
           - sensor.zigbee_dimmer_power
           - sensor.zigbee_dimmer_energy
-
+      - type: custom:bar-card
+        title: 실시간 전력(W)
+        entities:
+          - entity: sensor.seutaendeuhyeong_eeokeon_power
+            name: 에어컨 전력
+          - entity: sensor.zigbee_dimmer_power
+            name: 주방 조명 전력
       - type: custom:mini-graph-card
         name: 전력 추이 (12시간)
         hours_to_show: 12
@@ -180,14 +174,122 @@ views:
         entities:
           - sensor.ble_heart_rate_e0e33e6221b5
           - sensor.ble_steps_e0e33e6221b5
-
-      - type: glance
-        title: 칫솔 센서
+      - type: custom:mini-graph-card
+        name: 웨어러블 상세(최근 12h)
+        hours_to_show: 12
+        points_per_hour: 2
+        animate: true
         entities:
-          - sensor.smart_series_7000_6f50
-          - sensor.smart_series_7000_6f50_duration
-          - sensor.smart_series_7000_6f50_pressure
-          - binary_sensor.ble_toothbrush_f45eab216f50
+          - entity: sensor.ble_heart_rate_e0e33e6221b5
+            name: 심박수
+          - entity: sensor.ble_steps_e0e33e6221b5
+            name: 걸음 수
+
+  - title: 네트워크
+    path: network
+    icon: mdi:router-network
+    cards:
+      - type: custom:mushroom-entity-card
+        entity: sensor.192_168_1_1_devices_connected
+        name: 라우터 연결 기기 수
+        icon_color: indigo
+      - type: custom:mini-graph-card
+        name: 다운로드 속도(최근 12h)
+        hours_to_show: 12
+        points_per_hour: 2
+        animate: true
+        entities:
+          - entity: sensor.fast_com_download
+            name: Fast.com
+          - entity: sensor.paul_router_download_speed
+            name: Router DL
+      - type: custom:mini-graph-card
+        name: 업로드 속도(최근 12h)
+        hours_to_show: 12
+        points_per_hour: 2
+        animate: true
+        entities:
+          - entity: sensor.paul_router_upload_speed
+            name: Router UL
+
+  - title: 센서
+    path: sensors
+    icon: mdi:view-dashboard-outline
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: 온도/습도 센서
+        filter:
+          include:
+            - domain: sensor
+              name:
+                - "/temperature/i"
+                - "/humidity/i"
+              options:
+                secondary_info: last-changed
+          exclude:
+            - name: "/_firmware|_availability|_linkquality|_lqi|_last_seen|_reachable|_status_text|_state_text|_description|mode_text|condition/i"
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: 전력/에너지 센서
+        filter:
+          include:
+            - domain: sensor
+              name:
+                - "/power/i"
+                - "/energy/i"
+                - "/watt|kwh/i"
+              options:
+                secondary_info: last-changed
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: 배터리/전압 센서
+        filter:
+          include:
+            - domain: sensor
+              name:
+                - "/battery/i"
+                - "/voltage/i"
+              options:
+                secondary_info: last-changed
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: 재실/모션/존재 바이너리 센서
+        filter:
+          include:
+            - domain: binary_sensor
+              name:
+                - "/motion|occupancy|presence/i"
+              options:
+                secondary_info: last-changed
+
+  - title: 가족
+    path: family
+    icon: mdi:account-group
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: grid
+          title: 가족 구성원
+          columns: 2
+          square: false
+        card_param: cards
+        filter:
+          include:
+            - domain: person
+              options:
+                type: custom:mushroom-person-card
+                use_entity_picture: true
+                layout: horizontal
+      - type: entities
+        title: 재실 센서
+        entities:
+          - binary_sensor.iphone_presence
+          - binary_sensor.workday_sensor
 
   - title: 방/기기
     path: rooms
@@ -200,7 +302,6 @@ views:
           - light.smart_bulb
           - sensor.deseukeutab_jeonweon_power
           - sensor.deseukeutab_jeonweon_energy
-
       - type: entities
         title: 배터리 상태
         entities:
