@@ -1,0 +1,9 @@
+- id: evening_lights
+  name: 저녁 조명
+  entities:
+    light.zigbee_dimmer:
+      state: "on"
+      brightness: 180
+    light.smart_bulb:
+      state: "on"
+      brightness: 160

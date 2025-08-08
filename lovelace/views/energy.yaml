@@ -1,0 +1,29 @@
+# lovelace_gen
+- title: 에너지
+  path: energy
+  icon: mdi:flash
+  cards:
+    - type: entities
+      title: 전력/에너지
+      entities:
+        - sensor.seutaendeuhyeong_eeokeon_power
+        - sensor.seutaendeuhyeong_eeokeon_energy
+        - sensor.zigbee_dimmer_power
+        - sensor.zigbee_dimmer_energy
+    - type: entities
+      title: 실시간 전력(W)
+      entities:
+        - entity: sensor.seutaendeuhyeong_eeokeon_power
+          name: 에어컨 전력
+        - entity: sensor.zigbee_dimmer_power
+          name: 주방 조명 전력
+    - type: custom:mini-graph-card
+      name: 전력 추이 (12시간)
+      hours_to_show: 12
+      points_per_hour: 2
+      animate: true
+      entities:
+        - entity: sensor.seutaendeuhyeong_eeokeon_power
+          name: 에어컨
+        - entity: sensor.zigbee_dimmer_power
+          name: 주방조명

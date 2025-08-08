@@ -1,0 +1,60 @@
+# lovelace_gen
+# 홈 뷰
+- title: 홈
+  path: home
+  icon: mdi:home
+  cards:
+    - type: custom:mushroom-chips-card
+      chips:
+        - type: template
+          entity: input_boolean.trigger_home_absence
+          icon: "{{'mdi:shield-lock' if is_state(config.entity, 'on') else 'mdi:shield-lock-open-outline'}}"
+          icon_color: "{{'red' if is_state(config.entity, 'on') else 'green'}}"
+          tap_action:
+            action: call-service
+            service: input_boolean.toggle
+            service_data:
+              entity_id: input_boolean.trigger_home_absence
+        - type: entity
+          entity: light.zigbee_dimmer
+        - type: entity
+          entity: climate.seutaendeuhyeong_eeokeon
+
+    - type: thermostat
+      entity: climate.seutaendeuhyeong_eeokeon
+      name: 거실 에어컨
+
+    - type: custom:mushroom-entity-card
+      entity: sensor.seutaendeuhyeong_eeokeon_temperature
+      name: 스탠드형 에어컨 온도
+      icon_color: blue
+    - type: custom:mushroom-entity-card
+      entity: sensor.seutaendeuhyeong_eeokeon_humidity
+      name: 스탠드형 에어컨 습도
+      icon_color: teal
+
+    - type: glance
+      title: 재실/근무
+      entities:
+        - entity: binary_sensor.iphone_presence
+          name: 아이폰 재실
+        - entity: binary_sensor.workday_sensor
+          name: 근무일
+
+    - type: custom:mini-graph-card
+      name: 전력(최근 12h)
+      hours_to_show: 12
+      points_per_hour: 2
+      animate: true
+      entities:
+        - entity: sensor.seutaendeuhyeong_eeokeon_power
+          name: 에어컨
+        - entity: sensor.zigbee_dimmer_power
+          name: 주방조명
+      color_thresholds:
+        - value: 1
+          color: '#4caf50'
+        - value: 100
+          color: '#ff9800'
+        - value: 300
+          color: '#f44336'

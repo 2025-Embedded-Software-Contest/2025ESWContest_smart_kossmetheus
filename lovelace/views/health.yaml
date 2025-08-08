@@ -1,0 +1,20 @@
+# lovelace_gen
+- title: 건강/BLE
+  path: health
+  icon: mdi:watch-variant
+  cards:
+    - type: glance
+      title: 웨어러블
+      entities:
+        - sensor.ble_heart_rate_e0e33e6221b5
+        - sensor.ble_steps_e0e33e6221b5
+    - type: custom:mini-graph-card
+      name: 웨어러블 상세(최근 12h)
+      hours_to_show: 12
+      points_per_hour: 2
+      animate: true
+      entities:
+        - entity: sensor.ble_heart_rate_e0e33e6221b5
+          name: 심박수
+        - entity: sensor.ble_steps_e0e33e6221b5
+          name: 걸음 수

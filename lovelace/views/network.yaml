@@ -1,0 +1,27 @@
+# lovelace_gen
+- title: 네트워크
+  path: network
+  icon: mdi:router-network
+  cards:
+    - type: custom:mushroom-entity-card
+      entity: sensor.192_168_1_1_devices_connected
+      name: 라우터 연결 기기 수
+      icon_color: indigo
+    - type: custom:mini-graph-card
+      name: 다운로드 속도(최근 12h)
+      hours_to_show: 12
+      points_per_hour: 2
+      animate: true
+      entities:
+        - entity: sensor.fast_com_download
+          name: Fast.com
+        - entity: sensor.paul_router_download_speed
+          name: Router DL
+    - type: custom:mini-graph-card
+      name: 업로드 속도(최근 12h)
+      hours_to_show: 12
+      points_per_hour: 2
+      animate: true
+      entities:
+        - entity: sensor.paul_router_upload_speed
+          name: Router UL

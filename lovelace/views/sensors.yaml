@@ -1,0 +1,55 @@
+# lovelace_gen
+- title: 센서
+  path: sensors
+  icon: mdi:view-dashboard-outline
+  cards:
+    - type: custom:auto-entities
+      card:
+        type: entities
+        title: 온도/습도 센서
+      filter:
+        include:
+          - domain: sensor
+            name:
+              - "/temperature/i"
+              - "/humidity/i"
+            options:
+              secondary_info: last-changed
+        exclude:
+          - name: "/_firmware|_availability|_linkquality|_lqi|_last_seen|_reachable|_status_text|_state_text|_description|mode_text|condition/i"
+    - type: custom:auto-entities
+      card:
+        type: entities
+        title: 전력/에너지 센서
+      filter:
+        include:
+          - domain: sensor
+            name:
+              - "/power/i"
+              - "/energy/i"
+              - "/watt|kwh/i"
+            options:
+              secondary_info: last-changed
+    - type: custom:auto-entities
+      card:
+        type: entities
+        title: 배터리/전압 센서
+      filter:
+        include:
+          - domain: sensor
+            name:
+              - "/battery/i"
+              - "/voltage/i"
+            options:
+              secondary_info: last-changed
+    - type: custom:auto-entities
+      card:
+        type: entities
+        title: 재실/모션/존재 바이너리 센서
+      filter:
+        include:
+          - domain: binary_sensor
+            name:
+              - "/motion|occupancy|presence/i"
+            options:
+              secondary_info: last-changed
