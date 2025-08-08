@@ -177,3 +177,6 @@ influxdb:
   #     override_measurement: climate_state
   #   light:
   #     override_measurement: light_state
+
+lovelace:
+  mode: yaml

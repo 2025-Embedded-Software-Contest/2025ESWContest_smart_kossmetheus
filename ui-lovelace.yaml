@@ -1,0 +1,9 @@
+title: CareDian 대시보드
+views:
+  - title: 홈
+    path: home
+    cards:
+      - type: markdown
+        content: |
+          CareDian Lovelace YAML 모드가 설정되었습니다.
+          필요에 맞게 카드와 뷰를 추가하세요.
