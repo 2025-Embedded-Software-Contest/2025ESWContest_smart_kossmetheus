@@ -82,3 +82,43 @@ OZW_Log.txt
 
 # Claude local settings (optional - remove if you want to sync)
 .claude/settings.local.json
+
+# Additional sensitive files for CareDian project
+# Cloud certificates and keys
+.cloud/
+*.pem
+*.crt
+*.cert
+*.key
+
+# Home Assistant specific sensitive data
+.auth_provider.homeassistant
+.uuid
+.google.token
+.google_calendars.yaml
+
+# iCloud3 specific data
+icloud3.log*
+.storage/icloud3/
+
+# Additional database files
+*.sqlite
+*.sqlite3
+
+# Waze and location data
+**/waze_location_history.db
+**/location_history.db
+
+# Device specific files
+known_devices.yaml
+device_registry.yaml
+entity_registry.yaml
+area_registry.yaml
+
+# Network and hardware specific
+.HA_VERSION
+.shopping_list.json
+.conversation.json
+
+# Temporary sync files
+pull-config.log
