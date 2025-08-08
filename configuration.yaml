@@ -5,35 +5,175 @@ default_config:
 # frontend:
 #   themes: !include_dir_merge_named themes
 
-# ssh:
-# username: 전예찬
-# password: qwer1234!
-# authorized_keys: []
-
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
+secret: !include secrets.yaml
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24
+    - 172.30.0.0/16
 
 influxdb:
   host: a0d7b954-influxdb
   port: 8086
   database: homeassistant
   username: homeassistant
-  password: homeassistant
+  password: !secret influxdb_password
   max_retries: 3
   default_measurement: state
   ssl: true
   verify_ssl: true
-  # exclude:
-  #   entities:
-  #     - entity.id1
-  #     - entity.id2
-  #   domains:
-  #     - automation
+
+  # === ① 반드시 수집(숫자/이진 위주) ===
   include:
+    domains:
+      - sensor
+      - binary_sensor
+      - climate
+      - light
+      - switch
     entities:
-      - entity.id3
-      - entity.id4
-  tags:
-    instance: prod
-    source: hass
+      # 거실 · 스탠드형 에어컨
+      - climate.seutaendeuhyeong_eeokeon
+      - sensor.seutaendeuhyeong_eeokeon_humidity
+      - sensor.seutaendeuhyeong_eeokeon_temperature
+      - sensor.seutaendeuhyeong_eeokeon_power
+      - sensor.seutaendeuhyeong_eeokeon_power_energy
+      - sensor.seutaendeuhyeong_eeokeon_energy
+      - sensor.seutaendeuhyeong_eeokeon_energy_difference
+      - sensor.seutaendeuhyeong_eeokeon_volume
+      # 주방 조명/전력/네트워크
+      - light.zigbee_dimmer
+      - sensor.zigbee_dimmer_power
+      - sensor.zigbee_dimmer_energy
+      - sensor.192_168_1_1_devices_connected
+      - sensor.fast_com_download
+      - sensor.paul_router_download_speed
+      - sensor.paul_router_upload_speed
+      # 주방 식기세척기(수치/상태 바이너리 위주)
+      - binary_sensor.jubang_siggiseceoggi_machine_clean_reminder
+      - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
+      - binary_sensor.jubang_siggiseceoggi_door
+      - binary_sensor.jubang_siggiseceoggi_chime_sound
+      - sensor.jubang_siggiseceoggi_remaining_time
+      - sensor.jubang_siggiseceoggi_total_time
+      - sensor.jubang_siggiseceoggi_softening_level
+      - sensor.jubang_siggiseceoggi_delayed_start
+      - sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level
+      # 주방 김치냉장고(온도)
+      - sensor.jubang_gimcinaengjanggo_bottom_temperature
+      - sensor.jubang_gimcinaengjanggo_left_temperature
+      - sensor.jubang_gimcinaengjanggo_middle_temperature
+      - sensor.jubang_gimcinaengjanggo_right_temperature
+      # BLE 웨어러블
+      - sensor.ble_heart_rate_e0e33e6221b5
+      - sensor.ble_steps_e0e33e6221b5
+      # 복도 화장실(양치기)
+      - sensor.smart_series_7000_6f50
+      - sensor.smart_series_7000_6f50_duration
+      - sensor.smart_series_7000_6f50_pressure
+      # 우현이방 조명/전력/배터리
+      - light.deseukeutab_jeonweon
+      - light.smart_bulb
+      - sensor.deseukeutab_jeonweon_power
+      - sensor.deseukeutab_jeonweon_energy
+      - sensor.gimuhyeonyi_apple_watch_battery
+      - sensor.gimuhyeonyi_macbook_pro_battery
+      - sensor.uhyeonyi_ipad_pro_battery
+      - sensor.uhyeonyi_iphone_xs_battery
+      # 존재/근무일/BLE 칫솔 바이너리
+      - binary_sensor.iphone_presence
+      - binary_sensor.workday_sensor
+      - binary_sensor.ble_toothbrush_f45eab216f50
+    entity_globs:
+      # 배터리/신호/전력/환경 수치
+      - sensor.*_battery
+      - sensor.*temperature*
+      - sensor.*humidity*
+      - sensor.*power*
+      - sensor.*energy*
+      - sensor.*voltage*
+      - sensor.*current*
+      - sensor.*co2*
+      - sensor.*pm2_5*
+      - sensor.*pm10*
+      - sensor.*illuminance*
+      - sensor.*lux*
+      - binary_sensor.*motion*
+      - binary_sensor.*occupancy*
+      - binary_sensor.*presence*
+
+  # === ② 제외(문자 위주/진단/잡음) ===
+  exclude:
+    domains:
+      - media_player           # Bluetooth Audio, Paul-Nest, VLC 등 모두 제외
+      - weather                # weather.forecast_jib (문자 상태 위주)
+      - calendar               # epic games 캘린더
+      - update
+      - persistent_notification
+      - automation
+      - script
+    entities:
+      # 시스템/진단성·문자열 위주
+      - sensor.cpu_speed
+      - sensor.local_ip
+      - sensor.moon_phase
+      - sensor.season
+      - sensor.time_date
+      - sensor.uptime
+      - sensor.192_168_1_1_last_boot
+      - sensor.icloud3_alerts
+      - sensor.icloud3_event_log
+      - sensor.icloud3_wazehist_track
+      # 식기세척기 문자열 상태(필요 시 주석 해제해 include로 이동)
+      - sensor.jubang_siggiseceoggi_current_status
+      - sensor.jubang_siggiseceoggi_current_cycle
+      # 김치냉장고 필터 교체 알림(문자/드문 이벤트면 제외 유지)
+      - binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
+    entity_globs:
+      # 펌웨어/가용/링크품질 등 잡음
+      - sensor.*_firmware*
+      - sensor.*_availability
+      - sensor.*_linkquality
+      - sensor.*_lqi
+      - sensor.*_last_seen
+      - sensor.*_reachable
+      - sensor.*_status_text
+      - sensor.*_state_text
+      - sensor.*_description
+      - sensor.*mode_text
+      - sensor.*condition
+
+  # === ③ 태그/속성 정리 ===
+  tags_attributes:
+    - friendly_name
+    - device_class
+    - unit_of_measurement
+    - area_id
+  ignore_attributes:
+    - attribution
+    - icon
+    - entity_picture
+    - state_class
+    - suggested_display_precision
+    - suggested_precision
+    - restore_state
+    - supported_features
+    - source_type
+    - available_modes
+    - hvac_modes
+    - preset_modes
+
+  # (선택) 도메인별 측정명 분리
+  component_config:
+    sensor:
+      override_measurement: sensor_state
+    binary_sensor:
+      override_measurement: binary_state
+    climate:
+      override_measurement: climate_state
+    light:
+      override_measurement: light_state

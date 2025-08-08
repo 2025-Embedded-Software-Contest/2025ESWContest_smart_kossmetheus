@@ -1,0 +1,84 @@
+# Home Assistant .gitignore
+
+# Secrets and sensitive files
+secrets.yaml
+*.key
+*.pem
+*.crt
+*.cert
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+home-assistant_v2.*
+
+# Log files
+*.log
+*.log.*
+*.fault
+
+# Cache and temporary files
+.storage/
+.cloud/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Runtime directories
+deps/
+tts/
+
+# Auth and session files
+.auth
+auth_provider.homeassistant
+known_devices.yaml
+
+# Configuration backups
+*.backup
+*.bak
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Custom component downloads (managed by HACS)
+custom_components/hacs/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# ESPHome secrets
+esphome/secrets.yaml
+esphome/.esphome/
+
+# Local development files
+*.local
+*.dev
+.env
+
+# Compiled python files
+*.compiled
+
+# OZW Log
+OZW_Log.txt
+
+# Network storage
+*.uuid
+
+# Claude local settings (optional - remove if you want to sync)
+.claude/settings.local.json
