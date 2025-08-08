@@ -168,12 +168,12 @@ influxdb:
     - preset_modes
 
   # (선택) 도메인별 측정명 분리
-  component_config:
-    sensor:
-      override_measurement: sensor_state
-    binary_sensor:
-      override_measurement: binary_state
-    climate:
-      override_measurement: climate_state
-    light:
-      override_measurement: light_state
+  # component_config:
+  #   sensor:
+  #     override_measurement: sensor_state
+  #   binary_sensor:
+  #     override_measurement: binary_state
+  #   climate:
+  #     override_measurement: climate_state
+  #   light:
+  #     override_measurement: light_state
