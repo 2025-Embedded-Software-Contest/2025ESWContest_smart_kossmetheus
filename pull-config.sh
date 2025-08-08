@@ -24,9 +24,9 @@ fi
 echo "$(date): Stashing local changes..." | tee -a "$LOG_FILE"
 git stash
 
-# Pull latest changes from origin
+# Pull latest changes from origin (updated to use main branch)
 echo "$(date): Pulling latest changes..." | tee -a "$LOG_FILE"
-if git pull origin master; then
+if git pull origin main; then
     echo "$(date): Successfully pulled latest configuration" | tee -a "$LOG_FILE"
     
     # Restart Home Assistant to apply changes
