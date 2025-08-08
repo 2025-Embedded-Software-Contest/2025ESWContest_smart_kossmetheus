@@ -1,0 +1,19 @@
+---
+card_basic_mode:
+  show_icon: true
+  show_name: true
+  show_state: false
+  show_label: false
+  layout: icon_name
+  styles:
+    card:
+      - height: 50px
+    name:
+      - font-size: 12px
+    icon:
+      - transition: 1.5s ease
+  tap_action:
+    action: none
+  double_tap_action:
+    action: toggle
+    haptic: light

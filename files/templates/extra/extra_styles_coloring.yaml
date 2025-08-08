@@ -1,0 +1,12 @@
+---
+extra_styles_coloring:  #컬러
+  extra_styles: |
+    @keyframes coloring {
+      0% {color: red;}
+      17% {color: orange;}
+      34% {color: yellow;}
+      51% {color: lightgreen;}
+      68% {color: lightblue;}
+      85% {color: blue;}
+      100% {color: violet;}
+      }

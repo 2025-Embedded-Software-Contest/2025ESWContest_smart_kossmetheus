@@ -1,0 +1,11 @@
+---
+extra_styles_rotation:  #회전
+  extra_styles: |
+    @keyframes rotation {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }

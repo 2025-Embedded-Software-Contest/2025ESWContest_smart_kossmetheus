@@ -1,0 +1,18 @@
+---
+floorplan_pinwheel:  #선풍기
+  icon: mdi:pinwheel
+  state:
+    - value: 'on'
+      color: skyblue
+      styles:
+        icon:
+          - animation: |
+              [[[
+                if (String(entity.attributes.percentage) != 'undefined') {
+                return `rotating ${1.8-(entity.attributes.percentage*0.015)}s linear infinite`;
+                } else {
+                return 'rotating 0.4s linear infinite';
+                }
+              ]]]
+    - value: 'off'
+      color: transparent

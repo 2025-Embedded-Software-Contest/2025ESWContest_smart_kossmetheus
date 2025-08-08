@@ -1,0 +1,30 @@
+---
+floorplan:
+  show_icon: true
+  show_name: false
+  size: 23px
+  styles:
+    card:
+      - box-shadow: inset 0px 0px 0px
+      - background: transparent
+    icon:
+      - filter: drop-shadow(0.5px 0.5px 1px black)
+      - transition: 1.5s ease
+    name:
+      - color: >
+          [[[ return entity.state === 'active' ? 'gold' : 'transparent'; ]]]
+  state:
+    - value: 'off'
+      color: transparent
+    - value: 'unavailable'
+      color: red
+      styles:
+        icon:
+          - animation: blink 1s ease infinite
+  tap_action:
+    action: none
+  double_tap_action:
+    action: none
+  hold_action:
+    action: more-info
+    haptic: medium

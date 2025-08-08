@@ -1,0 +1,13 @@
+---
+card_desktop:
+  show_state: true
+  show_icon: false
+  show_label: true
+  aspect_ratio: 1/0.5
+  layout: name_state
+  styles:
+    card:
+      - font-size: 13px
+    label:
+      - color: peru
+      - font-weight: bold

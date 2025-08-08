@@ -1,0 +1,7 @@
+---
+extra_styles_wobbling:  #스윙
+  extra_styles: |
+    @keyframes wobbling {
+      0% {transform: rotate(-8deg);}
+      100% {transform: rotate(+8deg);}
+      }

@@ -1,0 +1,15 @@
+---
+extra_styles_wobbling_disappear:  #스윙블링킹
+  extra_styles: |
+    @keyframes wobbling {
+      0% {transform: rotate(-8deg);}
+      100% {transform: rotate(+8deg);}
+      }
+    @keyframes disappear {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }

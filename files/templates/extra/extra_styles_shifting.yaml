@@ -1,0 +1,10 @@
+---
+extra_styles_shifting:  #시프팅
+  extra_styles: |
+    @keyframes shifting {
+      0% {
+        transform: translate(-10px,0);
+      }
+      100% {
+        transform: translate(10px,0);
+      }

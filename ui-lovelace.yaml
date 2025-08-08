@@ -1,9 +1,215 @@
+resources:
+  - url: /hacsfiles/button-card/button-card.js
+    type: module
+  - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
+    type: module
+  - url: /hacsfiles/multiple-entity-row/multiple-entity-row.js
+    type: module
+  - url: /hacsfiles/config-template-card/config-template-card.js
+    type: module
+  - url: /hacsfiles/horizon-card/horizon-card.js
+    type: module
+  - url: /hacsfiles/lovelace-card-mod/card-mod.js
+    type: module
+
+button_card_templates:
+  <<:
+    - !include files/card_home.yaml
+    - !include files/card_lights.yaml
+    - !include files/card_persons.yaml
+    - !include files/card_person_tab_aiden.yaml
+
 title: CareDian 대시보드
 views:
   - title: 홈
     path: home
+    icon: mdi:home
     cards:
-      - type: markdown
-        content: |
-          CareDian Lovelace YAML 모드가 설정되었습니다.
-          필요에 맞게 카드와 뷰를 추가하세요.
+      - type: grid
+        title: 빠른 카드
+        columns: 2
+        square: false
+        cards:
+          - type: custom:button-card
+            template: card_home
+            entity: input_boolean.trigger_home_absence
+          - type: custom:button-card
+            template: card_lights
+            entity: light.zigbee_dimmer
+
+      - type: thermostat
+        entity: climate.seutaendeuhyeong_eeokeon
+        name: 거실 에어컨
+
+      - type: entities
+        title: 온도/습도
+        entities:
+          - sensor.seutaendeuhyeong_eeokeon_temperature
+          - sensor.seutaendeuhyeong_eeokeon_humidity
+
+      - type: glance
+        title: 재실/근무
+        entities:
+          - entity: binary_sensor.iphone_presence
+            name: 아이폰 재실
+          - entity: binary_sensor.workday_sensor
+            name: 근무일
+
+      - type: custom:mini-graph-card
+        name: 전력(최근 12h)
+        hours_to_show: 12
+        points_per_hour: 2
+        animate: true
+        card_mod:
+          style: |
+            .graph .graph__container .graph__container__svg svg g mask .line {
+              animation-duration: 5s !important;
+              animation-delay: 0s !important;
+              animation-timing-function: linear !important;
+              animation-iteration-count: infinite !important;
+            }
+        entities:
+          - entity: sensor.seutaendeuhyeong_eeokeon_power
+            name: 에어컨
+          - entity: sensor.zigbee_dimmer_power
+            name: 주방조명
+        color_thresholds:
+          - value: 1
+            color: '#4caf50'
+          - value: 100
+            color: '#ff9800'
+          - value: 300
+            color: '#f44336'
+
+  - title: 주방
+    path: kitchen
+    icon: mdi:silverware-fork-knife
+    cards:
+      - type: light
+        entity: light.zigbee_dimmer
+        name: 주방 조명
+
+      - type: entities
+        title: 식기세척기
+        entities:
+          - binary_sensor.jubang_siggiseceoggi_door
+          - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
+          - binary_sensor.jubang_siggiseceoggi_chime_sound
+          - sensor.jubang_siggiseceoggi_remaining_time
+          - sensor.jubang_siggiseceoggi_total_time
+          - sensor.jubang_siggiseceoggi_softening_level
+          - sensor.jubang_siggiseceoggi_delayed_start
+          - sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level
+
+      - type: entities
+        title: 김치냉장고 온도
+        entities:
+          - sensor.jubang_gimcinaengjanggo_left_temperature
+          - sensor.jubang_gimcinaengjanggo_middle_temperature
+          - sensor.jubang_gimcinaengjanggo_right_temperature
+          - sensor.jubang_gimcinaengjanggo_bottom_temperature
+
+  - title: 조명
+    path: lights
+    icon: mdi:lightbulb-group
+    cards:
+      - type: grid
+        title: 빠른 제어
+        columns: 3
+        square: false
+        cards:
+          - type: custom:button-card
+            template: button_styles
+            name: 주방
+            entity: light.zigbee_dimmer
+            show_entity_picture: false
+            show_state: true
+          - type: custom:button-card
+            template: button_styles
+            name: 우현이방
+            entity: light.deseukeutab_jeonweon
+            show_entity_picture: false
+            show_state: true
+          - type: custom:button-card
+            template: button_styles
+            name: 스마트벌브
+            entity: light.smart_bulb
+            show_entity_picture: false
+            show_state: true
+
+      - type: entities
+        title: 방별 조명/전력
+        entities:
+          - type: custom:multiple-entity-row
+            entity: light.deseukeutab_jeonweon
+            name: 우현이방 조명/전력
+            toggle: true
+            entities:
+              - entity: light.smart_bulb
+                name: 스마트벌브
+                toggle: true
+              - entity: sensor.deseukeutab_jeonweon_power
+                name: 전력(W)
+              - entity: sensor.deseukeutab_jeonweon_energy
+                name: 에너지(kWh)
+
+  - title: 에너지
+    path: energy
+    icon: mdi:flash
+    cards:
+      - type: entities
+        title: 전력/에너지
+        entities:
+          - sensor.seutaendeuhyeong_eeokeon_power
+          - sensor.seutaendeuhyeong_eeokeon_energy
+          - sensor.zigbee_dimmer_power
+          - sensor.zigbee_dimmer_energy
+
+      - type: custom:mini-graph-card
+        name: 전력 추이 (12시간)
+        hours_to_show: 12
+        points_per_hour: 2
+        animate: true
+        entities:
+          - entity: sensor.seutaendeuhyeong_eeokeon_power
+            name: 에어컨
+          - entity: sensor.zigbee_dimmer_power
+            name: 주방조명
+
+  - title: 건강/BLE
+    path: health
+    icon: mdi:watch-variant
+    cards:
+      - type: glance
+        title: 웨어러블
+        entities:
+          - sensor.ble_heart_rate_e0e33e6221b5
+          - sensor.ble_steps_e0e33e6221b5
+
+      - type: glance
+        title: 칫솔 센서
+        entities:
+          - sensor.smart_series_7000_6f50
+          - sensor.smart_series_7000_6f50_duration
+          - sensor.smart_series_7000_6f50_pressure
+          - binary_sensor.ble_toothbrush_f45eab216f50
+
+  - title: 방/기기
+    path: rooms
+    icon: mdi:home-outline
+    cards:
+      - type: entities
+        title: 우현이방
+        entities:
+          - light.deseukeutab_jeonweon
+          - light.smart_bulb
+          - sensor.deseukeutab_jeonweon_power
+          - sensor.deseukeutab_jeonweon_energy
+
+      - type: entities
+        title: 배터리 상태
+        entities:
+          - sensor.gimuhyeonyi_apple_watch_battery
+          - sensor.gimuhyeonyi_macbook_pro_battery
+          - sensor.uhyeonyi_ipad_pro_battery
+          - sensor.uhyeonyi_iphone_xs_battery

@@ -1,0 +1,39 @@
+---
+state_mode:  #상태모드
+  state:
+    - value: 'on'
+      color: gold
+      styles:
+        icon:
+          - animation: on 0.8s
+    - value: 'open'
+      color: gold
+      styles:
+        icon:
+          - animation: on 0.8s
+    - value: 'recording'
+      color: yellow
+      styles:
+    - value: 'auto'
+      color: green
+      styles:
+    - value: 'cool'
+      color: skyblue
+      styles:
+    - value: 'dry'
+      color: yellow
+      styles:
+    - value: 'fan_only'
+      color: gray
+      styles:
+    - value: 'idle'
+      color: transparent
+      styles:
+    - value: 'paused'
+      color: blue
+      styles:
+    - value: 'unavailable'
+      color: red
+      styles:
+        icon:
+          - animation: blink 1s ease infinite

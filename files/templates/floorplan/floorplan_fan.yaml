@@ -1,0 +1,12 @@
+---
+floorplan_fan:
+  icon: mdi:fan
+  state:
+    - value: 'on'
+      color: skyblue
+      styles:
+        icon:
+          - animation: rotating 0.4s linear infinite
+          - transition: 1.5s ease
+    - value: 'off'
+      color: transparent

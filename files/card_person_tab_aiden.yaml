@@ -1,0 +1,245 @@
+---
+card_person_tab_aiden:
+  tap_action:
+    action: fire-dom-event
+    browser_mod:
+      service: browser_mod.popup
+      data:
+        style: '--mdc-theme-surface: transparent'
+        title: >
+          [[[ return states['sensor.place_aiden'].state ]]]
+        hide_header: true
+        content:
+          type: custom:button-card
+          name: "[[[ return entity.attributes.friendly_name ]]]"
+          show_entity_picture: true
+          entity_picture: /local/floorplan/p_aiden.png
+          styles:
+            card:
+              - background-color: rgba(var(--card-background-color),.9)
+              - backdrop-filter: blur(1.5em) brightness(1.2)
+              - height: 500px
+              - font-size: 12px
+            img_cell:
+              - z-index: 2
+              - padding-bottom: 10px
+            name:
+              - z-index: 2
+              - top: 5px
+              - left: 25px
+              - position: absolute
+              - justify-self: start
+              - font-size: 20px
+              - font-weight: bold
+              - color: peru
+            icon:
+              - width: 50%
+              - filter: |
+                  [[[
+                    if (entity.state == 'home')
+                      return 'grayscale(0%)';
+                    if (entity.state == 'not_home')
+                      return 'grayscale(100%)';
+                  ]]]
+            custom_fields:
+              pos:
+                - z-index: 3
+                - top: 60px
+                - left: 20px
+                - position: absolute
+                - font-size: 13px
+              find:
+                - z-index: 3
+                - bottom: 0px
+                - left: 10px
+                - width: 100%
+                - position: absolute
+                - padding: 1em
+              travel:
+                - z-index: 3
+                - bottom: 40px
+                - left: 10px
+                - width: 100%
+                - position: absolute
+                - padding: 1em
+          custom_fields:
+            pos: >
+              [[[ return states['sensor.aiden_phone_geocoded_location'].state ]]]
+            travel:
+              card:
+                 square: false
+                 columns: 2
+                 type: grid
+                 cards:
+                  - type: custom:button-card
+                    name: 외출시간
+                    entity: sensor.gone_aiden_time
+                    show_state: true
+                    icon: mdi:account-minus-outline
+                    layout: icon_name_state2nd
+                    styles:
+                      card:
+                        - background-color: transparent
+                        - box-shadow: none
+                        - border-style: none
+                        - '--mdc-ripple-press-opacity': 0
+                      icon:
+                        - width: 25px
+                      name:
+                        - justify-self: start
+                        - font-weight: bold
+                        - font-size: 12px
+                      state:
+                        - justify-self: start
+                        - font-size: 12px
+                  - type: custom:button-card
+                    name: 장기외출
+                    entity: binary_sensor.gone_aiden
+                    show_state: true
+                    icon: mdi:account-clock-outline
+                    layout: icon_name_state2nd
+                    styles:
+                      card:
+                        - background-color: transparent
+                        - box-shadow: none
+                        - border-style: none
+                        - '--mdc-ripple-press-opacity': 0
+                      icon:
+                        - width: 25px
+                      name:
+                        - justify-self: start
+                        - font-weight: bold
+                        - font-size: 12px
+                      state:
+                        - justify-self: start
+                        - font-size: 12px
+                    state_display: >
+                      [[[ return states['binary_sensor.gone_aiden'].state ]]]
+                  - type: custom:button-card
+                    color_type: blank-card
+            find:
+              card:
+                 square: false
+                 columns: 2
+                 type: grid
+                 cards:
+                  - type: custom:button-card
+                    name: 현재위치
+                    entity: person.aiden
+                    show_state: true
+                    icon: mdi:map-marker-account-outline
+                    layout: icon_name_state2nd
+                    styles:
+                      card:
+                        - background-color: transparent
+                        - box-shadow: none
+                        - border-style: none
+                        - '--mdc-ripple-press-opacity': 0
+                      icon:
+                        - width: 25px
+                      name:
+                        - justify-self: start
+                        - font-weight: bold
+                        - font-size: 12px
+                      state:
+                        - justify-self: start
+                        - font-size: 12px
+                    state_display: 지도에서 보기
+                    tap_action:
+                      action: fire-dom-event
+                      browser_mod:
+                        service: browser_mod.popup
+                        data:
+                          style: '--mdc-theme-surface: transparent'
+                          title: |
+                            [[[
+                              return states['sensor.aiden_phone_geocoded_location'].attributes.locality + " " + 
+                              states['sensor.aiden_phone_geocoded_location'].attributes.thoroughfare + " " + 
+                              states['sensor.aiden_phone_geocoded_location'].attributes.sub_thoroughfare
+                            ]]]
+                          hide_header: true
+                          icon: mdi:google-maps
+                          content:
+                            type: map
+                            default_zoom: 15
+                            entities:
+                              - person.aiden
+                            aspect_ratio: 16:9
+                            hours_to_show: 8
+                            deviceID:
+                              - this
+                  - type: custom:button-card
+                    name: '와이파이'
+                    entity: binary_sensor.aiden_phone_wifi_state
+                    show_state: true
+                    icon: |
+                     [[[
+                       if (entity.state == 'off')
+                         return 'mdi:wifi-off';
+                       if (entity.state == 'on')
+                         return 'mdi:wifi';
+                     ]]]
+                    layout: icon_name_state2nd
+                    styles:
+                      card:
+                        - background-color: transparent
+                        - box-shadow: none
+                        - border-style: none
+                        - '--mdc-ripple-press-opacity': 0
+                      icon:
+                        - width: 25px
+                      name:
+                        - justify-self: start
+                        - font-weight: bold
+                        - font-size: 12px
+                      state:
+                        - justify-self: start
+                        - font-size: 12px
+                    state_display: >
+                      [[[ return states['sensor.aiden_phone_wifi_connection'].state ]]]
+
+          tap_action:
+            action: fire-dom-event
+            browser_mod:
+              service: browser_mod.popup
+              data:
+                style: '--mdc-theme-surface: transparent'
+                title: Aiden KakaoTalk QR Card
+                hide_header: true
+                content:
+                  type: custom:button-card
+                  color_type: icon
+                  show_entity_picture: true
+                  show_state: false
+                  show_name: false
+                  size: 100%
+                  styles:
+                    img_cell:
+                      - filter: opacity(60%)
+                    card:
+                      - padding: 0px
+                    entity_picture:
+                      - height: 100%
+                      - width: 100%
+                  entity_picture: /local/floorplan/qr_aiden.png
+                  card_mod:
+                    style: |
+                      ha-card::before {
+                        content: "";
+                        info_color: red;
+                        position: absolute;
+                        top: -50%;
+                        left: -50%;
+                        width: 200%;
+                        height: 200%;
+                        box-shadow: 0 0 5px red, 0 0 10px red, 0 0 15px red;
+                        animation: runningFire 5s linear infinite;
+                      }
+                      @keyframes runningFire {
+                        0% {
+                          transform: translate(0, 0);
+                        }
+                        100% {
+                          transform: translate(0, 100%);
+                        }
+                      }

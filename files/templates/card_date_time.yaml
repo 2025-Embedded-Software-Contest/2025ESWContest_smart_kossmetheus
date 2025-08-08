@@ -1,0 +1,42 @@
+---
+card_date_time:
+  show_label: true
+  name: |
+    [[[
+      return states['sensor.calendar_date'].state + 
+      ', ' +
+      states['sensor.calendar_weekday'].state
+    ]]]
+  label: |
+    [[[
+      return states['sensor.ap_time'].state 
+    ]]]
+  styles:
+    grid:
+      - grid-template-areas: '"n" "l"'
+    card:
+      - background: transparent
+      - box-shadow: none
+      - padding: 5px
+      - overflow: visible
+    name:
+      - justify-self: start
+      - font-color: var(--primary-text-color)
+      - font-size: 16px
+      - padding: 5px
+    label:
+      - justify-self: start
+      - font-color: var(--primary-text-color)
+      - font-size: 28px
+      - font-weight: bold
+      - padding: 5px
+  tap_action:
+    action: none
+  double_tap_action:
+    action: call-service
+    service: input_boolean.toggle
+    service_data:
+      entity_id: input_boolean.show_calendar
+    haptic: medium
+  hold_action:
+    action: none

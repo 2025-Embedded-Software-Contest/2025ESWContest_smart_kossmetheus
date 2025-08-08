@@ -1,0 +1,49 @@
+---
+floorplan_state:
+  template: extra_styles_coloring
+  state:
+    - value: 'ready'
+      color: transparent
+    - value: 'playing'
+      color: lime
+      styles:
+        icon:
+          - animation: coloring 5s ease infinite
+    - value: 'running'
+      color: lime
+      styles:
+        icon:
+          - animation: coloring 5s ease infinite
+    - value: 'cleaning'
+      color: yellow
+      styles:
+        icon:
+          - animation: coloring 5s ease infinite
+    - value: 'charging'
+      color: lime
+      styles:
+        icon:
+          - animation: blink 2s ease infinite
+          - filter: drop-shadow(0.5px 0.5px 1px black) drop-shadow(0px 0px 0.3px yellow)
+    - value: 'docked'
+      color: lime
+      styles:
+        icon:
+          - animation: blink 2s ease infinite
+          - filter: drop-shadow(0.5px 0.5px 1px black) drop-shadow(0px 0px 0.3px yellow)
+    - value: 'recording'
+      color: yellow
+    - value: 'cooking'
+      color: yellow
+    - value: 'auto'
+      color: green
+    - value: 'cool'
+      color: skyblue
+    - value: 'dry'
+      color: yellow
+    - value: 'fan_only'
+      color: gray
+    - value: 'idle'
+      color: gold
+    - value: 'paused'
+      color: blue

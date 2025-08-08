@@ -1,0 +1,109 @@
+floorplan_slideshow_outside:  #도어벨 스냅샷 슬라이드
+  double_tap_action:
+    action: fire-dom-event
+    browser_mod:
+      service: browser_mod.popup
+      data:
+        style: |
+          --mdc-theme-surface: transparent;
+          --popup-background-color: transparent;
+          --popup-border-color: transparent;
+          --dialog-backdrop-filter: transparent;
+        title: " "
+        hide_header: true
+        content:
+          type: custom:button-card
+          name: "[[[ return entity.attributes.friendly_name ]]]"
+          styles:
+            card:
+              - background-color: rgba(var(--card-background-color),.9)
+              - backdrop-filter: blur(0.3em) brightness(1.5)
+              - height: 480px
+            name:
+              - z-index: 2
+              - top: 0px
+              - left: 25px
+              - position: absolute
+              - justify-self: start
+              - font-size: 18px
+              - font-weight: bold
+              - color: gold
+            custom_fields:
+              slideshow:
+                - z-index: 2
+                - top: 10px
+                - left: 0px
+                - width: 100%
+                - position: absolute
+          custom_fields:
+            slideshow:
+              card:
+                type: vertical-stack
+                cards:
+                  - type: picture-elements
+                    card_mod:
+                      style: |
+                        ha-card {
+                          background-color: transparent;
+                          box-shadow: none;
+                        }
+                    title: " "
+                    entity: camera.slideshow_outside
+                    camera_image: camera.slideshow_outside
+                    camera_view: live
+                    aspect_ratio: 100%
+                    elements:
+                      - type: icon
+                        icon: mdi:skip-previous
+                        style:
+                          background: 'rgba(255,255,255,0.2)'
+                          right: 50px
+                          bottom: 100px
+                        tap_action:
+                          action: call-service
+                          service: imagedirectory.camera_prev_image
+                          service_data:
+                            entity_id: camera.slideshow_outside
+                      - type: icon
+                        icon: mdi:skip-next
+                        style:
+                          background: 'rgba(255,255,255,0.2)'
+                          right: 0px
+                          bottom: 100px
+                        tap_action:
+                          action: call-service
+                          service: imagedirectory.camera_next_image
+                          service_data:
+                            entity_id: camera.slideshow_outside
+                      - type: conditional
+                        conditions:
+                          - entity: camera.slideshow_outside
+                            state: streaming
+                        elements:
+                          - type: icon
+                            icon: mdi:pause
+                            style:
+                              background: 'rgba(255,255,255,0.2)'
+                              right: 25px
+                              bottom: 100px
+                            tap_action:
+                              action: call-service
+                              service: imagedirectory.camera_toggle_pause
+                              service_data:
+                                entity_id: camera.slideshow_outside
+                      - type: conditional
+                        conditions:
+                          - entity: camera.slideshow_outside
+                            state: paused
+                        elements:
+                          - type: icon
+                            icon: mdi:play
+                            style:
+                              background: 'rgba(255,255,255,0.2)'
+                              right: 25px
+                              bottom: 100px
+                            tap_action:
+                              action: call-service
+                              service: imagedirectory.camera_toggle_pause
+                              service_data:
+                                entity_id: camera.slideshow_outside

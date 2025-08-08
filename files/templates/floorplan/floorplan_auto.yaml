@@ -1,0 +1,13 @@
+---
+floorplan_auto:  #컬러(테스트)
+  show_icon: true
+  show_name: false
+  show_label: false
+  show_state: false
+  size: 23px
+  state:
+    - value: 'on'
+      styles:
+        icon:
+          - filter: >
+              [[[ return "hue-rotate(" + (entity.attributes.hs_color ? entity.attributes.hs_color[0]:0)+ "deg)" ]]]

@@ -1,0 +1,11 @@
+---
+floorplan_ventilation:
+  template: extra_styles_resizing
+  state:
+    - value: 'on'
+      color: green
+      styles:
+        icon:
+          - animation: resizing 1s linear infinite alternate
+    - value: 'off'
+      color: transparent
