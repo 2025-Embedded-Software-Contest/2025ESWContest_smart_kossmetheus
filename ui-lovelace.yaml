@@ -12,12 +12,7 @@ resources:
   - url: /hacsfiles/lovelace-card-mod/card-mod.js
     type: module
 
-button_card_templates:
-  <<:
-    - !include files/card_home.yaml
-    - !include files/card_lights.yaml
-    - !include files/card_persons.yaml
-    - !include files/card_person_tab_aiden.yaml
+button_card_templates: !include_dir_merge_named files/button_templates
 
 title: CareDian 대시보드
 views:
