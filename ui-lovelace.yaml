@@ -1,5 +1,3 @@
 # lovelace_gen
-button_card_templates: !include_dir_merge_named files/templates
-
 # 분할된 뷰를 결합
 views: !include_dir_merge_list lovelace/views

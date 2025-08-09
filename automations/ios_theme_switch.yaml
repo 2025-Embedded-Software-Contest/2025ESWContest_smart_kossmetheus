@@ -1,0 +1,30 @@
+# iOS Themes 자동 전환 (일출/일몰 기준)
+# 프로필에서 테마를 '백엔드 선택(Backend-selected)'으로 설정해야 동작합니다.
+- id: ios_theme_auto_switch
+  alias: UI 테마 자동 전환 (일출/일몰)
+  description: 일출엔 Light, 일몰엔 Dark 테마를 적용합니다.
+  trigger:
+    - platform: homeassistant
+      event: start
+    - platform: state
+      entity_id: sun.sun
+  action:
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: sun.sun
+              state: above_horizon
+          sequence:
+            - service: frontend.set_theme
+              data:
+                name: ios-light-mode-blue-red
+        - conditions:
+            - condition: state
+              entity_id: sun.sun
+              state: below_horizon
+          sequence:
+            - service: frontend.set_theme
+              data:
+                name: ios-dark-mode-blue-red
+      default: []
+  mode: single

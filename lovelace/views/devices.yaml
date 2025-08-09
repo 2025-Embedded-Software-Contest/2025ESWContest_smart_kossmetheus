@@ -1,10 +1,10 @@
-# Mushroom 기반 센서 뷰 (모든 센서/바이너리 센서 자동 포함)
-- title: 센서
-  path: sensors
-  icon: mdi:gauge
+# Mushroom 기반 기기 뷰 (장치류 자동 포함)
+- title: 기기
+  path: devices
+  icon: mdi:apps-box
   cards:
     - type: custom:mushroom-title-card
-      title: 수치 센서 (sensor)
+      title: 로봇청소기/공기청정기/팬/가습기 등
     - type: custom:auto-entities
       card:
         type: entities
@@ -13,13 +13,17 @@
         method: name
       filter:
         include:
-          - domain: sensor
+          - domain: vacuum
+          - domain: fan
+          - domain: humidifier
+          - domain: air_quality
+          - domain: water_heater
+          - domain: dehumidifier
         exclude:
           - state: 'unavailable'
-          - name: "/_firmware|_availability|_linkquality|_lqi|_last_seen|_reachable|_status_text|_state_text|_description|mode_text|condition/i"
 
     - type: custom:mushroom-title-card
-      title: 바이너리 센서 (binary_sensor)
+      title: 커버/문/창/블라인드
     - type: custom:auto-entities
       card:
         type: entities
@@ -28,6 +32,8 @@
         method: name
       filter:
         include:
-          - domain: binary_sensor
+          - domain: cover
+          - domain: door
+          - domain: window
         exclude:
           - state: 'unavailable'

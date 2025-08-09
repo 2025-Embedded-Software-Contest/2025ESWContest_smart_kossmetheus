@@ -1,60 +1,73 @@
-# lovelace_gen
-# 홈 뷰
+# Mushroom 기반 홈 뷰 (메인 제어)
 - title: 홈
   path: home
   icon: mdi:home
   cards:
     - type: custom:mushroom-chips-card
       chips:
-        - type: template
-          entity: input_boolean.trigger_home_absence
-          icon: "{{'mdi:shield-lock' if is_state(config.entity, 'on') else 'mdi:shield-lock-open-outline'}}"
-          icon_color: "{{'red' if is_state(config.entity, 'on') else 'green'}}"
-          tap_action:
-            action: call-service
-            service: input_boolean.toggle
-            service_data:
-              entity_id: input_boolean.trigger_home_absence
+        - type: menu
+        - type: weather
+          entity: weather.home
         - type: entity
-          entity: light.zigbee_dimmer
-        - type: entity
-          entity: climate.seutaendeuhyeong_eeokeon
+          entity: person.home
+          content_info: name
 
-    - type: thermostat
-      entity: climate.seutaendeuhyeong_eeokeon
-      name: 거실 에어컨
+    - type: custom:mushroom-title-card
+      title: 주요 제어
 
-    - type: custom:mushroom-entity-card
-      entity: sensor.seutaendeuhyeong_eeokeon_temperature
-      name: 스탠드형 에어컨 온도
-      icon_color: blue
-    - type: custom:mushroom-entity-card
-      entity: sensor.seutaendeuhyeong_eeokeon_humidity
-      name: 스탠드형 에어컨 습도
-      icon_color: teal
+    - type: grid
+      columns: 2
+      square: false
+      cards:
+        - type: custom:auto-entities
+          card:
+            type: entities
+            title: 조명
+          sort:
+            method: name
+          filter:
+            include:
+              - domain: light
+        - type: custom:auto-entities
+          card:
+            type: entities
+            title: 스위치
+          sort:
+            method: name
+          filter:
+            include:
+              - domain: switch
+        - type: custom:auto-entities
+          card:
+            type: entities
+            title: 난방/냉방
+          sort:
+            method: name
+          filter:
+            include:
+              - domain: climate
+        - type: custom:auto-entities
+          card:
+            type: entities
+            title: 미디어 플레이어
+          sort:
+            method: name
+          filter:
+            include:
+              - domain: media_player
 
-    - type: glance
-      title: 재실/근무
-      entities:
-        - entity: binary_sensor.iphone_presence
-          name: 아이폰 재실
-        - entity: binary_sensor.workday_sensor
-          name: 근무일
-
-    - type: custom:mini-graph-card
-      name: 전력(최근 12h)
-      hours_to_show: 12
-      points_per_hour: 2
-      animate: true
-      entities:
-        - entity: sensor.seutaendeuhyeong_eeokeon_power
-          name: 에어컨
-        - entity: sensor.zigbee_dimmer_power
-          name: 주방조명
-      color_thresholds:
-        - value: 1
-          color: '#4caf50'
-        - value: 100
-          color: '#ff9800'
-        - value: 300
-          color: '#f44336'
+    - type: custom:mushroom-title-card
+      title: 보안/존재
+    - type: custom:auto-entities
+      card:
+        type: entities
+      sort:
+        method: name
+      filter:
+        include:
+          - domain: lock
+          - domain: alarm_control_panel
+          - domain: person
+          - domain: device_tracker
+        exclude:
+          - state: 'unavailable'
