@@ -46,7 +46,6 @@ sensor:
       - 'date_time_iso'
       - 'time_date'
       - 'time_utc'
-      - 'beat'
 
   # 계절 정보
   - platform: season
