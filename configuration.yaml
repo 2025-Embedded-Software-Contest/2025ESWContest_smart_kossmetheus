@@ -5,7 +5,6 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-# lovelace_gen: (YAML 미지원으로 제거)
 automation: !include_dir_merge_list automations
 script: !include_dir_merge_named scripts
 scene: !include_dir_merge_list scenes
@@ -16,6 +15,112 @@ http:
     - 172.30.33.0/24
     - 172.30.0.0/16
 
+# ===========================
+# 추가 센서 통합
+# ===========================
+
+# 시스템 모니터링
+sensor:
+  # 시스템 리소스 모니터링
+  - platform: systemmonitor
+    resources:
+      - type: disk_use_percent
+        arg: /
+      - type: memory_use_percent
+      - type: processor_use
+      - type: load_1m
+      - type: load_5m
+      - type: network_in
+        arg: eth0
+      - type: network_out
+        arg: eth0
+      - type: last_boot
+
+  # 시간 및 날짜
+  - platform: time_date
+    display_options:
+      - 'time'
+      - 'date'
+      - 'date_time'
+      - 'date_time_utc'
+      - 'date_time_iso'
+      - 'time_date'
+      - 'time_utc'
+      - 'beat'
+
+  # 계절 정보
+  - platform: season
+    type: astronomical
+
+  # 달 위상
+  - platform: moon
+
+# Sun integration (일출/일몰)
+sun:
+
+# 템플릿 센서 (사용자 정의 계산)
+template:
+  - sensor:
+      # 총 전력 소비량
+      - name: "총 실시간 전력 소비"
+        unit_of_measurement: "W"
+        state: >
+          {% set ac = states('sensor.seutaendeuhyeong_eeokeon_power') | float(0) %}
+          {% set kitchen = states('sensor.zigbee_dimmer_power') | float(0) %}
+          {% set desktop = states('sensor.deseukeutab_jeonweon_power') | float(0) %}
+          {{ (ac + kitchen + desktop) | round(2) }}
+        icon: mdi:lightning-bolt
+
+      # 평균 김치냉장고 온도
+      - name: "김치냉장고 평균 온도"
+        unit_of_measurement: "°C"
+        state: >
+          {% set left = states('sensor.jubang_gimcinaengjanggo_left_temperature') | float(0) %}
+          {% set middle = states('sensor.jubang_gimcinaengjanggo_middle_temperature') | float(0) %}
+          {% set right = states('sensor.jubang_gimcinaengjanggo_right_temperature') | float(0) %}
+          {% set bottom = states('sensor.jubang_gimcinaengjanggo_bottom_temperature') | float(0) %}
+          {{ ((left + middle + right + bottom) / 4) | round(1) }}
+        icon: mdi:thermometer
+
+      # 평균 배터리 수준
+      - name: "전체 디바이스 평균 배터리"
+        unit_of_measurement: "%"
+        state: >
+          {% set watch = states('sensor.gimuhyeonyi_apple_watch_battery') | float(0) %}
+          {% set macbook = states('sensor.gimuhyeonyi_macbook_pro_battery') | float(0) %}
+          {% set ipad = states('sensor.uhyeonyi_ipad_pro_battery') | float(0) %}
+          {% set iphone = states('sensor.uhyeonyi_iphone_xs_battery') | float(0) %}
+          {{ ((watch + macbook + ipad + iphone) / 4) | round(0) }}
+        icon: mdi:battery
+
+  - binary_sensor:
+      # 저배터리 알림
+      - name: "저배터리 디바이스 있음"
+        state: >
+          {% set devices = [
+            states('sensor.gimuhyeonyi_apple_watch_battery') | float(100),
+            states('sensor.gimuhyeonyi_macbook_pro_battery') | float(100),
+            states('sensor.uhyeonyi_ipad_pro_battery') | float(100),
+            states('sensor.uhyeonyi_iphone_xs_battery') | float(100)
+          ] %}
+          {{ devices | select('<', 20) | list | length > 0 }}
+        icon: mdi:battery-alert
+
+      # 집에 사람 있음
+      - name: "집에 사람 있음"
+        state: >
+          {{ is_state('binary_sensor.iphone_presence', 'on') }}
+        icon: mdi:home-account
+
+# 근무일 센서 (한국 공휴일 적용)
+binary_sensor:
+  - platform: workday
+    country: KR
+    name: workday_kr
+
+# ===========================
+# InfluxDB 설정 (확장)
+# ===========================
 influxdb:
   host: a0d7b954-influxdb
   port: 8086
@@ -24,13 +129,11 @@ influxdb:
   password: !secret influxdb_password
   max_retries: 3
   default_measurement: state
-  ssl: false           # 애드온 내부 통신은 보통 HTTP (SSL 해제)
-  verify_ssl: false    # SSL 미사용에 맞춰 검증도 해제
+  ssl: false
+  verify_ssl: false
   precision: s
-  # Performance optimizations
 
-
-  # === ① 반드시 수집(숫자/이진 위주) ===
+  # === 확장된 포함 설정 ===
   include:
     domains:
       - sensor
@@ -38,8 +141,11 @@ influxdb:
       - climate
       - light
       - switch
+      - weather        # 날씨 정보 포함
+      - sun           # 일출/일몰 정보
+      - person        # 사람 추적 (있을 경우)
     entities:
-      # 거실 · 스탠드형 에어컨
+      # 기존 엔티티들 유지
       - climate.seutaendeuhyeong_eeokeon
       - sensor.seutaendeuhyeong_eeokeon_humidity
       - sensor.seutaendeuhyeong_eeokeon_temperature
@@ -48,15 +154,21 @@ influxdb:
       - sensor.seutaendeuhyeong_eeokeon_energy
       - sensor.seutaendeuhyeong_eeokeon_energy_difference
       - sensor.seutaendeuhyeong_eeokeon_volume
-      # 주방 조명/전력/네트워크
+      
       - light.zigbee_dimmer
+      - light.smart_bulb
+      - light.deseukeutab_jeonweon
       - sensor.zigbee_dimmer_power
       - sensor.zigbee_dimmer_energy
+      - sensor.deseukeutab_jeonweon_power
+      - sensor.deseukeutab_jeonweon_energy
+      
       - sensor.192_168_1_1_devices_connected
       - sensor.fast_com_download
       - sensor.paul_router_download_speed
       - sensor.paul_router_upload_speed
-      # 주방 식기세척기(수치/상태 바이너리 위주)
+      
+      # 주방 가전
       - binary_sensor.jubang_siggiseceoggi_machine_clean_reminder
       - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
       - binary_sensor.jubang_siggiseceoggi_door
@@ -66,33 +178,55 @@ influxdb:
       - sensor.jubang_siggiseceoggi_softening_level
       - sensor.jubang_siggiseceoggi_delayed_start
       - sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level
-      # 주방 김치냉장고(온도)
+      
       - sensor.jubang_gimcinaengjanggo_bottom_temperature
       - sensor.jubang_gimcinaengjanggo_left_temperature
       - sensor.jubang_gimcinaengjanggo_middle_temperature
       - sensor.jubang_gimcinaengjanggo_right_temperature
-      # BLE 웨어러블
+      
+      # 헬스 & BLE
       - sensor.ble_heart_rate_e0e33e6221b5
       - sensor.ble_steps_e0e33e6221b5
-      # 복도 화장실(양치기)
       - sensor.smart_series_7000_6f50
       - sensor.smart_series_7000_6f50_duration
       - sensor.smart_series_7000_6f50_pressure
-      # 우현이방 조명/전력/배터리
-      - light.deseukeutab_jeonweon
-      - light.smart_bulb
-      - sensor.deseukeutab_jeonweon_power
-      - sensor.deseukeutab_jeonweon_energy
+      - binary_sensor.ble_toothbrush_f45eab216f50
+      
+      # 배터리
       - sensor.gimuhyeonyi_apple_watch_battery
       - sensor.gimuhyeonyi_macbook_pro_battery
       - sensor.uhyeonyi_ipad_pro_battery
       - sensor.uhyeonyi_iphone_xs_battery
-      # 존재/근무일/BLE 칫솔 바이너리
+      
+      # 존재감지
       - binary_sensor.iphone_presence
       - binary_sensor.workday_sensor
-      - binary_sensor.ble_toothbrush_f45eab216f50
+      - binary_sensor.workday_kr
+      
+      # 새로 추가된 시스템 센서들
+      - sensor.disk_use_percent
+      - sensor.memory_use_percent
+      - sensor.processor_use
+      - sensor.load_1m
+      - sensor.load_5m
+      - sensor.network_in_eth0
+      - sensor.network_out_eth0
+      - sensor.last_boot
+      - sensor.time
+      - sensor.date
+      - sensor.season
+      - sensor.moon_phase
+      - sun.sun
+      
+      # 템플릿 센서들
+      - sensor.총_실시간_전력_소비
+      - sensor.김치냉장고_평균_온도
+      - sensor.전체_디바이스_평균_배터리
+      - binary_sensor.저배터리_디바이스_있음
+      - binary_sensor.집에_사람_있음
+
     entity_globs:
-      # 배터리/신호/전력/환경 수치
+      # 기존 패턴들 유지
       - sensor.*_battery
       - sensor.*temperature*
       - sensor.*humidity*
@@ -105,39 +239,37 @@ influxdb:
       - sensor.*pm10*
       - sensor.*illuminance*
       - sensor.*lux*
+      - sensor.*speed*        # 네트워크 속도 등
+      - sensor.*_use*         # CPU, 메모리 사용률 등
+      - sensor.*_load*        # 시스템 로드
       - binary_sensor.*motion*
       - binary_sensor.*occupancy*
       - binary_sensor.*presence*
+      - binary_sensor.*door*
+      - binary_sensor.*window*
 
-  # === ② 제외(문자 위주/진단/잡음) ===
+  # === 제외 설정 (최소화) ===
   exclude:
     domains:
-      - media_player           # Bluetooth Audio, Paul-Nest, VLC 등 모두 제외
-      - weather                # weather.forecast_jib (문자 상태 위주)
-      - calendar               # epic games 캘린더
-      - update
+      - media_player           # 일단 유지 (선택적으로 포함 가능)
+      - calendar              # 캘린더는 텍스트 위주라 제외
       - persistent_notification
-      - automation
-      - script
+      - automation            # 자동화 상태는 제외
+      - script               # 스크립트 상태는 제외
     entities:
-      # 시스템/진단성·문자열 위주
+      # 불필요한 텍스트/진단 센서들만 제외
       - sensor.cpu_speed
       - sensor.local_ip
-      - sensor.moon_phase
-      - sensor.season
-      - sensor.time_date
-      - sensor.uptime
-      - sensor.192_168_1_1_last_boot
+      - sensor.uptime         # 시스템 가동시간은 last_boot으로 대체
       - sensor.icloud3_alerts
       - sensor.icloud3_event_log
       - sensor.icloud3_wazehist_track
-      # 식기세척기 문자열 상태(필요 시 주석 해제해 include로 이동)
+      # 텍스트 상태들
       - sensor.jubang_siggiseceoggi_current_status
       - sensor.jubang_siggiseceoggi_current_cycle
-      # 김치냉장고 필터 교체 알림(문자/드문 이벤트면 제외 유지)
       - binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
     entity_globs:
-      # 펌웨어/가용/링크품질 등 잡음
+      # 진단/링크 품질 관련
       - sensor.*_firmware*
       - sensor.*_availability
       - sensor.*_linkquality
@@ -150,17 +282,17 @@ influxdb:
       - sensor.*mode_text
       - sensor.*condition
 
-  # === ③ 태그/속성 정리 ===
+  # === 태그/속성 설정 ===
   tags_attributes:
     - friendly_name
     - device_class
     - unit_of_measurement
     - area_id
+    - state_class
   ignore_attributes:
     - attribution
     - icon
     - entity_picture
-    - state_class
     - suggested_display_precision
     - suggested_precision
     - restore_state
@@ -169,7 +301,6 @@ influxdb:
     - available_modes
     - hvac_modes
     - preset_modes
-    # Performance: Skip large/noisy attributes
     - context_id
     - context_user_id
     - context_parent_id
@@ -177,17 +308,9 @@ influxdb:
     - last_updated
     - assumed_state
 
-  # (선택) 도메인별 측정명 분리
-  # component_config:
-  #   sensor:
-  #     override_measurement: sensor_state
-  #   binary_sensor:
-  #     override_measurement: binary_state
-  #   climate:
-  #     override_measurement: climate_state
-  #   light:
-  #     override_measurement: light_state
-
+# ===========================
+# Lovelace 설정
+# ===========================
 lovelace:
   mode: yaml
   resources:
@@ -199,13 +322,18 @@ lovelace:
       type: module
     - url: /hacsfiles/config-template-card/config-template-card.js
       type: module
-    - url: /hacsfiles/horizon-card/horizon-card.js
+    - url: /hacsfiles/lovelace-horizon-card/lovelace-horizon-card.js
       type: module
     - url: /hacsfiles/lovelace-card-mod/card-mod.js
       type: module
-    - url: /hacsfiles/mushroom-cards/mushroom.js
+    - url: /hacsfiles/mushroom/mushroom.js
       type: module
     - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
       type: module
     - url: /hacsfiles/bar-card/bar-card.js
+      type: module
+    # 추가 커스텀 카드들
+    - url: /hacsfiles/apexcharts-card/apexcharts-card.js
+      type: module
+    - url: /hacsfiles/battery-state-card/battery-state-card.js
       type: module
