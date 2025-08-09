@@ -28,6 +28,12 @@ influxdb:
   default_measurement: state
   ssl: true
   verify_ssl: true
+  timeout: 30
+  precision: s
+  # Performance optimizations
+  bucket: 10000  # Batch size for better performance
+  retry_count: 3
+  ignore_sensor_state: true  # Skip sensor state attributes for efficiency
 
   # === ① 반드시 수집(숫자/이진 위주) ===
   include:
@@ -168,6 +174,13 @@ influxdb:
     - available_modes
     - hvac_modes
     - preset_modes
+    # Performance: Skip large/noisy attributes
+    - context_id
+    - context_user_id
+    - context_parent_id
+    - last_changed
+    - last_updated
+    - assumed_state
 
   # (선택) 도메인별 측정명 분리
   # component_config:
