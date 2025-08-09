@@ -260,30 +260,30 @@ influxdb:
       # Xbox 통합 제외 (네트워크 타임아웃 문제)
       - sensor.xbox_*
       - binary_sensor.xbox_*
-      # 진단/링크 품질 관련
+      # 진단/링크 품질 및 텍스트성 상태
       - sensor.*_firmware*
       - sensor.*_availability
       - sensor.*_linkquality
       - sensor.*_lqi
       - sensor.*_last_seen
-    entities:
-      # 불필요한 텍스트/진단 센서들만 제외
-      - sensor.cpu_speed
-      - sensor.local_ip
-      - sensor.uptime         # 시스템 가동시간은 last_boot으로 대체
-      - sensor.icloud3_alerts
-      - sensor.icloud3_event_log
-      - sensor.icloud3_wazehist_track
-      # 텍스트 상태들
-      - sensor.jubang_siggiseceoggi_current_status
-      - sensor.jubang_siggiseceoggi_current_cycle
-      - binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
       - sensor.*_reachable
       - sensor.*_status_text
       - sensor.*_state_text
       - sensor.*_description
       - sensor.*mode_text
       - sensor.*condition
+    entities:
+      # 불필요한 텍스트/진단 센서들만 제외 (정확한 엔티티 ID만)
+      - sensor.cpu_speed
+      - sensor.local_ip
+      - sensor.uptime         # 시스템 가동시간은 last_boot으로 대체
+      - sensor.icloud3_alerts
+      - sensor.icloud3_event_log
+      - sensor.icloud3_wazehist_track
+      - sensor.jubang_siggiseceoggi_current_status
+      - sensor.jubang_siggiseceoggi_current_cycle
+      - binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
+
 
   # === 태그/속성 설정 ===
   tags_attributes:
