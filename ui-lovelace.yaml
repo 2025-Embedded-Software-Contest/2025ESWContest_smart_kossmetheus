@@ -86,7 +86,7 @@ views:
 
               # 총 전력 소비 (NEW)
               - type: custom:button-card
-                entity: sensor.총_실시간_전력_소비
+                entity: sensor.total_power_consumption
                 name: 총 전력
                 icon: mdi:lightning-bolt-circle
                 show_state: true
@@ -111,7 +111,7 @@ views:
 
               # 집 상태 (NEW)
               - type: custom:button-card
-                entity: binary_sensor.집에_사람_있음
+                entity: binary_sensor.someone_home
                 name: 집 상태
                 show_state: true
                 show_name: true
@@ -186,7 +186,7 @@ views:
           - type: entities
             title: 실시간 전력
             entities:
-              - entity: sensor.총_실시간_전력_소비
+              - entity: sensor.total_power_consumption
                 name: 총 전력 소비
                 icon: mdi:lightning-bolt-circle
               - entity: sensor.seutaendeuhyeong_eeokeon_power
@@ -202,7 +202,7 @@ views:
           # 전력 사용량 그래프
           - type: custom:mini-graph-card
             entities:
-              - entity: sensor.총_실시간_전력_소비
+              - entity: sensor.total_power_consumption
                 name: 총합
                 color: '#e67e22'
               - entity: sensor.seutaendeuhyeong_eeokeon_power
@@ -247,7 +247,7 @@ views:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                entity: sensor.김치냉장고_평균_온도
+                entity: sensor.kimchi_fridge_avg_temperature
                 name: 평균 온도
                 icon: mdi:thermometer
                 show_state: true
@@ -323,7 +323,7 @@ views:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                entity: sensor.전체_디바이스_평균_배터리
+                entity: sensor.average_device_battery
                 name: 평균 배터리
                 icon: mdi:battery
                 show_state: true
@@ -338,7 +338,7 @@ views:
                     - font-weight: bold
 
               - type: custom:button-card
-                entity: binary_sensor.저배터리_디바이스_있음
+                entity: binary_sensor.low_battery_devices
                 name: 저배터리 알림
                 show_state: true
                 show_name: true
@@ -436,7 +436,7 @@ views:
               box-shadow: 0 2px 12px rgba(0,0,0,0.15);
             }
         entities:
-          - entity: binary_sensor.집에_사람_있음
+          - entity: binary_sensor.someone_home
             name: 집에 사람 있음
             icon: mdi:home-account
           - entity: binary_sensor.iphone_presence
@@ -445,7 +445,7 @@ views:
           - entity: binary_sensor.workday_sensor
             name: 오늘 근무일
             icon: mdi:briefcase
-          - entity: binary_sensor.저배터리_디바이스_있음
+          - entity: binary_sensor.low_battery_devices
             name: 저배터리 주의
             icon: mdi:battery-alert
 
@@ -460,7 +460,7 @@ views:
       - type: horizontal-stack
         cards:
           - type: custom:button-card
-            entity: sensor.총_실시간_전력_소비
+            entity: sensor.total_power_consumption
             name: 현재 총 전력
             show_state: true
             show_name: true

@@ -17,10 +17,10 @@
       for: "00:10:00"  # 10분간 지속
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
     - condition: state
-      entity_id: binary_sensor.workday_kr
+      entity_id: binary_sensor.workday_sensor
       state: "on"  # 근무일에만
   action:
     - choose:
@@ -92,10 +92,10 @@
       offset: "-00:30:00"  # 일출 30분 전
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
     - condition: state
-      entity_id: binary_sensor.workday_kr
+      entity_id: binary_sensor.workday_sensor
       state: "on"  # 근무일에만
   action:
     - service: light.turn_on
@@ -122,7 +122,7 @@
       offset: "00:30:00"  # 일몰 30분 후
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
   action:
     - service: light.turn_on
@@ -143,7 +143,7 @@
       at: "23:30:00"  # 밤 11시 30분
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
   action:
     # 조명을 서서히 어둡게
@@ -177,10 +177,10 @@
       at: "07:30:00"  # 아침 7시 30분
   condition:
     - condition: state
-      entity_id: binary_sensor.workday_kr
+      entity_id: binary_sensor.workday_sensor
       state: "on"
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
   action:
     - service: persistent_notification.create
@@ -192,8 +192,8 @@
           📅 {{ states('sensor.date') }}
           🌡️ 실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C
           💧 실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%
-          ⚡ 현재 전력: {{ states('sensor.총_실시간_전력_소비') }}W
-          🔋 평균 배터리: {{ states('sensor.전체_디바이스_평균_배터리') }}%
+          ⚡ 현재 전력: {{ states('sensor.total_power_consumption') }}W
+          🔋 평균 배터리: {{ states('sensor.average_device_battery') }}%
           
           좋은 하루 되세요! 💪
         notification_id: morning_briefing
@@ -212,10 +212,10 @@
       offset: "02:00:00"  # 일출 2시간 후
   condition:
     - condition: state
-      entity_id: binary_sensor.workday_kr
+      entity_id: binary_sensor.workday_sensor
       state: "off"  # 휴일
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
   action:
     - service: light.turn_on

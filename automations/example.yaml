@@ -8,19 +8,19 @@
   description: "총 전력 소비가 임계값을 초과했을 때 알림"
   trigger:
     - platform: numeric_state
-      entity_id: sensor.총_실시간_전력_소비
+      entity_id: sensor.total_power_consumption
       above: 500  # 500W 이상
       for: "00:05:00"  # 5분간 지속
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
   action:
     - service: persistent_notification.create
       data:
         title: "⚡ 전력 소비 주의"
         message: >
-          현재 전력 소비량이 {{ states('sensor.총_실시간_전력_소비') }}W입니다.
+          현재 전력 소비량이 {{ states('sensor.total_power_consumption') }}W입니다.
           에너지 절약을 위해 불필요한 기기를 확인해보세요.
         notification_id: high_power_alert
 
@@ -30,7 +30,7 @@
   description: "집에 아무도 없을 때 에너지 절약"
   trigger:
     - platform: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       from: "on"
       to: "off"
       for: "00:30:00"  # 30분간 부재
@@ -51,7 +51,7 @@
   description: "집에 도착했을 때 조명 자동 켜기"
   trigger:
     - platform: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       from: "off"
       to: "on"
   condition:
@@ -80,7 +80,7 @@
   description: "배터리가 부족한 디바이스가 있을 때 알림"
   trigger:
     - platform: state
-      entity_id: binary_sensor.저배터리_디바이스_있음
+      entity_id: binary_sensor.low_battery_devices
       from: "off"
       to: "on"
   action:
@@ -133,7 +133,7 @@
       at: "22:00:00"  # 저녁 10시
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
     # 최근 2시간 내에 양치하지 않았을 때
     - condition: template
@@ -202,11 +202,11 @@
   description: "김치냉장고 온도가 적정 범위를 벗어났을 때 알림"
   trigger:
     - platform: numeric_state
-      entity_id: sensor.김치냉장고_평균_온도
+      entity_id: sensor.kimchi_fridge_avg_temperature
       above: 5    # 5도 이상
       for: "00:30:00"  # 30분간 지속
     - platform: numeric_state
-      entity_id: sensor.김치냉장고_평균_온도
+      entity_id: sensor.kimchi_fridge_avg_temperature
       below: -5   # -5도 이하
       for: "00:30:00"  # 30분간 지속
   action:
@@ -214,7 +214,7 @@
       data:
         title: "🥬 김치냉장고 온도 주의"
         message: >
-          김치냉장고 평균 온도가 {{ states('sensor.김치냉장고_평균_온도') }}°C입니다.
+          김치냉장고 평균 온도가 {{ states('sensor.kimchi_fridge_avg_temperature') }}°C입니다.
           적정 온도 범위(-5°C ~ 5°C)를 확인해보세요.
         notification_id: kimchi_fridge_temp_alert
 
@@ -228,7 +228,7 @@
       to: "0"
   condition:
     - condition: state
-      entity_id: binary_sensor.집에_사람_있음
+      entity_id: binary_sensor.someone_home
       state: "on"
   action:
     - service: persistent_notification.create

@@ -62,7 +62,8 @@ sun:
 template:
   - sensor:
       # 총 전력 소비량
-      - name: "총 실시간 전력 소비"
+      - name: "total_power_consumption"
+        unique_id: "total_power_consumption"
         unit_of_measurement: "W"
         state: >
           {% set ac = states('sensor.seutaendeuhyeong_eeokeon_power') | float(0) %}
@@ -72,7 +73,8 @@ template:
         icon: mdi:lightning-bolt
 
       # 평균 김치냉장고 온도
-      - name: "김치냉장고 평균 온도"
+      - name: "kimchi_fridge_avg_temperature"
+        unique_id: "kimchi_fridge_avg_temperature"
         unit_of_measurement: "°C"
         state: >
           {% set left = states('sensor.jubang_gimcinaengjanggo_left_temperature') | float(0) %}
@@ -83,7 +85,8 @@ template:
         icon: mdi:thermometer
 
       # 평균 배터리 수준
-      - name: "전체 디바이스 평균 배터리"
+      - name: "average_device_battery"
+        unique_id: "average_device_battery"
         unit_of_measurement: "%"
         state: >
           {% set watch = states('sensor.gimuhyeonyi_apple_watch_battery') | float(0) %}
@@ -95,7 +98,8 @@ template:
 
   - binary_sensor:
       # 저배터리 알림
-      - name: "저배터리 디바이스 있음"
+      - name: "low_battery_devices"
+        unique_id: "low_battery_devices"
         state: >
           {% set devices = [
             states('sensor.gimuhyeonyi_apple_watch_battery') | float(100),
@@ -107,16 +111,14 @@ template:
         icon: mdi:battery-alert
 
       # 집에 사람 있음
-      - name: "집에 사람 있음"
+      - name: "someone_home"
+        unique_id: "someone_home"
         state: >
           {{ is_state('binary_sensor.iphone_presence', 'on') }}
         icon: mdi:home-account
 
-# 근무일 센서 (한국 공휴일 적용)
-binary_sensor:
-  - platform: workday
-    country: KR
-    name: workday_kr
+# 근무일 센서는 UI를 통해 통합으로 설정
+# Settings > Devices & Services > Add Integration > Workday
 
 # ===========================
 # InfluxDB 설정 (확장)
@@ -201,7 +203,6 @@ influxdb:
       # 존재감지
       - binary_sensor.iphone_presence
       - binary_sensor.workday_sensor
-      - binary_sensor.workday_kr
       
       # 새로 추가된 시스템 센서들
       - sensor.disk_use_percent
@@ -219,11 +220,11 @@ influxdb:
       - sun.sun
       
       # 템플릿 센서들
-      - sensor.총_실시간_전력_소비
-      - sensor.김치냉장고_평균_온도
-      - sensor.전체_디바이스_평균_배터리
-      - binary_sensor.저배터리_디바이스_있음
-      - binary_sensor.집에_사람_있음
+      - sensor.total_power_consumption
+      - sensor.kimchi_fridge_avg_temperature
+      - sensor.average_device_battery
+      - binary_sensor.low_battery_devices
+      - binary_sensor.someone_home
 
     entity_globs:
       # 기존 패턴들 유지
