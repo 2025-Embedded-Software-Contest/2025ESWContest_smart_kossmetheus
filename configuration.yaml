@@ -21,20 +21,7 @@ http:
 
 # 시스템 모니터링
 sensor:
-  # 시스템 리소스 모니터링
-  - platform: systemmonitor
-    resources:
-      - type: disk_use_percent
-        arg: /
-      - type: memory_use_percent
-      - type: processor_use
-      - type: load_1m
-      - type: load_5m
-      - type: network_in
-        arg: eth0
-      - type: network_out
-        arg: eth0
-      - type: last_boot
+  # (사용자 요청) systemmonitor 센서 제거
 
   # 시간 및 날짜
   - platform: time_date
@@ -49,15 +36,10 @@ sensor:
 
   # (season/moon는 센서 플랫폼이 아닌 통합형식이므로 아래에 최상위 키로 선언)
 
-# Sun integration (일출/일몰)
+# Sun integration (일출/일몰) - 제거 요청 없음, 유지
 sun:
 
-# 계절 정보 (통합)
-season:
-  type: astronomical
-
-# 달 위상 (통합)
-moon:
+# (사용자 요청) season/moon 통합 제거
 
 # 템플릿 센서 (사용자 정의 계산)
 template:
@@ -233,8 +215,7 @@ influxdb:
       - sensor.last_boot
       - sensor.time
       - sensor.date
-      - sensor.season
-      - sensor.moon_phase
+      # season/moon 제거에 따른 제외
       - sun.sun
       
       # 템플릿 센서들
