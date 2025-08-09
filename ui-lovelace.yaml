@@ -1,260 +1,314 @@
-title: Home Dashboard
+title: CareDian 홈 대시보드
 views:
-  - title: Home
+  - title: 홈
     path: home
-    type: masonry
-    badges: []
-
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))
+      grid-template-rows: auto
+      grid-gap: 16px
+      margin: 8px
+      mediaquery:
+        "(max-width: 600px)":
+          grid-template-columns: 1fr
+          margin: 4px
+        "(min-width: 1200px)":
+          grid-template-columns: repeat(3, 1fr)
+    
     cards:
       # ======================
-      # 환경(상단 고정 · 스티키)
+      # 환경 데이터 (최상단, 강조)
       # ======================
       - type: vertical-stack
+        view_layout:
+          grid-column: 1 / -1
         card_mod:
           style: |
-            :host {
-              position: sticky;
-              top: 0;
-              z-index: 20;
-            }
             ha-card {
-              backdrop-filter: blur(6px);
-              background: rgba(var(--card-background-color-rgb), 0.85);
-              box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,0.2));
+              background: linear-gradient(135deg, var(--primary-color, #03a9f4) 0%, var(--accent-color, #ff9800) 100%);
+              color: white;
+              border-radius: 16px;
+              box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+              margin-bottom: 8px;
+            }
+            .card-content {
+              padding: 20px;
             }
         cards:
-          # 환경 요약(온도/습도/CO2/날씨) - 자동
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: glance
-              title: 환경 요약
-              show_name: true
-              show_state: true
-              columns: 4
-            filter:
-              include:
-                - domain: sensor
-                  attributes:
-                    device_class: temperature
-                - domain: sensor
-                  attributes:
-                    device_class: humidity
-                - domain: sensor
-                  attributes:
-                    device_class: co2
-                - domain: weather
-              exclude:
-                - state: 'unavailable'
-                - state: 'unknown'
-
-          # 온도/습도 24시간 추세(자동)
+          # 주요 환경 지표
           - type: horizontal-stack
             cards:
+              - type: custom:button-card
+                entity: sensor.seutaendeuhyeong_eeokeon_temperature
+                name: 실내 온도
+                icon: mdi:thermometer
+                show_state: true
+                show_name: true
+                tap_action:
+                  action: more-info
+                styles:
+                  card:
+                    - background: transparent
+                    - border: none
+                    - box-shadow: none
+                  name:
+                    - color: white
+                    - font-size: 14px
+                  state:
+                    - color: white
+                    - font-size: 24px
+                    - font-weight: bold
+                  icon:
+                    - color: white
+                    - width: 32px
+                    - height: 32px
+
+              - type: custom:button-card
+                entity: sensor.seutaendeuhyeong_eeokeon_humidity
+                name: 실내 습도
+                icon: mdi:water-percent
+                show_state: true
+                show_name: true
+                tap_action:
+                  action: more-info
+                styles:
+                  card:
+                    - background: transparent
+                    - border: none
+                    - box-shadow: none
+                  name:
+                    - color: white
+                    - font-size: 14px
+                  state:
+                    - color: white
+                    - font-size: 24px
+                    - font-weight: bold
+                  icon:
+                    - color: white
+                    - width: 32px
+                    - height: 32px
+
+              # 날씨 정보 (자동 감지)
               - type: custom:auto-entities
                 show_empty: false
                 card_param: entities
                 card:
-                  type: custom:mini-graph-card
-                  name: 온도(24h)
-                  icon: mdi:thermometer
-                  hours_to_show: 24
-                  points_per_hour: 2
-                  show:
-                    extrema: true
-                    fill: fade
+                  type: custom:button-card
+                  name: 날씨
+                  icon: mdi:weather-partly-cloudy
+                  show_state: true
+                  show_name: true
+                  styles:
+                    card:
+                      - background: transparent
+                      - border: none
+                      - box-shadow: none
+                    name:
+                      - color: white
+                      - font-size: 14px
+                    state:
+                      - color: white
+                      - font-size: 18px
+                      - font-weight: bold
+                    icon:
+                      - color: white
+                      - width: 32px
+                      - height: 32px
                 filter:
                   include:
-                    - domain: sensor
-                      attributes:
-                        device_class: temperature
+                    - domain: weather
                   exclude:
                     - state: 'unavailable'
                     - state: 'unknown'
 
-              - type: custom:auto-entities
-                show_empty: false
-                card_param: entities
-                card:
-                  type: custom:mini-graph-card
-                  name: 습도(24h)
-                  icon: mdi:water-percent
-                  hours_to_show: 24
-                  points_per_hour: 2
-                  show:
-                    extrema: true
-                    fill: fade
-                filter:
-                  include:
-                    - domain: sensor
-                      attributes:
-                        device_class: humidity
-                  exclude:
-                    - state: 'unavailable'
-                    - state: 'unknown'
+      # ======================
+      # 기후 제어 (에어컨)
+      # ======================
+      - type: thermostat
+        entity: climate.seutaendeuhyeong_eeokeon
+        title: 스탠드형 에어컨
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
 
-      # =========
+      # ======================
       # 조명 제어
-      # =========
+      # ======================
+      - type: entities
+        title: 💡 조명 제어
+        show_header_toggle: true
+        state_color: true
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+        entities:
+          - entity: light.zigbee_dimmer
+            name: 주방 조명
+            icon: mdi:lightbulb
+          - entity: light.smart_bulb
+            name: 스마트 전구
+            icon: mdi:lightbulb-outline
+          - entity: light.deseukeutab_jeonweon
+            name: 데스크톱 전원
+            icon: mdi:desktop-classic
+
+      # ======================
+      # 전력 모니터링
+      # ======================
+      - type: entities
+        title: ⚡ 전력 모니터링
+        state_color: true
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+        entities:
+          - entity: sensor.seutaendeuhyeong_eeokeon_power
+            name: 에어컨 전력
+            icon: mdi:flash
+          - entity: sensor.zigbee_dimmer_power
+            name: 주방 조명 전력
+            icon: mdi:flash
+          - entity: sensor.deseukeutab_jeonweon_power
+            name: 데스크톱 전력
+            icon: mdi:flash
+
+      # ======================
+      # 주방 가전
+      # ======================
+      - type: entities
+        title: 🍽️ 주방 가전
+        state_color: true
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+        entities:
+          # 식기세척기 상태
+          - entity: binary_sensor.jubang_siggiseceoggi_door
+            name: 식기세척기 문
+            icon: mdi:dishwasher
+          - entity: sensor.jubang_siggiseceoggi_remaining_time
+            name: 남은 시간
+            icon: mdi:timer-outline
+          - entity: binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
+            name: 린스 보충 필요
+            icon: mdi:bottle-tonic-outline
+          # 김치냉장고 온도
+          - entity: sensor.jubang_gimcinaengjanggo_left_temperature
+            name: 김치냉장고 (좌측)
+            icon: mdi:fridge-outline
+          - entity: sensor.jubang_gimcinaengjanggo_right_temperature
+            name: 김치냉장고 (우측)
+            icon: mdi:fridge-outline
+
+      # ======================
+      # 헬스 & 웨어러블
+      # ======================
+      - type: entities
+        title: 💪 헬스 & 웨어러블
+        state_color: true
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+        entities:
+          - entity: sensor.ble_heart_rate_e0e33e6221b5
+            name: 심박수
+            icon: mdi:heart-pulse
+          - entity: sensor.ble_steps_e0e33e6221b5
+            name: 걸음수
+            icon: mdi:walk
+          - entity: binary_sensor.ble_toothbrush_f45eab216f50
+            name: 전동 칫솔
+            icon: mdi:toothbrush-electric
+          - entity: sensor.smart_series_7000_6f50_duration
+            name: 양치 시간
+            icon: mdi:timer
+
+      # ======================
+      # 네트워크 & 연결
+      # ======================
+      - type: entities
+        title: 🌐 네트워크 & 연결
+        state_color: true
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+        entities:
+          - entity: sensor.192_168_1_1_devices_connected
+            name: 연결된 기기
+            icon: mdi:devices
+          - entity: sensor.fast_com_download
+            name: 인터넷 속도
+            icon: mdi:speedometer
+          - entity: sensor.paul_router_download_speed
+            name: 다운로드 속도
+            icon: mdi:download
+          - entity: sensor.paul_router_upload_speed
+            name: 업로드 속도
+            icon: mdi:upload
+
+      # ======================
+      # 배터리 상태
+      # ======================
       - type: custom:auto-entities
         show_empty: false
         card:
           type: entities
-          title: 조명
-          show_header_toggle: true
+          title: 🔋 배터리 상태
           state_color: true
+          card_mod:
+            style: |
+              ha-card {
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+              }
         filter:
           include:
-            - domain: light
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
-
-      # =========
-      # 스위치
-      # =========
-      - type: custom:auto-entities
-        show_empty: false
-        card:
-          type: entities
-          title: 스위치
-          show_header_toggle: true
-          state_color: true
-        filter:
-          include:
-            - domain: switch
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
-
-      # =====
-      # 팬
-      # =====
-      - type: custom:auto-entities
-        show_empty: false
-        card:
-          type: entities
-          title: 팬
-          show_header_toggle: true
-          state_color: true
-        filter:
-          include:
-            - domain: fan
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
-
-      # ======
-      # 커튼
-      # ======
-      - type: custom:auto-entities
-        show_empty: false
-        card:
-          type: entities
-          title: 커튼 / 블라인드
-          state_color: true
-        filter:
-          include:
-            - domain: cover
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
-
-      # ===========
-      # 도어/창문
-      # ===========
-      - type: custom:auto-entities
-        show_empty: false
-        card:
-          type: glance
-          title: 도어 · 창문 상태
-          show_name: true
-          show_state: true
-          columns: 4
-        filter:
-          include:
-            - domain: binary_sensor
+            - entity_id: "*battery*"
               attributes:
-                device_class: door
-            - domain: binary_sensor
-              attributes:
-                device_class: window
+                device_class: battery
           exclude:
             - state: 'unavailable'
-
-      # =====
-      # 자물쇠
-      # =====
-      - type: custom:auto-entities
-        show_empty: false
-        card:
-          type: entities
-          title: 도어락
-          state_color: true
-        filter:
-          include:
-            - domain: lock
-          exclude:
-            - state: 'unavailable'
+            - state: 'unknown'
+            - attributes:
+                unit_of_measurement: '!=%'
         sort:
-          method: name
+          method: state
+          numeric: true
 
-      # =========
-      # 진공청소기
-      # =========
-      - type: custom:auto-entities
-        show_empty: false
-        card_param: entity
-        card:
-          type: custom:mushroom-vacuum-card
-          commands:
-            - start_pause
-            - stop
-            - home
-            - locate
-          fill_container: true
-        filter:
-          include:
-            - domain: vacuum
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
-
-      # =========
-      # 가전/공기
-      # =========
-      - type: custom:auto-entities
-        show_empty: false
-        card_param: entity
-        card:
-          type: custom:mushroom-humidifier-card
-          show_target_humidity_control: true
-          fill_container: true
-        filter:
-          include:
-            - domain: humidifier
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
-
-      # =====
-      # 미디어
-      # =====
-      - type: custom:auto-entities
-        show_empty: false
-        card_param: entity
-        card:
-          type: media-control
-        filter:
-          include:
-            - domain: media_player
-          exclude:
-            - state: 'unavailable'
-        sort:
-          method: name
+      # ======================
+      # 존재감지 & 보안
+      # ======================
+      - type: entities
+        title: 🏠 존재감지 & 보안
+        state_color: true
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 12px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+        entities:
+          - entity: binary_sensor.iphone_presence
+            name: iPhone 존재
+            icon: mdi:cellphone
+          - entity: binary_sensor.workday_sensor
+            name: 근무일
+            icon: mdi:briefcase

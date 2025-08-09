@@ -28,7 +28,7 @@ influxdb:
   verify_ssl: false    # SSL 미사용에 맞춰 검증도 해제
   precision: s
   # Performance optimizations
-  batch_size: 10000  # Batch size for better performance
+
 
   # === ① 반드시 수집(숫자/이진 위주) ===
   include:
