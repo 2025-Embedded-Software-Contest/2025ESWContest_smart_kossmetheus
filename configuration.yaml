@@ -9,7 +9,6 @@ frontend:
 automation: !include_dir_merge_list automations
 script: !include_dir_merge_named scripts
 scene: !include_dir_merge_list scenes
-secret: !include secrets.yaml
 
 http:
   use_x_forwarded_for: true
@@ -27,12 +26,9 @@ influxdb:
   default_measurement: state
   ssl: false           # 애드온 내부 통신은 보통 HTTP (SSL 해제)
   verify_ssl: false    # SSL 미사용에 맞춰 검증도 해제
-  timeout: 30
   precision: s
   # Performance optimizations
-  bucket: 10000  # Batch size for better performance
-  retry_count: 3
-  ignore_sensor_state: true  # Skip sensor state attributes for efficiency
+  batch_size: 10000  # Batch size for better performance
 
   # === ① 반드시 수집(숫자/이진 위주) ===
   include:

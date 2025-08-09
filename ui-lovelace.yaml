@@ -1,3 +1,260 @@
-# lovelace_gen
-# 분할된 뷰를 결합
-views: !include_dir_merge_list lovelace/views
+title: Home Dashboard
+views:
+  - title: Home
+    path: home
+    type: masonry
+    badges: []
+
+    cards:
+      # ======================
+      # 환경(상단 고정 · 스티키)
+      # ======================
+      - type: vertical-stack
+        card_mod:
+          style: |
+            :host {
+              position: sticky;
+              top: 0;
+              z-index: 20;
+            }
+            ha-card {
+              backdrop-filter: blur(6px);
+              background: rgba(var(--card-background-color-rgb), 0.85);
+              box-shadow: var(--ha-card-box-shadow, 0 2px 6px rgba(0,0,0,0.2));
+            }
+        cards:
+          # 환경 요약(온도/습도/CO2/날씨) - 자동
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: glance
+              title: 환경 요약
+              show_name: true
+              show_state: true
+              columns: 4
+            filter:
+              include:
+                - domain: sensor
+                  attributes:
+                    device_class: temperature
+                - domain: sensor
+                  attributes:
+                    device_class: humidity
+                - domain: sensor
+                  attributes:
+                    device_class: co2
+                - domain: weather
+              exclude:
+                - state: 'unavailable'
+                - state: 'unknown'
+
+          # 온도/습도 24시간 추세(자동)
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card_param: entities
+                card:
+                  type: custom:mini-graph-card
+                  name: 온도(24h)
+                  icon: mdi:thermometer
+                  hours_to_show: 24
+                  points_per_hour: 2
+                  show:
+                    extrema: true
+                    fill: fade
+                filter:
+                  include:
+                    - domain: sensor
+                      attributes:
+                        device_class: temperature
+                  exclude:
+                    - state: 'unavailable'
+                    - state: 'unknown'
+
+              - type: custom:auto-entities
+                show_empty: false
+                card_param: entities
+                card:
+                  type: custom:mini-graph-card
+                  name: 습도(24h)
+                  icon: mdi:water-percent
+                  hours_to_show: 24
+                  points_per_hour: 2
+                  show:
+                    extrema: true
+                    fill: fade
+                filter:
+                  include:
+                    - domain: sensor
+                      attributes:
+                        device_class: humidity
+                  exclude:
+                    - state: 'unavailable'
+                    - state: 'unknown'
+
+      # =========
+      # 조명 제어
+      # =========
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: entities
+          title: 조명
+          show_header_toggle: true
+          state_color: true
+        filter:
+          include:
+            - domain: light
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # =========
+      # 스위치
+      # =========
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: entities
+          title: 스위치
+          show_header_toggle: true
+          state_color: true
+        filter:
+          include:
+            - domain: switch
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # =====
+      # 팬
+      # =====
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: entities
+          title: 팬
+          show_header_toggle: true
+          state_color: true
+        filter:
+          include:
+            - domain: fan
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # ======
+      # 커튼
+      # ======
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: entities
+          title: 커튼 / 블라인드
+          state_color: true
+        filter:
+          include:
+            - domain: cover
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # ===========
+      # 도어/창문
+      # ===========
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: glance
+          title: 도어 · 창문 상태
+          show_name: true
+          show_state: true
+          columns: 4
+        filter:
+          include:
+            - domain: binary_sensor
+              attributes:
+                device_class: door
+            - domain: binary_sensor
+              attributes:
+                device_class: window
+          exclude:
+            - state: 'unavailable'
+
+      # =====
+      # 자물쇠
+      # =====
+      - type: custom:auto-entities
+        show_empty: false
+        card:
+          type: entities
+          title: 도어락
+          state_color: true
+        filter:
+          include:
+            - domain: lock
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # =========
+      # 진공청소기
+      # =========
+      - type: custom:auto-entities
+        show_empty: false
+        card_param: entity
+        card:
+          type: custom:mushroom-vacuum-card
+          commands:
+            - start_pause
+            - stop
+            - home
+            - locate
+          fill_container: true
+        filter:
+          include:
+            - domain: vacuum
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # =========
+      # 가전/공기
+      # =========
+      - type: custom:auto-entities
+        show_empty: false
+        card_param: entity
+        card:
+          type: custom:mushroom-humidifier-card
+          show_target_humidity_control: true
+          fill_container: true
+        filter:
+          include:
+            - domain: humidifier
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
+
+      # =====
+      # 미디어
+      # =====
+      - type: custom:auto-entities
+        show_empty: false
+        card_param: entity
+        card:
+          type: media-control
+        filter:
+          include:
+            - domain: media_player
+          exclude:
+            - state: 'unavailable'
+        sort:
+          method: name
