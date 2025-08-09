@@ -47,15 +47,17 @@ sensor:
       - 'time_date'
       - 'time_utc'
 
-  # 계절 정보
-  - platform: season
-    type: astronomical
-
-  # 달 위상
-  - platform: moon
+  # (season/moon는 센서 플랫폼이 아닌 통합형식이므로 아래에 최상위 키로 선언)
 
 # Sun integration (일출/일몰)
 sun:
+
+# 계절 정보 (통합)
+season:
+  type: astronomical
+
+# 달 위상 (통합)
+moon:
 
 # 템플릿 센서 (사용자 정의 계산)
 template:
