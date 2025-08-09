@@ -45,31 +45,6 @@
         title: "🏠 에너지 절약 모드 활성화"
         message: "부재 중이므로 조명을 자동으로 꺼두었습니다."
 
-# 귀가시 환영 모드
-- id: welcome_home_mode
-  alias: "귀가 환영 모드"
-  description: "집에 도착했을 때 조명 자동 켜기"
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.someone_home
-      from: "off"
-      to: "on"
-  condition:
-    - condition: sun
-      after: sunset
-      offset: "-01:00:00"  # 일몰 1시간 전부터
-  action:
-    - service: light.turn_on
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-      data:
-        brightness_pct: 70
-    - service: persistent_notification.create
-      data:
-        title: "🏠 어서오세요!"
-        message: "귀가를 환영합니다. 조명을 켜두었습니다."
-
 # ==============================================
 # 건강 & 배터리 관리 자동화
 # ==============================================
@@ -138,41 +113,28 @@
     # 최근 2시간 내에 양치하지 않았을 때
     - condition: template
       value_template: >
-        {{ (now() - states.binary_sensor.ble_toothbrush_f45eab216f50.last_changed).seconds > 7200 }}
+        {{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds() > 7200 }}
   action:
     - service: persistent_notification.create
       data:
-        title: "🦷 양치 시간입니다"
-        message: "저녁 양치를 잊지 마세요! 건강한 치아를 위해 꼭 필요해요."
+        title: "🪥 양치 알림"
+        message: "최근 2시간 동안 양치 기록이 없습니다."
         notification_id: brushing_reminder
 
-# 심박수 이상 알림
-- id: heart_rate_anomaly_alert
-  alias: "심박수 이상 알림"
-  description: "심박수가 비정상적으로 높거나 낮을 때 알림"
+# 심박수 과도 상승 감지
+- id: high_heart_rate_alert
+  alias: "심박수 경고"
+  description: "심박수가 120bpm 이상일 때 경고"
   trigger:
     - platform: numeric_state
       entity_id: sensor.ble_heart_rate_e0e33e6221b5
-      above: 120  # 분당 120회 이상
-      for: "00:05:00"  # 5분간 지속
-    - platform: numeric_state
-      entity_id: sensor.ble_heart_rate_e0e33e6221b5
-      below: 50   # 분당 50회 이하
-      for: "00:02:00"  # 2분간 지속
-  condition:
-    - condition: template
-      value_template: "{{ states('sensor.ble_heart_rate_e0e33e6221b5') != 'unavailable' }}"
+      above: 120
+      for: "00:01:00"
   action:
     - service: persistent_notification.create
       data:
-        title: "💓 심박수 주의"
-        message: >
-          현재 심박수가 {{ states('sensor.ble_heart_rate_e0e33e6221b5') }} BPM입니다.
-          {% if trigger.above is defined %}
-          정상 범위보다 높습니다. 휴식을 취하세요.
-          {% else %}
-          정상 범위보다 낮습니다. 상태를 확인해보세요.
-          {% endif %}
+        title: "❤️ 심박수 경고"
+        message: "심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요."
         notification_id: heart_rate_alert
 
 # 일일 걸음 수 목표 달성 축하
