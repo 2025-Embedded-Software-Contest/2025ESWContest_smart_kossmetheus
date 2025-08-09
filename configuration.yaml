@@ -5,8 +5,7 @@ default_config:
 frontend:
   themes: !include_dir_merge_named themes
 
-lovelace_gen:
-
+# lovelace_gen: (YAML 미지원으로 제거)
 automation: !include_dir_merge_list automations
 script: !include_dir_merge_named scripts
 scene: !include_dir_merge_list scenes
@@ -26,8 +25,8 @@ influxdb:
   password: !secret influxdb_password
   max_retries: 3
   default_measurement: state
-  ssl: true
-  verify_ssl: true
+  ssl: false           # 애드온 내부 통신은 보통 HTTP (SSL 해제)
+  verify_ssl: false    # SSL 미사용에 맞춰 검증도 해제
   timeout: 30
   precision: s
   # Performance optimizations
