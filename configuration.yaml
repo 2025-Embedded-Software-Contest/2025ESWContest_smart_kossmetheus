@@ -358,32 +358,31 @@ influxdb:
 # ===========================
 # Lovelace 설정
 # ===========================
-lovelace:
-  mode: yaml
-  resources:
-    - url: /hacsfiles/button-card/button-card.js
-      type: module
-    - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
-      type: module
-    - url: /hacsfiles/multiple-entity-row/multiple-entity-row.js
-      type: module
-    - url: /hacsfiles/config-template-card/config-template-card.js
-      type: module
-    - url: /hacsfiles/lovelace-horizon-card/lovelace-horizon-card.js
-      type: module
-    - url: /hacsfiles/lovelace-layout-card/layout-card.js
-      type: module
-    - url: /hacsfiles/lovelace-card-mod/card-mod.js
-      type: module
-    - url: /hacsfiles/mushroom/mushroom.js
-      type: module
-    - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
-      type: module
-    # Bubble-Card (rounded/ui 스타일 구현용)
-    - url: /hacsfiles/Bubble-Card/bubble-card.js
-      type: module
-    # 추가 커스텀 카드들
-    - url: /hacsfiles/apexcharts-card/apexcharts-card.js
-      type: module
-    - url: /hacsfiles/battery-state-card/battery-state-card.js
-      type: module
+# YAML 편집 모드 해제 (UI 편집 모드 사용)
+# lovelace:
+#   mode: yaml
+#   resources:
+#     - url: /hacsfiles/button-card/button-card.js
+#       type: module
+#     - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
+#       type: module
+#     - url: /hacsfiles/multiple-entity-row/multiple-entity-row.js
+#       type: module
+#     - url: /hacsfiles/config-template-card/config-template-card.js
+#       type: module
+#     - url: /hacsfiles/lovelace-horizon-card/lovelace-horizon-card.js
+#       type: module
+#     - url: /hacsfiles/lovelace-layout-card/layout-card.js
+#       type: module
+#     - url: /hacsfiles/lovelace-card-mod/card-mod.js
+#       type: module
+#     - url: /hacsfiles/mushroom/mushroom.js
+#       type: module
+#     - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+#       type: module
+#     - url: /hacsfiles/Bubble-Card/bubble-card.js
+#       type: module
+#     - url: /hacsfiles/apexcharts-card/apexcharts-card.js
+#       type: module
+#     - url: /hacsfiles/battery-state-card/battery-state-card.js
+#       type: module
