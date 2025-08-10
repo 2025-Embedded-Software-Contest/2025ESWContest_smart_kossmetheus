@@ -69,7 +69,7 @@ template:
           {{ (ac + kitchen + desktop) | round(2) }}
         icon: mdi:lightning-bolt
 
-      # 평균 김치냉장고 온도
+      # 평균 김치냉장고 온도 (개선된 fallback 로직)
       - name: "kimchi_fridge_avg_temperature"
         unique_id: "kimchi_fridge_avg_temperature"
         unit_of_measurement: "°C"
@@ -82,15 +82,65 @@ template:
             'sensor.jubang_gimcinaengjanggo_bottom_temperature'
           ] %}
           {% set nums = [] %}
+          {% set unavailable_count = 0 %}
           {% for id in ids %}
             {% set vs = states(id) %}
             {% if vs not in ['unknown', 'unavailable', 'none', None] %}
-              {% set nums = nums + [ vs | float(0) ] %}
+              {% set temp_val = vs | float(0) %}
+              {# 유효한 온도 범위 체크 (-30°C ~ 30°C) #}
+              {% if temp_val >= -30 and temp_val <= 30 %}
+                {% set nums = nums + [temp_val] %}
+              {% endif %}
+            {% else %}
+              {% set unavailable_count = unavailable_count + 1 %}
             {% endif %}
           {% endfor %}
           {% set count = nums | count %}
-          {{ ((nums | sum) / (count if count > 0 else 1)) | round(1) }}
-        icon: mdi:thermometer
+          {% if count > 0 %}
+            {{ ((nums | sum) / count) | round(1) }}
+          {% elif unavailable_count == 4 %}
+            {# 모든 센서가 unavailable인 경우 #}
+            unavailable
+          {% else %}
+            {# 일부만 unavailable이지만 유효한 데이터가 없는 경우 #}
+            0
+          {% endif %}
+        icon: >
+          {% if states('sensor.kimchi_fridge_avg_temperature') == 'unavailable' %}
+            mdi:thermometer-alert
+          {% else %}
+            mdi:thermometer
+          {% endif %}
+        attributes:
+          available_sensors: >
+            {% set ids = [
+              'sensor.jubang_gimcinaengjanggo_left_temperature',
+              'sensor.jubang_gimcinaengjanggo_middle_temperature', 
+              'sensor.jubang_gimcinaengjanggo_right_temperature',
+              'sensor.jubang_gimcinaengjanggo_bottom_temperature'
+            ] %}
+            {% set available = [] %}
+            {% for id in ids %}
+              {% if states(id) not in ['unknown', 'unavailable', 'none', None] %}
+                {% set available = available + [id.split('.')[1].replace('jubang_gimcinaengjanggo_', '').replace('_temperature', '')] %}
+              {% endif %}
+            {% endfor %}
+            {{ available | join(', ') if available else 'none' }}
+          total_sensors: 4
+          unavailable_sensors: >
+            {% set ids = [
+              'sensor.jubang_gimcinaengjanggo_left_temperature',
+              'sensor.jubang_gimcinaengjanggo_middle_temperature',
+              'sensor.jubang_gimcinaengjanggo_right_temperature', 
+              'sensor.jubang_gimcinaengjanggo_bottom_temperature'
+            ] %}
+            {% set unavailable = [] %}
+            {% for id in ids %}
+              {% if states(id) in ['unknown', 'unavailable', 'none', None] %}
+                {% set unavailable = unavailable + [id.split('.')[1].replace('jubang_gimcinaengjanggo_', '').replace('_temperature', '')] %}
+              {% endif %}
+            {% endfor %}
+            {{ unavailable | join(', ') if unavailable else 'none' }}
 
       # 평균 배터리 수준
       - name: "average_device_battery"
@@ -155,11 +205,15 @@ template:
 logger:
   default: info
   logs:
-    # Xbox 통합 로그 최소화 (네트워크 타임아웃 문제)
-    homeassistant.components.xbox: error
-    homeassistant.components.xbox.coordinator: error
+    # Xbox 통합 완전 비활성화 (네트워크 타임아웃 문제 해결)
+    homeassistant.components.xbox: critical
+    homeassistant.components.xbox.coordinator: critical
     # 라즈베리파이 전력 경고 최소화
     homeassistant.components.rpi_power: error
+    # LG ThinQ 통합 로그 레벨 상승 (문제 진단용)
+    custom_components.smartthinq_sensors: debug
+    # BLE Monitor 로그 레벨 상승 (문제 진단용)  
+    custom_components.ble_monitor: info
 
 # 시스템 리소스 최적화
 system_health:

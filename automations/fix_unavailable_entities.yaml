@@ -1,0 +1,99 @@
+alias: Fix Unavailable Entities - Automated Recovery
+id: fix_unavailable_entities_recovery
+description: 자동으로 unavailable 엔티티들을 복구하는 자동화
+trigger:
+  # 30분마다 실행 (진단보다 자주)
+  - platform: time_pattern
+    minutes: "/30"
+  # Home Assistant 시작 시에도 실행
+  - platform: homeassistant
+    event: start
+condition: []
+action:
+  - variables:
+      # unavailable 엔티티 목록 수집
+      unavailable_entities: >-
+        {{ states | selectattr('state', 'in', ['unavailable','unknown'])
+                   | map(attribute='entity_id') | list }}
+      
+      # 통합별 분류
+      thinq_unavailable: >-
+        {{ unavailable_entities | select('match', 'sensor.jubang_.*') | list }}
+      
+      ble_unavailable: >-
+        {{ unavailable_entities | select('match', '.*ble.*') | list }}
+      
+      icloud_unavailable: >-
+        {{ unavailable_entities | select('match', '.*battery') | list }}
+      
+      xbox_unavailable: >-
+        {{ unavailable_entities | select('match', '.*xbox.*') | list }}
+
+  # LG ThinQ 관련 복구 시도
+  - choose:
+      - conditions: "{{ thinq_unavailable | length > 0 }}"
+        sequence:
+          - service: system_log.write
+            data:
+              message: >-
+                LG ThinQ unavailable entities detected: {{ thinq_unavailable | join(', ') }}
+                Attempting integration reload...
+              level: warning
+          
+          # ThinQ 통합 재시작 시도
+          - service: homeassistant.reload_config_entry
+            target:
+              entity_id: "{{ thinq_unavailable }}"
+            continue_on_error: true
+
+  # BLE Monitor 관련 복구 시도  
+  - choose:
+      - conditions: "{{ ble_unavailable | length > 0 }}"
+        sequence:
+          - service: system_log.write
+            data:
+              message: >-
+                BLE unavailable entities detected: {{ ble_unavailable | join(', ') }}
+                May require bluetooth adapter reset
+              level: warning
+
+  # iCloud3 관련 알림
+  - choose:
+      - conditions: "{{ icloud_unavailable | length > 0 }}"
+        sequence:
+          - service: system_log.write
+            data:
+              message: >-
+                Apple device battery sensors unavailable: {{ icloud_unavailable | join(', ') }}
+                Check iCloud3 integration and Mobile App connections
+              level: warning
+
+  # Xbox 관련 엔티티는 로그만 기록 (비활성화 예정)
+  - choose:
+      - conditions: "{{ xbox_unavailable | length > 0 }}"
+        sequence:
+          - service: system_log.write
+            data:
+              message: >-
+                Xbox entities remain unavailable: {{ xbox_unavailable | join(', ') }}
+                These will be permanently disabled in next configuration update
+              level: info
+
+  # 전체 결과 요약
+  - service: persistent_notification.create
+    data:
+      title: "자동 복구 시도 완료"
+      message: >-
+        **복구 시도 결과:**
+        - ThinQ: {{ thinq_unavailable | length }}개 엔티티
+        - BLE: {{ ble_unavailable | length }}개 엔티티  
+        - iCloud: {{ icloud_unavailable | length }}개 엔티티
+        - Xbox: {{ xbox_unavailable | length }}개 엔티티 (비활성화 예정)
+        
+        **총 unavailable 엔티티**: {{ unavailable_entities | length }}개
+        
+        상세 정보는 로그를 확인하세요.
+      notification_id: auto_recovery_status
+
+mode: single
+max_exceeded: silent
