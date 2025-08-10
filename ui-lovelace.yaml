@@ -2,22 +2,25 @@ title: CareDian 스마트홈 대시보드
 views:
   - title: 홈
     path: home
+    # rounded/ui 레이아웃: 그리드 기반의 여백/둥근 모서리 디자인
     type: custom:grid-layout
     layout:
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))
       grid-template-rows: auto
       grid-gap: 12px
-      margin: 8px
+      margin: 12px
       mediaquery:
         "(max-width: 600px)":
           grid-template-columns: 1fr
-          margin: 4px
+          margin: 6px
         "(min-width: 1200px)":
           grid-template-columns: repeat(3, 1fr)
     
     cards:
       # ======================
-      # 환경 & 집 상태 요약 (최상단)
+      # 상단: 시간/날씨/집 상태 개요
+      # - 총 4개의 배지형 버튼으로 현재 온도/습도/총 전력/재실 표시
+      # - rounded/ui 스타일을 카드 모서리 둥글게 적용
       # ======================
       - type: vertical-stack
         view_layout:
@@ -34,7 +37,28 @@ views:
         cards:
           - type: horizontal-stack
             cards:
-              # 실내 온도
+              # 현재 시간 (rounded 배지)
+              - type: custom:button-card
+                entity: sensor.time
+                name: 현재 시간
+                icon: mdi:clock-outline
+                show_state: true
+                show_name: true
+                styles:
+                  card:
+                    - background: black
+                    - color: white
+                    - border-radius: 999px
+                    - padding: 8px 12px
+                  name:
+                    - color: white
+                    - font-size: 14px
+                  state:
+                    - color: white
+                    - font-size: 18px
+                    - font-weight: bold
+
+              # 날씨 요약 온도 배지 (weather 엔티티 대신 현재 온도 센서 표시)
               - type: custom:button-card
                 entity: sensor.seutaendeuhyeong_eeokeon_temperature
                 name: 실내 온도
@@ -43,23 +67,18 @@ views:
                 show_name: true
                 styles:
                   card:
-                    - background: transparent
-                    - border: none
-                    - box-shadow: none
+                    - background: black
+                    - color: white
+                    - border-radius: 999px
+                    - padding: 8px 12px
                   name:
                     - color: white
                     - font-size: 14px
-                    - font-weight: 500
                   state:
                     - color: white
-                    - font-size: 28px
+                    - font-size: 18px
                     - font-weight: bold
-                  icon:
-                    - color: white
-                    - width: 40px
-                    - height: 40px
-
-              # 실내 습도
+              # 실내 습도 배지
               - type: custom:button-card
                 entity: sensor.seutaendeuhyeong_eeokeon_humidity
                 name: 실내 습도
@@ -68,23 +87,23 @@ views:
                 show_name: true
                 styles:
                   card:
-                    - background: transparent
-                    - border: none
-                    - box-shadow: none
+                    - background: black
+                    - color: white
+                    - border-radius: 999px
+                    - padding: 8px 12px
                   name:
                     - color: white
                     - font-size: 14px
-                    - font-weight: 500
                   state:
                     - color: white
-                    - font-size: 28px
+                    - font-size: 18px
                     - font-weight: bold
                   icon:
                     - color: white
-                    - width: 40px
-                    - height: 40px
+                    - width: 24px
+                    - height: 24px
 
-              # 총 전력 소비 (NEW)
+              # 총 전력 소비 배지 (템플릿 센서 사용)
               - type: custom:button-card
                 entity: sensor.total_power_consumption
                 name: 총 전력
@@ -93,23 +112,23 @@ views:
                 show_name: true
                 styles:
                   card:
-                    - background: transparent
-                    - border: none
-                    - box-shadow: none
+                    - background: black
+                    - color: white
+                    - border-radius: 999px
+                    - padding: 8px 12px
                   name:
                     - color: white
                     - font-size: 14px
-                    - font-weight: 500
                   state:
                     - color: white
-                    - font-size: 28px
+                    - font-size: 18px
                     - font-weight: bold
                   icon:
                     - color: white
-                    - width: 40px
-                    - height: 40px
+                    - width: 24px
+                    - height: 24px
 
-              # 집 상태 (NEW)
+              # 집 상태 배지 (재실 템플릿)
               - type: custom:button-card
                 entity: binary_sensor.someone_home
                 name: 집 상태
@@ -121,28 +140,28 @@ views:
                   ]]]
                 styles:
                   card:
-                    - background: transparent
-                    - border: none
-                    - box-shadow: none
+                    - background: black
+                    - color: white
+                    - border-radius: 999px
+                    - padding: 8px 12px
                   name:
                     - color: white
                     - font-size: 14px
-                    - font-weight: 500
                   state:
                     - color: white
-                    - font-size: 20px
+                    - font-size: 18px
                     - font-weight: bold
                   icon:
                     - color: white
-                    - width: 40px
-                    - height: 40px
+                    - width: 24px
+                    - height: 24px
                 icon: |
                   [[[
                     return entity.state === 'on' ? 'mdi:home-account' : 'mdi:home-outline';
                   ]]]
 
       # ======================
-      # 기후 제어 (에어컨)
+      # 중앙: 환경 센서(기후 제어 포함)
       # ======================
       - type: thermostat
         entity: climate.seutaendeuhyeong_eeokeon
@@ -155,7 +174,7 @@ views:
             }
 
       # ======================
-      # 조명 & 전력 통합
+      # 하단: 조명 & 전력 제어
       # ======================
       - type: vertical-stack
         title: 💡 조명 & 전력
@@ -215,7 +234,7 @@ views:
               fill: fade
 
       # ======================
-      # 주방 가전 상세
+      # 하단 스크롤 섹션: 주방 가전 상세
       # ======================
       - type: vertical-stack
         title: 🍽️ 주방 가전
@@ -271,7 +290,7 @@ views:
                     icon: mdi:thermometer-high
 
       # ======================
-      # 헬스 & 웨어러블 확장
+      # 하단 스크롤 섹션: 헬스 & 웨어러블
       # ======================
       - type: vertical-stack
         title: 💪 헬스 & 웨어러블
@@ -308,7 +327,7 @@ views:
                 icon: mdi:gauge
 
       # ======================
-      # 배터리 상태 향상
+      # 배터리 상태(요약 + 상세)
       # ======================
       - type: vertical-stack
         title: 🔋 배터리 관리
@@ -553,9 +572,7 @@ views:
           - entity: sensor.date
             name: 오늘 날짜
             icon: mdi:calendar
-          - entity: sensor.season
-            name: 현재 계절
-            icon: mdi:weather-partly-cloudy
+          # season 통합 제거에 따라 카드에서 제외
           - entity: sun.sun
             name: 태양
             icon: mdi:weather-sunny

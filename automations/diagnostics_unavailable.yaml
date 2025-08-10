@@ -1,0 +1,31 @@
+alias: Diagnostics - Notify unavailable entities
+id: diagnostics_unavailable_entities
+description: 주기적으로 'unavailable'/'unknown' 엔티티 목록을 알림으로 표시합니다.
+trigger:
+  - platform: homeassistant
+    event: start
+  - platform: time_pattern
+    minutes: "/15"
+condition: []
+action:
+  - variables:
+      problem_list: >-
+        {{ states | selectattr('state', 'in', ['unavailable','unknown'])
+                   | map(attribute='entity_id') | list }}
+  - choose:
+      - conditions: "{{ problem_list | length > 0 }}"
+        sequence:
+          - service: persistent_notification.create
+            data:
+              title: >-
+                Unavailable/Unknown entities ({{ problem_list | length }})
+              message: >-
+                {{ problem_list | join('\n') }}
+              notification_id: unavailable_entities
+      - conditions: "{{ problem_list | length == 0 }}"
+        sequence:
+          - service: persistent_notification.dismiss
+            data:
+              notification_id: unavailable_entities
+mode: restart
+

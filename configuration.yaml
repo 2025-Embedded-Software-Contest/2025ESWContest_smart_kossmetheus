@@ -34,6 +34,20 @@ sensor:
       - 'time_date'
       - 'time_utc'
 
+  # 시스템 모니터 센서 복구(대시보드/InfluxDB 참조 엔티티 정상화)
+  - platform: systemmonitor
+    resources:
+      - type: processor_use
+      - type: memory_use_percent
+      - type: disk_use_percent
+      - type: load_1m
+      - type: load_5m
+      - type: network_in
+        arg: eth0
+      - type: network_out
+        arg: eth0
+      - type: last_boot
+
   # (season/moon는 센서 플랫폼이 아닌 통합형식이므로 아래에 최상위 키로 선언)
 
 # Sun integration (일출/일몰) - 제거 요청 없음, 유지
@@ -60,11 +74,22 @@ template:
         unique_id: "kimchi_fridge_avg_temperature"
         unit_of_measurement: "°C"
         state: >
-          {% set left = states('sensor.jubang_gimcinaengjanggo_left_temperature') | float(0) %}
-          {% set middle = states('sensor.jubang_gimcinaengjanggo_middle_temperature') | float(0) %}
-          {% set right = states('sensor.jubang_gimcinaengjanggo_right_temperature') | float(0) %}
-          {% set bottom = states('sensor.jubang_gimcinaengjanggo_bottom_temperature') | float(0) %}
-          {{ ((left + middle + right + bottom) / 4) | round(1) }}
+          {# kimchi fridge 각 존 센서가 일부 'unavailable'일 때도 평균이 동작하도록 처리 #}
+          {% set ids = [
+            'sensor.jubang_gimcinaengjanggo_left_temperature',
+            'sensor.jubang_gimcinaengjanggo_middle_temperature',
+            'sensor.jubang_gimcinaengjanggo_right_temperature',
+            'sensor.jubang_gimcinaengjanggo_bottom_temperature'
+          ] %}
+          {% set nums = [] %}
+          {% for id in ids %}
+            {% set vs = states(id) %}
+            {% if vs not in ['unknown', 'unavailable', 'none', None] %}
+              {% set nums = nums + [ vs | float(0) ] %}
+            {% endif %}
+          {% endfor %}
+          {% set count = nums | count %}
+          {{ ((nums | sum) / (count if count > 0 else 1)) | round(1) }}
         icon: mdi:thermometer
 
       # 평균 배터리 수준
@@ -79,6 +104,22 @@ template:
           {{ ((watch + macbook + ipad + iphone) / 4) | round(0) }}
         icon: mdi:battery
 
+      # 진단: 'unavailable/unknown' 엔티티 개수
+      - name: "unavailable_entities_count"
+        unique_id: "unavailable_entities_count"
+        unit_of_measurement: "entities"
+        state: >
+          {{ states | selectattr('state', 'in', ['unavailable', 'unknown']) | list | length }}
+        icon: mdi:alert-circle-outline
+
+      # 진단: 문제 엔티티 목록(JSON)
+      - name: "unavailable_entities_json"
+        unique_id: "unavailable_entities_json"
+        state: >
+          {{ (states | selectattr('state', 'in', ['unavailable','unknown'])
+                 | map(attribute='entity_id') | list) | tojson }}
+        icon: mdi:code-json
+
   - binary_sensor:
       # 저배터리 알림
       - name: "low_battery_devices"
@@ -90,7 +131,7 @@ template:
             states('sensor.uhyeonyi_ipad_pro_battery') | float(100),
             states('sensor.uhyeonyi_iphone_xs_battery') | float(100)
           ] %}
-          {{ devices | select('<', 20) | list | length > 0 }}
+          {{ devices | select('lt', 20) | list | length > 0 }}
         icon: mdi:battery-alert
 
       # 집에 사람 있음
@@ -335,7 +376,8 @@ lovelace:
       type: module
     - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
       type: module
-    - url: /hacsfiles/bar-card/bar-card.js
+    # Bubble-Card (rounded/ui 스타일 구현용)
+    - url: /hacsfiles/Bubble-Card/bubble-card.js
       type: module
     # 추가 커스텀 카드들
     - url: /hacsfiles/apexcharts-card/apexcharts-card.js
