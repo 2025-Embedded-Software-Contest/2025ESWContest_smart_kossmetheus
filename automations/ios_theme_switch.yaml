@@ -132,7 +132,7 @@
           - light.smart_bulb
       data:
         brightness_pct: 80
-        color_temp: 400  # 따뜻한 색온도
+        color_temp_kelvin: 2500  # color_temp(미레드) → color_temp_kelvin(켈빈)로 변경
 
 # 취침 시간 조명 자동 끄기
 - id: bedtime_lights_off

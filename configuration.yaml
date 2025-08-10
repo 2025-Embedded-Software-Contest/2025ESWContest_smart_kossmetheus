@@ -112,12 +112,15 @@ template:
           {{ states | selectattr('state', 'in', ['unavailable', 'unknown']) | list | length }}
         icon: mdi:alert-circle-outline
 
-      # 진단: 문제 엔티티 목록(JSON)
-      - name: "unavailable_entities_json"
-        unique_id: "unavailable_entities_json"
+      # 진단: 문제 엔티티 상세(상태=개수, 목록은 attributes에 저장 → 상태 길이 255 제한 회피)
+      - name: "unavailable_entities"
+        unique_id: "unavailable_entities"
         state: >
-          {{ (states | selectattr('state', 'in', ['unavailable','unknown'])
-                 | map(attribute='entity_id') | list) | tojson }}
+          {{ states | selectattr('state', 'in', ['unavailable','unknown']) | list | length }}
+        attributes:
+          entities: >
+            {{ states | selectattr('state','in',['unavailable','unknown'])
+                       | map(attribute='entity_id') | list }}
         icon: mdi:code-json
 
   - binary_sensor:
