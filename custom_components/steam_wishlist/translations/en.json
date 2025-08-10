@@ -1,0 +1,31 @@
+{
+  "config": {
+    "error": {
+      "invalid_api_key": "The provided web API key is invalid.",
+      "invalid_steam_id": "The provided Steam ID is invalid."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "steam_id": "Steam ID",
+          "steam_web_api_key": "Steam Web API Key"
+        },
+        "data_description": {
+          "steam_id": "Your 64-bit SteamID. You can look up your ID here: https://steamid.io/",
+          "steam_web_api_key": "You can create or look up your api key here: https://steamcommunity.com/dev/apikey"
+        },
+        "title": "Setup"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "show_all_wishlist_items": "Display non-sale wishlist items too in Upcoming Media Card"
+        }
+      }
+    }
+  }
+}
