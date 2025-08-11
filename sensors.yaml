@@ -1,0 +1,202 @@
+# ===========================
+# 추가 센서 통합
+# ===========================
+
+# 시스템 모니터링
+sensor:
+  # (사용자 요청) systemmonitor 센서 제거
+
+  # 시간 및 날짜
+  - platform: time_date
+    display_options:
+      - "time"
+      - "date"
+      - "date_time"
+      - "date_time_utc"
+      - "date_time_iso"
+      - "time_date"
+      - "time_utc"
+
+  # 시스템 모니터 센서 복구(대시보드/InfluxDB 참조 엔티티 정상화)
+  - platform: systemmonitor
+    resources:
+      - type: processor_use
+      - type: memory_use_percent
+      - type: disk_use_percent
+      - type: load_1m
+      - type: load_5m
+      - type: network_in
+        arg: eth0
+      - type: network_out
+        arg: eth0
+      - type: last_boot
+
+  # (season/moon는 센서 플랫폼이 아닌 통합형식이므로 아래에 최상위 키로 선언)
+
+# Sun integration (일출/일몰) - 제거 요청 없음, 유지
+sun:
+
+# (사용자 요청) season/moon 통합 제거
+
+# 템플릿 센서 (사용자 정의 계산)
+template:
+  - sensor:
+      # 총 전력 소비량
+      - name: "total_power_consumption"
+        unique_id: "total_power_consumption"
+        unit_of_measurement: "W"
+        state: >
+          {% set ac = states('sensor.seutaendeuhyeong_eeokeon_power') | float(0) %}
+          {% set kitchen = states('sensor.zigbee_dimmer_power') | float(0) %}
+          {% set desktop = states('sensor.deseukeutab_jeonweon_power') | float(0) %}
+          {{ (ac + kitchen + desktop) | round(2) }}
+        icon: mdi:lightning-bolt
+
+      # 평균 김치냉장고 온도 (개선된 fallback 로직)
+      - name: "kimchi_fridge_avg_temperature"
+        unique_id: "kimchi_fridge_avg_temperature"
+        unit_of_measurement: "°C"
+        state: >
+          {# kimchi fridge 각 존 센서가 일부 'unavailable'일 때도 평균이 동작하도록 처리 #}
+          {% set ids = [
+            'sensor.jubang_gimcinaengjanggo_left_temperature',
+            'sensor.jubang_gimcinaengjanggo_middle_temperature',
+            'sensor.jubang_gimcinaengjanggo_right_temperature',
+            'sensor.jubang_gimcinaengjanggo_bottom_temperature'
+          ] %}
+          {% set nums = [] %}
+          {% set unavailable_count = 0 %}
+          {% for id in ids %}
+            {% set vs = states(id) %}
+            {% if vs not in ['unknown', 'unavailable', 'none', None] %}
+              {% set temp_val = vs | float(0) %}
+              {# 유효한 온도 범위 체크 (-30°C ~ 30°C) #}
+              {% if temp_val >= -30 and temp_val <= 30 %}
+                {% set nums = nums + [temp_val] %}
+              {% endif %}
+            {% else %}
+              {% set unavailable_count = unavailable_count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {% set count = nums | count %}
+          {% if count > 0 %}
+            {{ ((nums | sum) / count) | round(1) }}
+          {% elif unavailable_count == 4 %}
+            {# 모든 센서가 unavailable인 경우 #}
+            unavailable
+          {% else %}
+            {# 일부만 unavailable이지만 유효한 데이터가 없는 경우 #}
+            0
+          {% endif %}
+        icon: >
+          {% if states('sensor.kimchi_fridge_avg_temperature') == 'unavailable' %}
+            mdi:thermometer-alert
+          {% else %}
+            mdi:thermometer
+          {% endif %}
+        attributes:
+          available_sensors: >
+            {% set ids = [
+              'sensor.jubang_gimcinaengjanggo_left_temperature',
+              'sensor.jubang_gimcinaengjanggo_middle_temperature', 
+              'sensor.jubang_gimcinaengjanggo_right_temperature',
+              'sensor.jubang_gimcinaengjanggo_bottom_temperature'
+            ] %}
+            {% set available = [] %}
+            {% for id in ids %}
+              {% if states(id) not in ['unknown', 'unavailable', 'none', None] %}
+                {% set available = available + [id.split('.')[1].replace('jubang_gimcinaengjanggo_', '').replace('_temperature', '')] %}
+              {% endif %}
+            {% endfor %}
+            {{ available | join(', ') if available else 'none' }}
+          total_sensors: 4
+          unavailable_sensors: >
+            {% set ids = [
+              'sensor.jubang_gimcinaengjanggo_left_temperature',
+              'sensor.jubang_gimcinaengjanggo_middle_temperature',
+              'sensor.jubang_gimcinaengjanggo_right_temperature', 
+              'sensor.jubang_gimcinaengjanggo_bottom_temperature'
+            ] %}
+            {% set unavailable = [] %}
+            {% for id in ids %}
+              {% if states(id) in ['unknown', 'unavailable', 'none', None] %}
+                {% set unavailable = unavailable + [id.split('.')[1].replace('jubang_gimcinaengjanggo_', '').replace('_temperature', '')] %}
+              {% endif %}
+            {% endfor %}
+            {{ unavailable | join(', ') if unavailable else 'none' }}
+
+      # 평균 배터리 수준
+      - name: "average_device_battery"
+        unique_id: "average_device_battery"
+        unit_of_measurement: "%"
+        state: >
+          {% set watch = states('sensor.gimuhyeonyi_apple_watch_battery') | float(0) %}
+          {% set macbook = states('sensor.gimuhyeonyi_macbook_pro_battery') | float(0) %}
+          {% set ipad = states('sensor.uhyeonyi_ipad_pro_battery') | float(0) %}
+          {% set iphone = states('sensor.uhyeonyi_iphone_xs_battery') | float(0) %}
+          {{ ((watch + macbook + ipad + iphone) / 4) | round(0) }}
+        icon: mdi:battery
+
+      # 진단: 'unavailable/unknown' 엔티티 개수
+      - name: "unavailable_entities_count"
+        unique_id: "unavailable_entities_count"
+        unit_of_measurement: "entities"
+        state: >
+          {{ states | selectattr('state', 'in', ['unavailable', 'unknown']) | list | length }}
+        icon: mdi:alert-circle-outline
+
+      # 진단: 문제 엔티티 상세(상태=개수, 목록은 attributes에 저장 → 상태 길이 255 제한 회피)
+      - name: "unavailable_entities"
+        unique_id: "unavailable_entities"
+        state: >
+          {{ states | selectattr('state', 'in', ['unavailable','unknown']) | list | length }}
+        attributes:
+          entities: >
+            {{ states | selectattr('state','in',['unavailable','unknown'])
+                       | map(attribute='entity_id') | list }}
+        icon: mdi:code-json
+
+  - binary_sensor:
+      # 저배터리 알림
+      - name: "low_battery_devices"
+        unique_id: "low_battery_devices"
+        state: >
+          {% set devices = [
+            states('sensor.gimuhyeonyi_apple_watch_battery') | float(100),
+            states('sensor.gimuhyeonyi_macbook_pro_battery') | float(100),
+            states('sensor.uhyeonyi_ipad_pro_battery') | float(100),
+            states('sensor.uhyeonyi_iphone_xs_battery') | float(100)
+          ] %}
+          {{ devices | select('lt', 20) | list | length > 0 }}
+        icon: mdi:battery-alert
+
+      # 집에 사람 있음
+      - name: "someone_home"
+        unique_id: "someone_home"
+        state: >
+          {{ is_state('binary_sensor.iphone_presence', 'on') }}
+        icon: mdi:home-account
+
+# 근무일 센서는 UI를 통해 통합으로 설정
+# Settings > Devices & Services > Add Integration > Workday
+
+# ===========================
+# 시스템 최적화 설정
+# ===========================
+
+# 로그 레벨 조정 (문제 있는 통합 로그 최소화)
+logger:
+  default: info
+  logs:
+    # Xbox 통합 완전 비활성화 (네트워크 타임아웃 문제 해결)
+    homeassistant.components.xbox: critical
+    homeassistant.components.xbox.coordinator: critical
+    # 라즈베리파이 전력 경고 최소화
+    homeassistant.components.rpi_power: error
+    # LG ThinQ 통합 로그 레벨 상승 (문제 진단용)
+    custom_components.smartthinq_sensors: debug
+    # BLE Monitor 로그 레벨 상승 (문제 진단용)
+    custom_components.ble_monitor: info
+
+# 시스템 리소스 최적화
+system_health:

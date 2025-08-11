@@ -1,0 +1,8 @@
+globals:
+
+devices:
+
+ignore_platforms: []
+
+default_entity_id_format: 'st_custom_%{device_id}_%{label}_%{component}_%{capability}_%{attribute}_%{command}_%{name}'
+
