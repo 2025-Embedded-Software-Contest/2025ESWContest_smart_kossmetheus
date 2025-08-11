@@ -1,7 +1,7 @@
 globals:
 
 devices:
-  - device_id: "REPLACE_WITH_DEVICE_ID_KITCHEN_HOOD"
+  - device_id: "8eb9103b-3979-4334-a35e-f9621ca5e7a2"
     switch:
       - name: "%{label} power"
         component: main
@@ -17,7 +17,7 @@ devices:
         on_state: ["on"]
         parent_entity_id: light.zigbee_dimmer
 
-  - device_id: "REPLACE_WITH_DEVICE_ID_DESKTOP_POWER"
+  - device_id: "a02c4d01-de26-4f04-93de-93c5f9878f1c"
     switch:
       - name: "%{label} power"
         component: main
