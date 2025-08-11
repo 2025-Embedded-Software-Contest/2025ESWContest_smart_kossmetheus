@@ -1,189 +1,188 @@
 # ===========================
 # InfluxDB 설정 (확장)
 # ===========================
-influxdb:
-  host: a0d7b954-influxdb
-  port: 8086
-  database: homeassistant
-  username: homeassistant
-  password: !secret influxdb_password
-  max_retries: 3
-  default_measurement: state
-  ssl: false
-  verify_ssl: false
-  precision: s
+host: 192.168.1.49
+port: 8086
+database: homeassistant
+username: homeassistant
+password: !secret influxdb_password
+max_retries: 3
+default_measurement: state
+ssl: false
+verify_ssl: false
+precision: s
 
-  # === 확장된 포함 설정 ===
-  include:
-    domains:
-      - sensor
-      - binary_sensor
-      - climate
-      - light
-      - switch
-      - weather # 날씨 정보 포함
-      - sun # 일출/일몰 정보
-      - person # 사람 추적 (있을 경우)
-    entities:
-      # 기존 엔티티들 유지
-      - climate.seutaendeuhyeong_eeokeon
-      - sensor.seutaendeuhyeong_eeokeon_humidity
-      - sensor.seutaendeuhyeong_eeokeon_temperature
-      - sensor.seutaendeuhyeong_eeokeon_power
-      - sensor.seutaendeuhyeong_eeokeon_power_energy
-      - sensor.seutaendeuhyeong_eeokeon_energy
-      - sensor.seutaendeuhyeong_eeokeon_energy_difference
-      - sensor.seutaendeuhyeong_eeokeon_volume
+# === 확장된 포함 설정 ===
+include:
+  domains:
+    - sensor
+    - binary_sensor
+    - climate
+    - light
+    - switch
+    - weather # 날씨 정보 포함
+    - sun # 일출/일몰 정보
+    - person # 사람 추적 (있을 경우)
+  entities:
+    # 기존 엔티티들 유지
+    - climate.seutaendeuhyeong_eeokeon
+    - sensor.seutaendeuhyeong_eeokeon_humidity
+    - sensor.seutaendeuhyeong_eeokeon_temperature
+    - sensor.seutaendeuhyeong_eeokeon_power
+    - sensor.seutaendeuhyeong_eeokeon_power_energy
+    - sensor.seutaendeuhyeong_eeokeon_energy
+    - sensor.seutaendeuhyeong_eeokeon_energy_difference
+    - sensor.seutaendeuhyeong_eeokeon_volume
 
-      - light.zigbee_dimmer
-      - light.smart_bulb
-      - light.deseukeutab_jeonweon
-      - sensor.zigbee_dimmer_power
-      - sensor.zigbee_dimmer_energy
-      - sensor.deseukeutab_jeonweon_power
-      - sensor.deseukeutab_jeonweon_energy
+    - light.zigbee_dimmer
+    - light.smart_bulb
+    - light.deseukeutab_jeonweon
+    - sensor.zigbee_dimmer_power
+    - sensor.zigbee_dimmer_energy
+    - sensor.deseukeutab_jeonweon_power
+    - sensor.deseukeutab_jeonweon_energy
 
-      - sensor.192_168_1_1_devices_connected
-      - sensor.fast_com_download
-      - sensor.paul_router_download_speed
-      - sensor.paul_router_upload_speed
+    - sensor.192_168_1_1_devices_connected
+    - sensor.fast_com_download
+    - sensor.paul_router_download_speed
+    - sensor.paul_router_upload_speed
 
-      # 주방 가전
-      - binary_sensor.jubang_siggiseceoggi_machine_clean_reminder
-      - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
-      - binary_sensor.jubang_siggiseceoggi_door
-      - binary_sensor.jubang_siggiseceoggi_chime_sound
-      - sensor.jubang_siggiseceoggi_remaining_time
-      - sensor.jubang_siggiseceoggi_total_time
-      - sensor.jubang_siggiseceoggi_softening_level
-      - sensor.jubang_siggiseceoggi_delayed_start
-      - sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level
+    # 주방 가전
+    - binary_sensor.jubang_siggiseceoggi_machine_clean_reminder
+    - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
+    - binary_sensor.jubang_siggiseceoggi_door
+    - binary_sensor.jubang_siggiseceoggi_chime_sound
+    - sensor.jubang_siggiseceoggi_remaining_time
+    - sensor.jubang_siggiseceoggi_total_time
+    - sensor.jubang_siggiseceoggi_softening_level
+    - sensor.jubang_siggiseceoggi_delayed_start
+    - sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level
 
-      - sensor.jubang_gimcinaengjanggo_bottom_temperature
-      - sensor.jubang_gimcinaengjanggo_left_temperature
-      - sensor.jubang_gimcinaengjanggo_middle_temperature
-      - sensor.jubang_gimcinaengjanggo_right_temperature
+    - sensor.jubang_gimcinaengjanggo_bottom_temperature
+    - sensor.jubang_gimcinaengjanggo_left_temperature
+    - sensor.jubang_gimcinaengjanggo_middle_temperature
+    - sensor.jubang_gimcinaengjanggo_right_temperature
 
-      # 헬스 & BLE
-      - sensor.ble_heart_rate_e0e33e6221b5
-      - sensor.ble_steps_e0e33e6221b5
-      - sensor.smart_series_7000_6f50
-      - sensor.smart_series_7000_6f50_duration
-      - sensor.smart_series_7000_6f50_pressure
-      - binary_sensor.ble_toothbrush_f45eab216f50
+    # 헬스 & BLE
+    - sensor.ble_heart_rate_e0e33e6221b5
+    - sensor.ble_steps_e0e33e6221b5
+    - sensor.smart_series_7000_6f50
+    - sensor.smart_series_7000_6f50_duration
+    - sensor.smart_series_7000_6f50_pressure
+    - binary_sensor.ble_toothbrush_f45eab216f50
 
-      # 배터리
-      - sensor.gimuhyeonyi_apple_watch_battery
-      - sensor.gimuhyeonyi_macbook_pro_battery
-      - sensor.uhyeonyi_ipad_pro_battery
-      - sensor.uhyeonyi_iphone_xs_battery
+    # 배터리
+    - sensor.gimuhyeonyi_apple_watch_battery
+    - sensor.gimuhyeonyi_macbook_pro_battery
+    - sensor.uhyeonyi_ipad_pro_battery
+    - sensor.uhyeonyi_iphone_xs_battery
 
-      # 존재감지
-      - binary_sensor.iphone_presence
-      - binary_sensor.workday_sensor
+    # 존재감지
+    - binary_sensor.iphone_presence
+    - binary_sensor.workday_sensor
 
-      # 새로 추가된 시스템 센서들
-      - sensor.disk_use_percent
-      - sensor.memory_use_percent
-      - sensor.processor_use
-      - sensor.load_1m
-      - sensor.load_5m
-      - sensor.network_in_eth0
-      - sensor.network_out_eth0
-      - sensor.last_boot
-      - sensor.time
-      - sensor.date
-      # season/moon 제거에 따른 제외
-      - sun.sun
+    # 새로 추가된 시스템 센서들
+    - sensor.disk_use_percent
+    - sensor.memory_use_percent
+    - sensor.processor_use
+    - sensor.load_1m
+    - sensor.load_5m
+    - sensor.network_in_eth0
+    - sensor.network_out_eth0
+    - sensor.last_boot
+    - sensor.time
+    - sensor.date
+    # season/moon 제거에 따른 제외
+    - sun.sun
 
-      # 템플릿 센서들
-      - sensor.total_power_consumption
-      - sensor.kimchi_fridge_avg_temperature
-      - sensor.average_device_battery
-      - binary_sensor.low_battery_devices
-      - binary_sensor.someone_home
+    # 템플릿 센서들
+    - sensor.total_power_consumption
+    - sensor.kimchi_fridge_avg_temperature
+    - sensor.average_device_battery
+    - binary_sensor.low_battery_devices
+    - binary_sensor.someone_home
 
-    entity_globs:
-      # 기존 패턴들 유지
-      - sensor.*_battery
-      - sensor.*temperature*
-      - sensor.*humidity*
-      - sensor.*power*
-      - sensor.*energy*
-      - sensor.*voltage*
-      - sensor.*current*
-      - sensor.*co2*
-      - sensor.*pm2_5*
-      - sensor.*pm10*
-      - sensor.*illuminance*
-      - sensor.*lux*
-      - sensor.*speed* # 네트워크 속도 등
-      - sensor.*_use* # CPU, 메모리 사용률 등
-      - sensor.*_load* # 시스템 로드
-      - binary_sensor.*motion*
-      - binary_sensor.*occupancy*
-      - binary_sensor.*presence*
-      - binary_sensor.*door*
-      - binary_sensor.*window*
+  entity_globs:
+    # 기존 패턴들 유지
+    - sensor.*_battery
+    - sensor.*temperature*
+    - sensor.*humidity*
+    - sensor.*power*
+    - sensor.*energy*
+    - sensor.*voltage*
+    - sensor.*current*
+    - sensor.*co2*
+    - sensor.*pm2_5*
+    - sensor.*pm10*
+    - sensor.*illuminance*
+    - sensor.*lux*
+    - sensor.*speed* # 네트워크 속도 등
+    - sensor.*_use* # CPU, 메모리 사용률 등
+    - sensor.*_load* # 시스템 로드
+    - binary_sensor.*motion*
+    - binary_sensor.*occupancy*
+    - binary_sensor.*presence*
+    - binary_sensor.*door*
+    - binary_sensor.*window*
 
-  # === 제외 설정 (최소화) ===
-  exclude:
-    domains:
-      - media_player # 일단 유지 (선택적으로 포함 가능)
-      - calendar # 캘린더는 텍스트 위주라 제외
-      - persistent_notification
-      - automation # 자동화 상태는 제외
-      - script # 스크립트 상태는 제외
-    entity_globs:
-      # Xbox 통합 제외 (네트워크 타임아웃 문제)
-      - sensor.xbox_*
-      - binary_sensor.xbox_*
-      # 진단/링크 품질 및 텍스트성 상태
-      - sensor.*_firmware*
-      - sensor.*_availability
-      - sensor.*_linkquality
-      - sensor.*_lqi
-      - sensor.*_last_seen
-      - sensor.*_reachable
-      - sensor.*_status_text
-      - sensor.*_state_text
-      - sensor.*_description
-      - sensor.*mode_text
-      - sensor.*condition
-    entities:
-      # 불필요한 텍스트/진단 센서들만 제외 (정확한 엔티티 ID만)
-      - sensor.cpu_speed
-      - sensor.local_ip
-      - sensor.uptime # 시스템 가동시간은 last_boot으로 대체
-      - sensor.icloud3_alerts
-      - sensor.icloud3_event_log
-      - sensor.icloud3_wazehist_track
-      - sensor.jubang_siggiseceoggi_current_status
-      - sensor.jubang_siggiseceoggi_current_cycle
-      - binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
+# === 제외 설정 (최소화) ===
+exclude:
+  domains:
+    - media_player # 일단 유지 (선택적으로 포함 가능)
+    - calendar # 캘린더는 텍스트 위주라 제외
+    - persistent_notification
+    - automation # 자동화 상태는 제외
+    - script # 스크립트 상태는 제외
+  entity_globs:
+    # Xbox 통합 제외 (네트워크 타임아웃 문제)
+    - sensor.xbox_*
+    - binary_sensor.xbox_*
+    # 진단/링크 품질 및 텍스트성 상태
+    - sensor.*_firmware*
+    - sensor.*_availability
+    - sensor.*_linkquality
+    - sensor.*_lqi
+    - sensor.*_last_seen
+    - sensor.*_reachable
+    - sensor.*_status_text
+    - sensor.*_state_text
+    - sensor.*_description
+    - sensor.*mode_text
+    - sensor.*condition
+  entities:
+    # 불필요한 텍스트/진단 센서들만 제외 (정확한 엔티티 ID만)
+    - sensor.cpu_speed
+    - sensor.local_ip
+    - sensor.uptime # 시스템 가동시간은 last_boot으로 대체
+    - sensor.icloud3_alerts
+    - sensor.icloud3_event_log
+    - sensor.icloud3_wazehist_track
+    - sensor.jubang_siggiseceoggi_current_status
+    - sensor.jubang_siggiseceoggi_current_cycle
+    - binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
 
-  # === 태그/속성 설정 ===
-  tags_attributes:
-    - friendly_name
-    - device_class
-    - unit_of_measurement
-    - area_id
-    - state_class
-  ignore_attributes:
-    - attribution
-    - icon
-    - entity_picture
-    - suggested_display_precision
-    - suggested_precision
-    - restore_state
-    - supported_features
-    - source_type
-    - available_modes
-    - hvac_modes
-    - preset_modes
-    - context_id
-    - context_user_id
-    - context_parent_id
-    - last_changed
-    - last_updated
-    - assumed_state
+# === 태그/속성 설정 ===
+tags_attributes:
+  - friendly_name
+  - device_class
+  - unit_of_measurement
+  - area_id
+  - state_class
+ignore_attributes:
+  - attribution
+  - icon
+  - entity_picture
+  - suggested_display_precision
+  - suggested_precision
+  - restore_state
+  - supported_features
+  - source_type
+  - available_modes
+  - hvac_modes
+  - preset_modes
+  - context_id
+  - context_user_id
+  - context_parent_id
+  - last_changed
+  - last_updated
+  - assumed_state
