@@ -1,8 +1,38 @@
 globals:
 
 devices:
+  - device_id: "REPLACE_WITH_DEVICE_ID_KITCHEN_HOOD"
+    switch:
+      - name: "%{label} power"
+        component: main
+        capability: switch
+        command:
+          "on": "on"
+          "off": "off"
+        argument:
+          "on": []
+          "off": []
+        state:
+          attribute: switch
+        on_state: ["on"]
+        parent_entity_id: light.zigbee_dimmer
+
+  - device_id: "REPLACE_WITH_DEVICE_ID_DESKTOP_POWER"
+    switch:
+      - name: "%{label} power"
+        component: main
+        capability: switch
+        command:
+          "on": "on"
+          "off": "off"
+        argument:
+          "on": []
+          "off": []
+        state:
+          attribute: switch
+        on_state: ["on"]
+        parent_entity_id: light.deseukeutab_jeonweon
 
 ignore_platforms: []
 
 default_entity_id_format: 'st_custom_%{device_id}_%{label}_%{component}_%{capability}_%{attribute}_%{command}_%{name}'
-
