@@ -70,6 +70,7 @@ esphome/.esphome/
 *.local
 *.dev
 .env
+.env.hass-mcp
 
 # Compiled python files
 *.compiled
