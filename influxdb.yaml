@@ -105,6 +105,7 @@ include:
 
   entity_globs:
     # 기존 패턴들 유지
+    - hae.*
     - sensor.*_battery
     - sensor.*temperature*
     - sensor.*humidity*
