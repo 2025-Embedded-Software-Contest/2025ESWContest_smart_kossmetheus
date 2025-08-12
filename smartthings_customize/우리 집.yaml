@@ -3,7 +3,8 @@ globals:
 devices:
   - device_id: "8eb9103b-3979-4334-a35e-f9621ca5e7a2"
     switch:
-      - name: "%{label} power"
+      - name: "주방 후드 전원"
+        entity_id_format: kitchen_hood
         component: main
         capability: switch
         command:
@@ -19,7 +20,8 @@ devices:
 
   - device_id: "a02c4d01-de26-4f04-93de-93c5f9878f1c"
     switch:
-      - name: "%{label} power"
+      - name: "데스크탑 전원"
+        entity_id_format: desktop_power
         component: main
         capability: switch
         command:
