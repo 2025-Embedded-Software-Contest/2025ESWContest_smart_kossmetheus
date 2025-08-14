@@ -147,7 +147,8 @@ class SmartThingsEntity_custom(Entity):
 
     @property
     def has_entity_name(self) -> bool:
-        return True
+        # 중복 표기 방지를 위해 디바이스명과 엔티티명을 합치지 않음
+        return False
 
     @property
     def extra_state_attributes(self):
