@@ -6,6 +6,7 @@ secrets.yaml
 *.pem
 *.crt
 *.cert
+certificate.zip
 
 # Database files
 *.db
