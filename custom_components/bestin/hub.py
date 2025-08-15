@@ -5,7 +5,7 @@ import asyncio
 import serial_asyncio
 import socket
 
-from typing import cast, Optional, Union
+from typing import cast
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PORT, CONF_USERNAME
@@ -38,11 +38,11 @@ class ConnectionManager:
         self.conn_str = conn_str
         self.is_serial = False
         self.is_socket = False
-        self.reader: Optional[asyncio.StreamReader] = None
-        self.writer: Optional[asyncio.StreamWriter] = None
+        self.reader: asyncio.StreamReader = None
+        self.writer: asyncio.StreamWriter = None
         self.reconnect_attempts: int = 0
-        self.last_reconnect_attempt: Optional[float] = None
-        self.next_attempt_time: Optional[float] = None
+        self.last_reconnect_attempt: float = None
+        self.next_attempt_time: float = None
 
         self.chunk_size = 64
         self.constant_packet_length = 10
@@ -66,11 +66,8 @@ class ConnectionManager:
                 await self._connect_socket()
             self.reconnect_attempts = 0
             LOGGER.info("Connection established successfully.")
-        except (OSError, asyncio.TimeoutError, serial_asyncio.SerialException) as e:
-            LOGGER.error(f"Connection failed: {e}")
-            await self.reconnect()
         except Exception as e:
-            LOGGER.error(f"Unexpected error during connection: {e}", exc_info=True)
+            LOGGER.error(f"Connection failed: {e}")
             await self.reconnect()
 
     async def _connect_serial(self) -> None:
@@ -93,11 +90,7 @@ class ConnectionManager:
                 return self.writer is not None and not self.writer.transport.is_closing()
             elif self.is_socket:
                 return self.writer is not None
-        except (AttributeError, OSError) as e:
-            LOGGER.debug(f"Connection check failed: {e}")
-            return False
-        except Exception as e:
-            LOGGER.warning(f"Unexpected error checking connection: {e}")
+        except Exception:
             return False
 
     async def reconnect(self) -> bool | None:
@@ -129,11 +122,8 @@ class ConnectionManager:
             self.writer.write(packet)
             await self.writer.drain()
             await asyncio.sleep(interval)
-        except (OSError, asyncio.IncompleteReadError, ConnectionResetError) as e:
-            LOGGER.error(f"Network error sending packet data: {e}")
-            await self.reconnect()
         except Exception as e:
-            LOGGER.error(f"Unexpected error sending packet data: {e}", exc_info=True)
+            LOGGER.error(f"Failed to send packet data: {e}")
             await self.reconnect()
 
     async def receive(self, size: int = 64) -> bytes | None:
@@ -145,12 +135,8 @@ class ConnectionManager:
                 return await self.reader.read(size)
         except asyncio.TimeoutError:
             pass
-        except (OSError, asyncio.IncompleteReadError, ConnectionResetError) as e:
-            LOGGER.error(f"Network error receiving packet data: {e}")
-            await self.reconnect()
-            return None
         except Exception as e:
-            LOGGER.error(f"Unexpected error receiving packet data: {e}", exc_info=True)
+            LOGGER.error(f"Failed to receive packet data: {e}")
             await self.reconnect()
             return None
 

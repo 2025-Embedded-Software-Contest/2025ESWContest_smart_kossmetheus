@@ -107,10 +107,8 @@ class CenterAPIv2:
                     data={**self.entry.data, CONF_SESSION: resp},
                 )
                 await asyncio.sleep(1)
-        except (aiohttp.ClientError, asyncio.TimeoutError) as ex:
-            LOGGER.error(f"Network error during session refresh: {type(ex).__name__}: {ex}")
         except Exception as ex:
-            LOGGER.error(f"Unexpected error during session refresh: {type(ex).__name__}: {ex}", exc_info=True)
+            LOGGER.error(f"Exception during session refresh: {type(ex).__name__}: {ex}")
 
     async def elevator_call_request(self):
         """Send elevator call request."""
@@ -136,10 +134,8 @@ class CenterAPIv2:
                     self.hass.create_task(self.fetch_elevator_status())
                 else:
                     LOGGER.error(f"Only central server elevator request failed: {resp}")
-        except (aiohttp.ClientError, asyncio.TimeoutError) as ex:
-            LOGGER.error(f"Network error requesting elevator command: {ex}")
         except Exception as ex:
-            LOGGER.error(f"Unexpected error requesting elevator command: {ex}", exc_info=True)
+            LOGGER.error(f"Error requesting elevator command: {ex}")
 
     async def fetch_elevator_status(self):
         """Fetch and process elevator status updates."""
@@ -496,11 +492,8 @@ class BestinCenterAPI(CenterAPIv2):
         try:
             result = xmltodict.parse(response)
             return result["imap"]["service"]["@result"]
-        except (KeyError, ValueError, ET.ParseError) as ex:
-            LOGGER.error(f"XML parsing error: {ex}")
-            return None
         except Exception as ex:
-            LOGGER.error(f"Unexpected XML processing error: {ex}", exc_info=True)
+            LOGGER.error(f"XML parsing error: {ex}")
             return None
 
     def result_after_request(self, response: dict | str) -> str:
@@ -625,10 +618,8 @@ class BestinCenterAPI(CenterAPIv2):
                     data={**self.entry.data, CONF_SESSION: new_cookie},
                 )
                 await asyncio.sleep(1)
-        except (aiohttp.ClientError, asyncio.TimeoutError) as ex:
-            LOGGER.error(f"Network error during session refresh: {type(ex).__name__}: {ex}")
         except Exception as ex:
-            LOGGER.error(f"Unexpected error during session refresh: {type(ex).__name__}: {ex}", exc_info=True)
+            LOGGER.error(f"Exception during session refresh: {type(ex).__name__}: {ex}")
 
     async def _v1_fetch_status(
         self, url: str, params: dict, device_type: str, device_number: int
