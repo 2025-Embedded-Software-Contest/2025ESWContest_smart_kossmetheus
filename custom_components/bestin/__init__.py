@@ -10,12 +10,21 @@ from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, LOGGER, PLATFORMS, CONF_SESSION
 from .hub import BestinHub
+from .monitoring import BestinMonitor
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up the BESTIN integration."""
     hub = BestinHub(hass, entry)
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub
+    monitor = BestinMonitor(hass, hub.hub_id)
+    
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {
+        "hub": hub,
+        "monitor": monitor
+    }
+    
+    # Start performance monitoring
+    await monitor.start()
 
     if CONF_SESSION not in entry.data:
         try:
@@ -51,7 +60,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, PLATFORMS
     ):
-        hub: BestinHub = hass.data[DOMAIN].pop(entry.entry_id)
+        entry_data = hass.data[DOMAIN].pop(entry.entry_id)
+        hub: BestinHub = entry_data["hub"]
         await hub.async_close()
     
     return unload_ok
