@@ -1,6 +1,7 @@
 # ===========================
 # InfluxDB 설정 (확장)
 # ===========================
+api_version: 1
 host: 192.168.1.49
 port: 8086
 database: homeassistant
@@ -106,6 +107,7 @@ include:
   entity_globs:
     # 기존 패턴들 유지
     - hae.*
+    - sensor.hae_*
     - sensor.*_battery
     - sensor.*temperature*
     - sensor.*humidity*
