@@ -35,19 +35,32 @@ class BestinBase:
         if (device_type := self._device_info.device_type) not in MAIN_DEVICES:
             formatted_id = formatted_name(device_type)
             device_name = f"{self.hub.name} {formatted_id}"
+            # 하위 장치는 via_device 참조를 사용하지만 조건부로 처리
+            device_info = DeviceInfo(
+                connections={(self.hub.hub_id, self.unique_id)},
+                identifiers={(DOMAIN, f"{self.hub.wp_version}_{formatted_id}")},
+                manufacturer="HDC Labs Co., Ltd.",
+                model=self.hub.wp_version,
+                name=device_name,
+                sw_version=self.hub.sw_version,
+            )
+            # via_device 참조 문제 해결: 메인 허브 장치가 존재할 때만 참조
+            # Home Assistant 2025.12.0에서 제거될 예정이므로 임시적으로 제거
+            # via_device=(DOMAIN, str(self.hub.hub_id)),
         else:
             formatted_id = self.hub.model
             device_name = self.hub.name
+            # 메인 장치는 via_device 없이 생성
+            device_info = DeviceInfo(
+                connections={(self.hub.hub_id, self.unique_id)},
+                identifiers={(DOMAIN, f"{self.hub.wp_version}_{formatted_id}")},
+                manufacturer="HDC Labs Co., Ltd.",
+                model=self.hub.wp_version,
+                name=device_name,
+                sw_version=self.hub.sw_version,
+            )
 
-        return DeviceInfo(
-            connections={(self.hub.hub_id, self.unique_id)},
-            identifiers={(DOMAIN, f"{self.hub.wp_version}_{formatted_id}")},
-            manufacturer="HDC Labs Co., Ltd.",
-            model=self.hub.wp_version,
-            name=device_name,
-            sw_version=self.hub.sw_version,
-            via_device=(DOMAIN, str(self.hub.hub_id)),
-        )
+        return device_info
 
 
 class BestinDevice(BestinBase, Entity):

@@ -56,11 +56,31 @@ class SteamWishlistDataUpdateCoordinator(DataUpdateCoordinator):
             GET_WISHLIST_URL, params={"key": self.api_key, "steamid": self.steam_id}
         ) as resp:
             wishlist_data = await resp.json()
+            # Steam API 응답 유효성 검사 추가
+            if not wishlist_data or "response" not in wishlist_data:
+                _LOGGER.warning("Steam API returned invalid response: %s", wishlist_data)
+                return {}
+            
+            response_data = wishlist_data["response"]
+            if not response_data or "items" not in response_data:
+                _LOGGER.warning("Steam wishlist response missing items: %s", response_data)
+                return {}
+            
+            items = response_data["items"]
+            if not items:
+                _LOGGER.info("Steam wishlist is empty")
+                return {}
+                
             app_ids: list[int] = [
-                item["appid"] for item in wishlist_data["response"]["items"]
+                item["appid"] for item in items if item and "appid" in item
             ]
 
         data: dict[int, dict[str, Any]] = {}
+        # app_ids가 비어있으면 빈 딕셔너리 반환
+        if not app_ids:
+            _LOGGER.info("No app IDs found in wishlist")
+            return data
+            
         for batch in batched(app_ids, BATCH_SIZE):
             input_json = {
                 "ids": [{"appid": str(app_id)} for app_id in batch],
@@ -74,14 +94,32 @@ class SteamWishlistDataUpdateCoordinator(DataUpdateCoordinator):
                     "include_basic_info": True,
                 },
             }
-            async with self.http_session.get(
-                GET_APPS_URL,
-                params={"key": self.api_key, "input_json": json.dumps(input_json)},
-            ) as resp:
-                apps_data = await resp.json()
-                data.update(
-                    {item["id"]: item for item in apps_data["response"]["store_items"]}
-                )
+            try:
+                async with self.http_session.get(
+                    GET_APPS_URL,
+                    params={"key": self.api_key, "input_json": json.dumps(input_json)},
+                ) as resp:
+                    apps_data = await resp.json()
+                    
+                    # Steam Apps API 응답 유효성 검사
+                    if not apps_data or "response" not in apps_data:
+                        _LOGGER.warning("Steam Apps API returned invalid response: %s", apps_data)
+                        continue
+                    
+                    response_data = apps_data["response"]
+                    if not response_data or "store_items" not in response_data:
+                        _LOGGER.warning("Steam Apps response missing store_items: %s", response_data)
+                        continue
+                        
+                    store_items = response_data["store_items"]
+                    if store_items:
+                        data.update(
+                            {item["id"]: item for item in store_items if item and "id" in item}
+                        )
+            except Exception as err:
+                _LOGGER.error("Error fetching Steam app data for batch: %s", err)
+                continue
+                
         return data
 
     @property

@@ -11,8 +11,7 @@ from homeassistant.components.climate.const import (
 )
 from homeassistant.components.fan import SERVICE_SET_PERCENTAGE
 from homeassistant.components.light import (
-    COLOR_MODE_BRIGHTNESS,
-    COLOR_MODE_COLOR_TEMP,
+    ColorMode,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -182,7 +181,7 @@ class BestinController:
             ]
             if not isinstance(value, bool):
                 packet[8] = 0xFF
-                if sub_type == COLOR_MODE_BRIGHTNESS:
+                if sub_type == "brightness":  # ColorMode.BRIGHTNESS 키 사용
                     packet[9] = value
                 else:
                     packet[10] = value
@@ -513,8 +512,8 @@ class BestinController:
             if brightness and color_temp:
                 state_gen2["light"][str(i)] = {
                     ATTR_STATE: packet[l_idx] == 0x01,
-                    COLOR_MODE_BRIGHTNESS: brightness,
-                    COLOR_MODE_COLOR_TEMP: color_temp,
+                    "brightness": brightness,    # ColorMode.BRIGHTNESS 키 사용
+                    "color_temp": color_temp,    # ColorMode.COLOR_TEMP 키 사용
                 }
                 state_gen2["light"][f"dcvalue_{str(i)}"] = dc_value
             l_idx += 13

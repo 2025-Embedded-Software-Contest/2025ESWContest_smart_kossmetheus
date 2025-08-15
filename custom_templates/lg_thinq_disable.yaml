@@ -1,0 +1,10 @@
+# LG ThinQ 내장 통합 비활성화를 위한 템플릿
+# configuration.yaml에 추가할 내용
+
+# 내장 lg_thinq 통합을 비활성화하고 custom smartthinq_sensors만 사용
+default_config:
+  # 기본 구성에서 lg_thinq 제외
+  # 다른 기본 통합들은 유지하되 lg_thinq만 제외
+
+# 또는 개별적으로 비활성화:
+# integration: !include_dir_merge_list integrations/

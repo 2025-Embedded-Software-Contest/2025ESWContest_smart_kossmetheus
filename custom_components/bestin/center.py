@@ -17,8 +17,7 @@ from homeassistant.components.climate.const import (
     HVACMode,
 )
 from homeassistant.components.light import (
-    COLOR_MODE_BRIGHTNESS,
-    COLOR_MODE_COLOR_TEMP,
+    ColorMode,
 )
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.config_entries import ConfigEntry
@@ -260,8 +259,8 @@ class CenterAPIv2:
                             unit_last = unit["unit"]
                             unit_state = {
                                 ATTR_STATE: unit["state"] == "on",
-                                COLOR_MODE_BRIGHTNESS: int(unit["dimming"]) if unit["dimming"] != "null" else None,
-                                COLOR_MODE_COLOR_TEMP: int(unit["color"]) if unit["color"] != "null" else None,
+                                "brightness": int(unit["dimming"]) if unit["dimming"] != "null" else None,  # ColorMode.BRIGHTNESS 키 사용
+                                "color_temp": int(unit["color"]) if unit["color"] != "null" else None,      # ColorMode.COLOR_TEMP 키 사용
                             }
                         else:
                             unit_last = unit["unit"][-1]
