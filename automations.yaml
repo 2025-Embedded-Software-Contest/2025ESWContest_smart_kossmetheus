@@ -1,670 +1,627 @@
 - id: diagnostics_unavailable_entities
   alias: Diagnostics - Notify unavailable entities
-  description: "주기적으로 'unavailable'/'unknown' 엔티티 목록을 알림으로 표시합니다."
+  description: 주기적으로 'unavailable'/'unknown' 엔티티 목록을 알림으로 표시합니다.
   trigger:
-    - platform: homeassistant
-      event: start
-    - platform: time_pattern
-      minutes: "/15"
+  - platform: homeassistant
+    event: start
+  - platform: time_pattern
+    minutes: /15
   condition: []
   action:
-    - variables:
-        problem_list: >-
-          {{ states | selectattr('state', 'in', ['unavailable','unknown'])
-                     | map(attribute='entity_id') | list }}
-    - choose:
-        - conditions: "{{ problem_list | length > 0 }}"
-          sequence:
-            - service: persistent_notification.create
-              data:
-                title: >-
-                  Unavailable/Unknown entities ({{ problem_list | length }})
-                message: >-
-                  {{ problem_list | join('\n') }}
-                notification_id: unavailable_entities
-        - conditions: "{{ problem_list | length == 0 }}"
-          sequence:
-            - service: persistent_notification.dismiss
-              data:
-                notification_id: unavailable_entities
+  - variables:
+      problem_list: "{{ states | selectattr('state', 'in', ['unavailable','unknown'])\n
+        \          | map(attribute='entity_id') | list }}"
+  - choose:
+    - conditions: '{{ problem_list | length > 0 }}'
+      sequence:
+      - service: persistent_notification.create
+        data:
+          title: Unavailable/Unknown entities ({{ problem_list | length }})
+          message: '{{ problem_list | join(''\n'') }}'
+          notification_id: unavailable_entities
+    - conditions: '{{ problem_list | length == 0 }}'
+      sequence:
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: unavailable_entities
   mode: restart
-
 - id: enhanced_unavailable_monitoring
   alias: Enhanced Unavailable Entities Monitoring
-  description: "향상된 unavailable 엔티티 모니터링 및 분류 시스템"
+  description: 향상된 unavailable 엔티티 모니터링 및 분류 시스템
   trigger:
-    - platform: homeassistant
-      event: start
-    - platform: time_pattern
-      minutes: "/10"
-    - platform: state
-      entity_id: sensor.unavailable_entities_count
+  - platform: homeassistant
+    event: start
+  - platform: time_pattern
+    minutes: /10
+  - platform: state
+    entity_id: sensor.unavailable_entities_count
   condition: []
   action:
-    - variables:
-        all_unavailable: >-
-          {{ states | selectattr('state', 'in', ['unavailable','unknown'])
-                     | map(attribute='entity_id') | list }}
-        classifications:
-          thinq_fridge: >-
-            {{ all_unavailable | select('match', 'sensor.jubang_gimcinaengjanggo.*temperature') | list }}
-          thinq_dishwasher: >-
-            {{ all_unavailable | select('match', 'sensor.jubang_siggiseceoggi.*') | list }}
-          apple_batteries: >-
-            {{ all_unavailable | select('match', 'sensor..*battery') | list }}
-          ble_sensors: >-
-            {{ all_unavailable | select('match', '.*ble.*') | list }}
-          xbox_entities: >-
-            {{ all_unavailable | select('match', '.*xbox.*') | list }}
-          network_sensors: >-
-            {{ all_unavailable | select('match', 'sensor..*router.*|sensor.fast_com.*') | list }}
-          other_sensors: >-
-            {{ all_unavailable | reject('match', 'sensor.jubang_.*|sensor..*battery|.*ble.*|.*xbox.*|sensor..*router.*|sensor.fast_com.*') | list }}
-    - service: system_log.write
-      data:
-        message: >
-          🔍 Unavailable Entities 분석 결과:
-          📊 총계: {{ all_unavailable | length }}개
-          
-          📂 카테고리별 분석:
-          🧊 김치냉장고 온도: {{ classifications.thinq_fridge | length }}개
-          🍽️ 식기세척기: {{ classifications.thinq_dishwasher | length }}개  
-          🔋 Apple 배터리: {{ classifications.apple_batteries | length }}개
-          📡 BLE 센서: {{ classifications.ble_sensors | length }}개
-          🎮 Xbox: {{ classifications.xbox_entities | length }}개
-          🌐 네트워크: {{ classifications.network_sensors | length }}개
-          ❓ 기타: {{ classifications.other_sensors | length }}개
-        level: info
-    - choose:
-        - conditions: "{{ classifications.thinq_fridge | length > 0 }}"
-          sequence:
-            - service: persistent_notification.create
-              data:
-                title: "⚠️ 김치냉장고 온도 센서 문제"
-                message: >
-                  **문제 센서들:**
-                  {{ classifications.thinq_fridge | join('\n') }}
-                  
-                  **영향도 분석:**
-                  - 평균 온도 센서: {{ 'PARTIAL' if classifications.thinq_fridge | length < 4 else 'DOWN' }}
-                  - 사용 가능한 센서: {{ states.sensor.kimchi_fridge_avg_temperature.attributes.available_sensors | default('unknown') }}
-                  
-                  **권장 조치:**
-                  1. 스크립트 실행: `thinq_integration_reload`
-                  2. LG ThinQ 앱에서 기기 상태 확인
-                  3. 네트워크 연결 상태 점검
-                notification_id: thinq_fridge_alert
-    - choose:
-        - conditions: "{{ classifications.apple_batteries | length > 0 }}"
-          sequence:
-            - service: persistent_notification.create
-              data:
-                title: "🍎 Apple 기기 배터리 센서 문제"
-                message: >
-                  **문제 센서들:**
-                  {{ classifications.apple_batteries | join('\n') }}
-                  
-                  **권장 조치:**
-                  1. iCloud3 통합 상태 확인
-                  2. 각 기기에서 Home Assistant Companion 앱 확인
-                  3. "나의 찾기" 활성화 여부 확인
-                  4. 스크립트 실행: `apple_devices_battery_check`
-                notification_id: apple_battery_alert
-    - choose:
-        - conditions: "{{ classifications.ble_sensors | length > 0 }}"
-          sequence:
-            - service: persistent_notification.create
-              data:
-                title: "📡 BLE 센서 연결 문제"
-                message: >
-                  **문제 센서들:**
-                  {{ classifications.ble_sensors | join('\n') }}
-                  
-                  **권장 조치:**
-                  1. 스크립트 실행: `bluetooth_adapter_reset`
-                  2. BLE 장치들 물리적 재부팅
-                  3. 블루투스 어댑터 전원 관리 설정 확인
-                notification_id: ble_sensor_alert
-    - service: persistent_notification.create
-      data:
-        title: "📊 시스템 상태 요약"
-        message: >
-          **전체 시스템 상태** ({{ now().strftime('%Y-%m-%d %H:%M') }})
-          
-          🟢 **정상 작동 중:**
-          - 시스템 센서: {{ states.sensor | selectattr('entity_id', 'match', 'sensor.(processor_use|memory_use_percent|disk_use_percent)') | selectattr('state', 'ne', 'unavailable') | list | length }}/3
-          - 전력 센서: {{ states.sensor | selectattr('entity_id', 'match', '.*power') | selectattr('state', 'ne', 'unavailable') | list | length }}개
-          - 온습도 센서: {{ states.sensor | selectattr('entity_id', 'match', '.*temperature|.*humidity') | selectattr('state', 'ne', 'unavailable') | list | length }}개
-          
-          🔴 **문제 발생:**
-          - 총 unavailable: {{ all_unavailable | length }}개
-          - 주요 문제: 
-          {% if classifications.thinq_fridge | length > 0 %}  김치냉장고 ({{ classifications.thinq_fridge | length }}) {% endif %}
-          {% if classifications.apple_batteries | length > 0 %}  Apple배터리 ({{ classifications.apple_batteries | length }}) {% endif %}
-          {% if classifications.ble_sensors | length > 0 %}  BLE센서 ({{ classifications.ble_sensors | length }}) {% endif %}
-          
-          **복구 스크립트:** 설정 > 스크립트에서 실행 가능
-        notification_id: system_status_summary
-  mode: single
+  - variables:
+      all_unavailable: "{{ states | selectattr('state', 'in', ['unavailable','unknown'])\n
+        \          | map(attribute='entity_id') | list }}"
+      classifications:
+        thinq_fridge: '{{ all_unavailable | select(''match'', ''sensor.jubang_gimcinaengjanggo.*temperature'')
+          | list }}'
+        thinq_dishwasher: '{{ all_unavailable | select(''match'', ''sensor.jubang_siggiseceoggi.*'')
+          | list }}'
+        apple_batteries: '{{ all_unavailable | select(''match'', ''sensor..*battery'')
+          | list }}'
+        ble_sensors: '{{ all_unavailable | select(''match'', ''.*ble.*'') | list }}'
+        xbox_entities: '{{ all_unavailable | select(''match'', ''.*xbox.*'') | list
+          }}'
+        network_sensors: '{{ all_unavailable | select(''match'', ''sensor..*router.*|sensor.fast_com.*'')
+          | list }}'
+        other_sensors: '{{ all_unavailable | reject(''match'', ''sensor.jubang_.*|sensor..*battery|.*ble.*|.*xbox.*|sensor..*router.*|sensor.fast_com.*'')
+          | list }}'
+  - service: system_log.write
+    data:
+      message: "\U0001F50D Unavailable Entities 분석 결과: \U0001F4CA 총계: {{ all_unavailable
+        | length }}개\n\U0001F4C2 카테고리별 분석: \U0001F9CA 김치냉장고 온도: {{ classifications.thinq_fridge
+        | length }}개 \U0001F37D️ 식기세척기: {{ classifications.thinq_dishwasher | length
+        }}개   \U0001F50B Apple 배터리: {{ classifications.apple_batteries | length }}개
+        \U0001F4E1 BLE 센서: {{ classifications.ble_sensors | length }}개 \U0001F3AE
+        Xbox: {{ classifications.xbox_entities | length }}개 \U0001F310 네트워크: {{ classifications.network_sensors
+        | length }}개 ❓ 기타: {{ classifications.other_sensors | length }}개\n"
+      level: info
+  - choose:
+    - conditions: '{{ classifications.thinq_fridge | length > 0 }}'
+      sequence:
+      - service: persistent_notification.create
+        data:
+          title: ⚠️ 김치냉장고 온도 센서 문제
+          message: '**문제 센서들:** {{ classifications.thinq_fridge | join(''\n'') }}
 
+            **영향도 분석:** - 평균 온도 센서: {{ ''PARTIAL'' if classifications.thinq_fridge
+            | length < 4 else ''DOWN'' }} - 사용 가능한 센서: {{ states.sensor.kimchi_fridge_avg_temperature.attributes.available_sensors
+            | default(''unknown'') }}
+
+            **권장 조치:** 1. 스크립트 실행: `thinq_integration_reload` 2. LG ThinQ 앱에서 기기 상태
+            확인 3. 네트워크 연결 상태 점검
+
+            '
+          notification_id: thinq_fridge_alert
+  - choose:
+    - conditions: '{{ classifications.apple_batteries | length > 0 }}'
+      sequence:
+      - service: persistent_notification.create
+        data:
+          title: "\U0001F34E Apple 기기 배터리 센서 문제"
+          message: '**문제 센서들:** {{ classifications.apple_batteries | join(''\n'')
+            }}
+
+            **권장 조치:** 1. iCloud3 통합 상태 확인 2. 각 기기에서 Home Assistant Companion 앱 확인
+            3. "나의 찾기" 활성화 여부 확인 4. 스크립트 실행: `apple_devices_battery_check`
+
+            '
+          notification_id: apple_battery_alert
+  - choose:
+    - conditions: '{{ classifications.ble_sensors | length > 0 }}'
+      sequence:
+      - service: persistent_notification.create
+        data:
+          title: "\U0001F4E1 BLE 센서 연결 문제"
+          message: '**문제 센서들:** {{ classifications.ble_sensors | join(''\n'') }}
+
+            **권장 조치:** 1. 스크립트 실행: `bluetooth_adapter_reset` 2. BLE 장치들 물리적 재부팅 3.
+            블루투스 어댑터 전원 관리 설정 확인
+
+            '
+          notification_id: ble_sensor_alert
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F4CA 시스템 상태 요약"
+      message: "**전체 시스템 상태** ({{ now().strftime('%Y-%m-%d %H:%M') }})\n\U0001F7E2
+        **정상 작동 중:** - 시스템 센서: {{ states.sensor | selectattr('entity_id', 'match',
+        'sensor.(processor_use|memory_use_percent|disk_use_percent)') | selectattr('state',
+        'ne', 'unavailable') | list | length }}/3 - 전력 센서: {{ states.sensor | selectattr('entity_id',
+        'match', '.*power') | selectattr('state', 'ne', 'unavailable') | list | length
+        }}개 - 온습도 센서: {{ states.sensor | selectattr('entity_id', 'match', '.*temperature|.*humidity')
+        | selectattr('state', 'ne', 'unavailable') | list | length }}개\n\U0001F534
+        **문제 발생:** - 총 unavailable: {{ all_unavailable | length }}개 - 주요 문제:  {% if
+        classifications.thinq_fridge | length > 0 %}  김치냉장고 ({{ classifications.thinq_fridge
+        | length }}) {% endif %} {% if classifications.apple_batteries | length >
+        0 %}  Apple배터리 ({{ classifications.apple_batteries | length }}) {% endif %}
+        {% if classifications.ble_sensors | length > 0 %}  BLE센서 ({{ classifications.ble_sensors
+        | length }}) {% endif %}\n**복구 스크립트:** 설정 > 스크립트에서 실행 가능\n"
+      notification_id: system_status_summary
+  mode: single
 - id: fix_unavailable_entities_recovery
   alias: Fix Unavailable Entities - Automated Recovery
   description: 자동으로 unavailable 엔티티들을 복구하는 자동화
   trigger:
-    - platform: time_pattern
-      minutes: "/30"
-    - platform: homeassistant
-      event: start
+  - platform: time_pattern
+    minutes: /30
+  - platform: homeassistant
+    event: start
   condition: []
   action:
-    - variables:
-        unavailable_entities: >-
-          {{ states | selectattr('state', 'in', ['unavailable','unknown'])
-                     | map(attribute='entity_id') | list }}
-        thinq_unavailable: >-
-          {{ unavailable_entities | select('match', 'sensor.jubang_.*') | list }}
-        ble_unavailable: >-
-          {{ unavailable_entities | select('match', '.*ble.*') | list }}
-        icloud_unavailable: >-
-          {{ unavailable_entities | select('match', '.*battery') | list }}
-        xbox_unavailable: >-
-          {{ unavailable_entities | select('match', '.*xbox.*') | list }}
-    - choose:
-        - conditions: "{{ thinq_unavailable | length > 0 }}"
-          sequence:
-            - service: system_log.write
-              data:
-                message: >-
-                  LG ThinQ unavailable entities detected: {{ thinq_unavailable | join(', ') }}
-                  Attempting integration reload...
-                level: warning
-            - service: homeassistant.reload_config_entry
-              target:
-                entity_id: "{{ thinq_unavailable }}"
-              continue_on_error: true
-    - choose:
-        - conditions: "{{ ble_unavailable | length > 0 }}"
-          sequence:
-            - service: system_log.write
-              data:
-                message: >-
-                  BLE unavailable entities detected: {{ ble_unavailable | join(', ') }}
-                  May require bluetooth adapter reset
-                level: warning
-    - choose:
-        - conditions: "{{ icloud_unavailable | length > 0 }}"
-          sequence:
-            - service: system_log.write
-              data:
-                message: >-
-                  Apple device battery sensors unavailable: {{ icloud_unavailable | join(', ') }}
-                  Check iCloud3 integration and Mobile App connections
-                level: warning
-    - choose:
-        - conditions: "{{ xbox_unavailable | length > 0 }}"
-          sequence:
-            - service: system_log.write
-              data:
-                message: >-
-                  Xbox entities remain unavailable: {{ xbox_unavailable | join(', ') }}
-                  These will be permanently disabled in next configuration update
-                level: info
-    - service: persistent_notification.create
-      data:
-        title: "자동 복구 시도 완료"
-        message: >-
-          **복구 시도 결과:**
-          - ThinQ: {{ thinq_unavailable | length }}개 엔티티
-          - BLE: {{ ble_unavailable | length }}개 엔티티  
-          - iCloud: {{ icloud_unavailable | length }}개 엔티티
-          - Xbox: {{ xbox_unavailable | length }}개 엔티티 (비활성화 예정)
-          
-          **총 unavailable 엔티티**: {{ unavailable_entities | length }}개
-          
-          상세 정보는 로그를 확인하세요.
-        notification_id: auto_recovery_status
+  - variables:
+      unavailable_entities: "{{ states | selectattr('state', 'in', ['unavailable','unknown'])\n
+        \          | map(attribute='entity_id') | list }}"
+      thinq_unavailable: '{{ unavailable_entities | select(''match'', ''sensor.jubang_.*'')
+        | list }}'
+      ble_unavailable: '{{ unavailable_entities | select(''match'', ''.*ble.*'') |
+        list }}'
+      icloud_unavailable: '{{ unavailable_entities | select(''match'', ''.*battery'')
+        | list }}'
+      xbox_unavailable: '{{ unavailable_entities | select(''match'', ''.*xbox.*'')
+        | list }}'
+  - choose:
+    - conditions: '{{ thinq_unavailable | length > 0 }}'
+      sequence:
+      - service: system_log.write
+        data:
+          message: 'LG ThinQ unavailable entities detected: {{ thinq_unavailable |
+            join('', '') }} Attempting integration reload...'
+          level: warning
+      - service: homeassistant.reload_config_entry
+        target:
+          entity_id: '{{ thinq_unavailable }}'
+        continue_on_error: true
+  - choose:
+    - conditions: '{{ ble_unavailable | length > 0 }}'
+      sequence:
+      - service: system_log.write
+        data:
+          message: 'BLE unavailable entities detected: {{ ble_unavailable | join('',
+            '') }} May require bluetooth adapter reset'
+          level: warning
+  - choose:
+    - conditions: '{{ icloud_unavailable | length > 0 }}'
+      sequence:
+      - service: system_log.write
+        data:
+          message: 'Apple device battery sensors unavailable: {{ icloud_unavailable
+            | join('', '') }} Check iCloud3 integration and Mobile App connections'
+          level: warning
+  - choose:
+    - conditions: '{{ xbox_unavailable | length > 0 }}'
+      sequence:
+      - service: system_log.write
+        data:
+          message: 'Xbox entities remain unavailable: {{ xbox_unavailable | join('',
+            '') }} These will be permanently disabled in next configuration update'
+          level: info
+  - service: persistent_notification.create
+    data:
+      title: 자동 복구 시도 완료
+      message: '**복구 시도 결과:** - ThinQ: {{ thinq_unavailable | length }}개 엔티티 - BLE:
+        {{ ble_unavailable | length }}개 엔티티   - iCloud: {{ icloud_unavailable | length
+        }}개 엔티티 - Xbox: {{ xbox_unavailable | length }}개 엔티티 (비활성화 예정)
+
+        **총 unavailable 엔티티**: {{ unavailable_entities | length }}개
+
+        상세 정보는 로그를 확인하세요.'
+      notification_id: auto_recovery_status
   mode: single
   max_exceeded: silent
-
-# ===== example.yaml (전력/건강/가전) =====
 - id: high_power_consumption_alert
-  alias: "높은 전력 소비 알림"
-  description: "총 전력 소비가 임계값을 초과했을 때 알림"
+  alias: 높은 전력 소비 알림
+  description: 총 전력 소비가 임계값을 초과했을 때 알림
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.total_power_consumption
-      above: 500
-      for: "00:05:00"
+  - platform: numeric_state
+    entity_id: sensor.total_power_consumption
+    above: 500
+    for: 00:05:00
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   action:
-    - service: persistent_notification.create
-      data:
-        title: "⚡ 전력 소비 주의"
-        message: >
-          현재 전력 소비량이 {{ states('sensor.total_power_consumption') }}W입니다.
-          에너지 절약을 위해 불필요한 기기를 확인해보세요.
-        notification_id: high_power_alert
+  - service: persistent_notification.create
+    data:
+      title: ⚡ 전력 소비 주의
+      message: '현재 전력 소비량이 {{ states(''sensor.total_power_consumption'') }}W입니다. 에너지
+        절약을 위해 불필요한 기기를 확인해보세요.
 
+        '
+      notification_id: high_power_alert
 - id: energy_saving_mode
-  alias: "에너지 절약 모드"
-  description: "집에 아무도 없을 때 에너지 절약"
+  alias: 에너지 절약 모드
+  description: 집에 아무도 없을 때 에너지 절약
   trigger:
-    - platform: state
-      entity_id: binary_sensor.someone_home
-      from: "on"
-      to: "off"
-      for: "00:30:00"
+  - platform: state
+    entity_id: binary_sensor.someone_home
+    from: 'on'
+    to: 'off'
+    for: 00:30:00
   action:
-    - service: light.turn_off
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-    - service: persistent_notification.create
-      data:
-        title: "🏠 에너지 절약 모드 활성화"
-        message: "부재 중이므로 조명을 자동으로 꺼두었습니다."
-
-- id: low_battery_device_alert
-  alias: "저배터리 디바이스 알림"
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.low_battery_devices
-      from: "off"
-      to: "on"
-  action:
-    - service: persistent_notification.create
-      data:
-        title: "🔋 배터리 부족 주의"
-        message: >
-          배터리가 부족한 디바이스가 있습니다:
-          {% set devices = [
-            ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),
-            ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),
-            ('iPad Pro', states('sensor.uhyeonyi_ipad_pro_battery')),
-            ('iPhone XS', states('sensor.uhyeonyi_iphone_xs_battery'))
-          ] %}
-          {% for device, battery in devices %}
-          {% if battery|int < 20 %}
-          - {{ device }}: {{ battery }}%
-          {% endif %}
-          {% endfor %}
-        notification_id: low_battery_alert
-
-- id: critical_battery_alert
-  alias: "극저배터리 알림"
-  trigger:
-    - platform: numeric_state
+  - service: light.turn_off
+    target:
       entity_id:
-        - sensor.gimuhyeonyi_apple_watch_battery
-        - sensor.gimuhyeonyi_macbook_pro_battery
-        - sensor.uhyeonyi_ipad_pro_battery
-        - sensor.uhyeonyi_iphone_xs_battery
-      below: 10
+      - light.zigbee_dimmer
+      - light.smart_bulb
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F3E0 에너지 절약 모드 활성화"
+      message: 부재 중이므로 조명을 자동으로 꺼두었습니다.
+- id: low_battery_device_alert
+  alias: 저배터리 디바이스 알림
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.low_battery_devices
+    from: 'off'
+    to: 'on'
   action:
-    - service: persistent_notification.create
-      data:
-        title: "🚨 배터리 위험 수준"
-        message: >
-          {{ trigger.to_state.attributes.friendly_name }}의 배터리가 {{ trigger.to_state.state }}%입니다. 즉시 충전하세요!
-        notification_id: "critical_battery_{{ trigger.entity_id.split('.')[1] }}"
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F50B 배터리 부족 주의"
+      message: "배터리가 부족한 디바이스가 있습니다: {% set devices = [\n  ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),\n
+        \ ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),\n  ('iPad
+        Pro', states('sensor.uhyeonyi_ipad_pro_battery')),\n  ('iPhone XS', states('sensor.uhyeonyi_iphone_xs_battery'))\n]
+        %} {% for device, battery in devices %} {% if battery|int < 20 %} - {{ device
+        }}: {{ battery }}% {% endif %} {% endfor %}\n"
+      notification_id: low_battery_alert
+- id: critical_battery_alert
+  alias: 극저배터리 알림
+  trigger:
+  - platform: numeric_state
+    entity_id:
+    - sensor.gimuhyeonyi_apple_watch_battery
+    - sensor.gimuhyeonyi_macbook_pro_battery
+    - sensor.uhyeonyi_ipad_pro_battery
+    - sensor.uhyeonyi_iphone_xs_battery
+    below: 10
+  action:
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F6A8 배터리 위험 수준"
+      message: '{{ trigger.to_state.attributes.friendly_name }}의 배터리가 {{ trigger.to_state.state
+        }}%입니다. 즉시 충전하세요!
 
+        '
+      notification_id: critical_battery_{{ trigger.entity_id.split('.')[1] }}
 - id: evening_brushing_reminder
-  alias: "저녁 양치 알림"
+  alias: 저녁 양치 알림
   trigger:
-    - platform: time
-      at: "22:00:00"
+  - platform: time
+    at: '22:00:00'
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
-    - condition: template
-      value_template: >
-        {{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds() > 7200 }}
-  action:
-    - service: persistent_notification.create
-      data:
-        title: "🪥 양치 알림"
-        message: "최근 2시간 동안 양치 기록이 없습니다."
-        notification_id: brushing_reminder
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: template
+    value_template: '{{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds()
+      > 7200 }}
 
+      '
+  action:
+  - service: persistent_notification.create
+    data:
+      title: "\U0001FAA5 양치 알림"
+      message: 최근 2시간 동안 양치 기록이 없습니다.
+      notification_id: brushing_reminder
 - id: high_heart_rate_alert
-  alias: "심박수 경고"
+  alias: 심박수 경고
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.ble_heart_rate_e0e33e6221b5
-      above: 120
-      for: "00:01:00"
+  - platform: numeric_state
+    entity_id: sensor.ble_heart_rate_e0e33e6221b5
+    above: 120
+    for: 00:01:00
   action:
-    - service: persistent_notification.create
-      data:
-        title: "❤️ 심박수 경고"
-        message: "심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요."
-        notification_id: heart_rate_alert
-
+  - service: persistent_notification.create
+    data:
+      title: ❤️ 심박수 경고
+      message: 심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요.
+      notification_id: heart_rate_alert
 - id: daily_steps_goal_achievement
-  alias: "일일 걸음수 목표 달성"
+  alias: 일일 걸음수 목표 달성
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.ble_steps_e0e33e6221b5
-      above: 10000
+  - platform: numeric_state
+    entity_id: sensor.ble_steps_e0e33e6221b5
+    above: 10000
   condition:
-    - condition: template
-      value_template: >
-        {{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days == 0 }}
-  action:
-    - service: persistent_notification.create
-      data:
-        title: "🎉 걸음수 목표 달성!"
-        message: >
-          축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요.
-          건강한 하루를 보내고 계시는군요! 👏
-        notification_id: steps_goal_achieved
+  - condition: template
+    value_template: '{{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days
+      == 0 }}
 
+      '
+  action:
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F389 걸음수 목표 달성!"
+      message: "축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요. 건강한
+        하루를 보내고 계시는군요! \U0001F44F\n"
+      notification_id: steps_goal_achieved
 - id: kimchi_fridge_temperature_alert
-  alias: "김치냉장고 온도 이상"
+  alias: 김치냉장고 온도 이상
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.kimchi_fridge_avg_temperature
-      above: 5
-      for: "00:30:00"
-    - platform: numeric_state
-      entity_id: sensor.kimchi_fridge_avg_temperature
-      below: -5
-      for: "00:30:00"
+  - platform: numeric_state
+    entity_id: sensor.kimchi_fridge_avg_temperature
+    above: 5
+    for: 00:30:00
+  - platform: numeric_state
+    entity_id: sensor.kimchi_fridge_avg_temperature
+    below: -5
+    for: 00:30:00
   action:
-    - service: persistent_notification.create
-      data:
-        title: "🥬 김치냉장고 온도 주의"
-        message: >
-          김치냉장고 평균 온도가 {{ states('sensor.kimchi_fridge_avg_temperature') }}°C입니다.
-          적정 온도 범위(-5°C ~ 5°C)를 확인해보세요.
-        notification_id: kimchi_fridge_temp_alert
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F96C 김치냉장고 온도 주의"
+      message: '김치냉장고 평균 온도가 {{ states(''sensor.kimchi_fridge_avg_temperature'') }}°C입니다.
+        적정 온도 범위(-5°C ~ 5°C)를 확인해보세요.
 
+        '
+      notification_id: kimchi_fridge_temp_alert
 - id: dishwasher_cycle_complete
-  alias: "식기세척기 완료 알림"
+  alias: 식기세척기 완료 알림
   trigger:
-    - platform: state
-      entity_id: sensor.jubang_siggiseceoggi_remaining_time
-      to: "0"
+  - platform: state
+    entity_id: sensor.jubang_siggiseceoggi_remaining_time
+    to: '0'
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   action:
-    - service: persistent_notification.create
-      data:
-        title: "🍽️ 식기세척기 완료"
-        message: >
-          식기세척기 세척이 완료되었습니다! 
-          식기를 꺼내주세요. 총 세척 시간: {{ states('sensor.jubang_siggiseceoggi_total_time') }}
-        notification_id: dishwasher_complete
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F37D️ 식기세척기 완료"
+      message: '식기세척기 세척이 완료되었습니다!  식기를 꺼내주세요. 총 세척 시간: {{ states(''sensor.jubang_siggiseceoggi_total_time'')
+        }}
 
+        '
+      notification_id: dishwasher_complete
 - id: rinse_aid_refill_reminder
-  alias: "린스 보충 알림"
+  alias: 린스 보충 알림
   trigger:
-    - platform: state
-      entity_id: binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
-      from: "off"
-      to: "on"
+  - platform: state
+    entity_id: binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
+    from: 'off'
+    to: 'on'
   action:
-    - service: persistent_notification.create
-      data:
-        title: "🧴 린스 보충 필요"
-        message: >
-          식기세척기 린스 보충이 필요합니다. 
-          현재 잔여량: {{ states('sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level') }}
-        notification_id: rinse_aid_reminder
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F9F4 린스 보충 필요"
+      message: '식기세척기 린스 보충이 필요합니다.  현재 잔여량: {{ states(''sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level'')
+        }}
 
-# ===== ios_theme_switch.yaml (HVAC/시간/테마) =====
+        '
+      notification_id: rinse_aid_reminder
 - id: smart_ac_temperature_control
-  alias: "스마트 에어컨 온도 제어"
+  alias: 스마트 에어컨 온도 제어
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-      above: 28
-      for: "00:10:00"
-    - platform: numeric_state
-      entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-      below: 22
-      for: "00:10:00"
+  - platform: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+    above: 28
+    for: 00:10:00
+  - platform: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+    below: 22
+    for: 00:10:00
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
   action:
-    - choose:
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-              above: 28
-          sequence:
-            - service: climate.set_temperature
-              target:
-                entity_id: climate.seutaendeuhyeong_eeokeon
-              data:
-                temperature: 24
-                hvac_mode: "cool"
-            - service: persistent_notification.create
-              data:
-                title: "❄️ 에어컨 냉방 자동 시작"
-                message: "실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C로 높아져서 냉방을 시작했습니다."
-        - conditions:
-            - condition: numeric_state
-              entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-              below: 22
-          sequence:
-            - service: climate.turn_off
-              target:
-                entity_id: climate.seutaendeuhyeong_eeokeon
-            - service: persistent_notification.create
-              data:
-                title: "🌡️ 에어컨 자동 정지"
-                message: "실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C로 적정해져서 에어컨을 껐습니다."
-
+  - choose:
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+        above: 28
+      sequence:
+      - service: climate.set_temperature
+        target:
+          entity_id: climate.seutaendeuhyeong_eeokeon
+        data:
+          temperature: 24
+          hvac_mode: cool
+      - service: persistent_notification.create
+        data:
+          title: ❄️ 에어컨 냉방 자동 시작
+          message: 실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature')
+            }}°C로 높아져서 냉방을 시작했습니다.
+    - conditions:
+      - condition: numeric_state
+        entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+        below: 22
+      sequence:
+      - service: climate.turn_off
+        target:
+          entity_id: climate.seutaendeuhyeong_eeokeon
+      - service: persistent_notification.create
+        data:
+          title: "\U0001F321️ 에어컨 자동 정지"
+          message: 실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature')
+            }}°C로 적정해져서 에어컨을 껐습니다.
 - id: humidity_management_alert
-  alias: "습도 관리 알림"
+  alias: 습도 관리 알림
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
-      above: 70
-      for: "00:30:00"
-    - platform: numeric_state
-      entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
-      below: 30
-      for: "00:30:00"
+  - platform: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+    above: 70
+    for: 00:30:00
+  - platform: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+    below: 30
+    for: 00:30:00
   action:
-    - service: persistent_notification.create
-      data:
-        title: "💧 습도 관리 필요"
-        message: >
-          현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
-          {% if trigger.above is defined %}
-          습도가 높습니다. 제습을 고려해보세요.
-          {% else %}
-          습도가 낮습니다. 가습을 고려해보세요.
-          {% endif %}
-        notification_id: humidity_alert
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F4A7 습도 관리 필요"
+      message: '현재 습도가 {{ states(''sensor.seutaendeuhyeong_eeokeon_humidity'') }}%입니다.
+        {% if trigger.above is defined %} 습도가 높습니다. 제습을 고려해보세요. {% else %} 습도가 낮습니다.
+        가습을 고려해보세요. {% endif %}
 
+        '
+      notification_id: humidity_alert
 - id: sunrise_gradual_lighting
-  alias: "일출 조명 서서히 켜기"
+  alias: 일출 조명 서서히 켜기
   trigger:
-    - platform: sun
-      event: sunrise
-      offset: "-00:30:00"
+  - platform: sun
+    event: sunrise
+    offset: -00:30:00
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
   action:
-    - service: light.turn_on
-      target:
-        entity_id: light.zigbee_dimmer
-      data:
-        brightness_pct: 10
-        transition: 300
-    - delay: "00:15:00"
-    - service: light.turn_on
-      target:
-        entity_id: light.zigbee_dimmer
-      data:
-        brightness_pct: 50
-        transition: 900
-
+  - service: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 10
+      transition: 300
+  - delay: 00:15:00
+  - service: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 50
+      transition: 900
 - id: sunset_auto_lighting
-  alias: "일몰 후 자동 조명"
+  alias: 일몰 후 자동 조명
   trigger:
-    - platform: sun
-      event: sunset
-      offset: "00:30:00"
+  - platform: sun
+    event: sunset
+    offset: 00:30:00
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   action:
-    - service: light.turn_on
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-      data:
-        brightness_pct: 80
-        color_temp_kelvin: 2500
-
+  - service: light.turn_on
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+    data:
+      brightness_pct: 80
+      color_temp_kelvin: 2500
 - id: bedtime_lights_off
-  alias: "취침 시간 조명 끄기"
+  alias: 취침 시간 조명 끄기
   trigger:
-    - platform: time
-      at: "23:30:00"
+  - platform: time
+    at: '23:30:00'
   condition:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   action:
-    - service: light.turn_on
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-      data:
-        brightness_pct: 20
-        transition: 300
-    - delay: "00:05:00"
-    - service: light.turn_off
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-    - service: persistent_notification.create
-      data:
-        title: "🌙 좋은 꿈 되세요"
-        message: "취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!"
-        notification_id: bedtime_lights
-
+  - service: light.turn_on
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+    data:
+      brightness_pct: 20
+      transition: 300
+  - delay: 00:05:00
+  - service: light.turn_off
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F319 좋은 꿈 되세요"
+      message: 취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!
+      notification_id: bedtime_lights
 - id: workday_morning_briefing
-  alias: "근무일 아침 브리핑"
+  alias: 근무일 아침 브리핑
   trigger:
-    - platform: time
-      at: "07:30:00"
+  - platform: time
+    at: 07:30:00
   condition:
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "on"
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   action:
-    - service: persistent_notification.create
-      data:
-        title: "☀️ 좋은 아침입니다!"
-        message: >
-          오늘의 정보를 확인해보세요:
-          
-          📅 {{ states('sensor.date') }}
-          🌡️ 실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C
-          💧 실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%
-          ⚡ 현재 전력: {{ states('sensor.total_power_consumption') }}W
-          🔋 평균 배터리: {{ states('sensor.average_device_battery') }}%
-          
-          좋은 하루 되세요! 💪
-        notification_id: morning_briefing
-
+  - service: persistent_notification.create
+    data:
+      title: ☀️ 좋은 아침입니다!
+      message: "오늘의 정보를 확인해보세요:\n\U0001F4C5 {{ states('sensor.date') }} \U0001F321️
+        실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C \U0001F4A7
+        실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}% ⚡ 현재 전력:
+        {{ states('sensor.total_power_consumption') }}W \U0001F50B 평균 배터리: {{ states('sensor.average_device_battery')
+        }}%\n좋은 하루 되세요! \U0001F4AA\n"
+      notification_id: morning_briefing
 - id: weekend_sleep_mode
-  alias: "주말 늦잠 모드"
+  alias: 주말 늦잠 모드
   trigger:
-    - platform: sun
-      event: sunrise
-      offset: "02:00:00"
+  - platform: sun
+    event: sunrise
+    offset: 02:00:00
   condition:
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "off"
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'off'
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   action:
-    - service: light.turn_on
-      target:
-        entity_id: light.zigbee_dimmer
-      data:
-        brightness_pct: 30
-        transition: 600
-    - service: persistent_notification.create
-      data:
-        title: "😴 주말 모드"
-        message: "주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다."
-        notification_id: weekend_mode
-
+  - service: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 30
+      transition: 600
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F634 주말 모드"
+      message: 주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다.
+      notification_id: weekend_mode
 - id: weekly_system_report
-  alias: "주간 시스템 리포트"
+  alias: 주간 시스템 리포트
   trigger:
-    - platform: time
-      at: "20:00:00"
+  - platform: time
+    at: '20:00:00'
   condition:
-    - condition: time
-      weekday:
-        - sun
+  - condition: time
+    weekday:
+    - sun
   action:
-    - service: persistent_notification.create
-      data:
-        title: "📊 주간 시스템 리포트"
-        message: >
-          이번 주 시스템 상태 요약:
-          
-          🏠 시스템 가동시간: {{ states('sensor.last_boot') }}
-          💻 평균 CPU 사용률: {{ states('sensor.processor_use') }}%
-          💾 메모리 사용률: {{ states('sensor.memory_use_percent') }}%
-          💽 디스크 사용률: {{ states('sensor.disk_use_percent') }}%
-          🌐 네트워크 연결 기기: {{ states('sensor.192_168_1_1_devices_connected') }}개
-          
-          모든 시스템이 정상 작동 중입니다! 👍
-        notification_id: weekly_report
-
+  - service: persistent_notification.create
+    data:
+      title: "\U0001F4CA 주간 시스템 리포트"
+      message: "이번 주 시스템 상태 요약:\n\U0001F3E0 시스템 가동시간: {{ states('sensor.last_boot')
+        }} \U0001F4BB 평균 CPU 사용률: {{ states('sensor.processor_use') }}% \U0001F4BE
+        메모리 사용률: {{ states('sensor.memory_use_percent') }}% \U0001F4BD 디스크 사용률: {{
+        states('sensor.disk_use_percent') }}% \U0001F310 네트워크 연결 기기: {{ states('sensor.192_168_1_1_devices_connected')
+        }}개\n모든 시스템이 정상 작동 중입니다! \U0001F44D\n"
+      notification_id: weekly_report
 - id: ios_theme_dark_sunset
-  alias: "iOS 테마 다크모드 (일몰)"
+  alias: iOS 테마 다크모드 (일몰)
   trigger:
-    - platform: sun
-      event: sunset
+  - platform: sun
+    event: sunset
   action:
-    - service: frontend.set_theme
-      data:
-        name: "ios-dark-mode"
-
+  - service: frontend.set_theme
+    data:
+      name: ios-dark-mode
 - id: ios_theme_light_sunrise
-  alias: "iOS 테마 라이트모드 (일출)"
+  alias: iOS 테마 라이트모드 (일출)
   trigger:
-    - platform: sun
-      event: sunrise
+  - platform: sun
+    event: sunrise
   action:
-    - service: frontend.set_theme
-      data:
-        name: "ios-light-mode"
+  - service: frontend.set_theme
+    data:
+      name: ios-light-mode
+- id: '1755698295141'
+  alias: 주변 밝기 자동 조명 제어
+  description: 주변 밝기가 충분할 때 자동으로 조명을 끕니다.
+  triggers:
+  - type: value
+    device_id: 42940cb04959837ed39a637fed0f69e2
+    entity_id: 64ba2d64e316df06c349b58054dcab48
+    domain: sensor
+    trigger: device
+    above: 1
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: 16c454176737aa10fa53bf309f24d111
+    entity_id: f88477c68d783968908c54499f788206
+    domain: light
+  mode: single

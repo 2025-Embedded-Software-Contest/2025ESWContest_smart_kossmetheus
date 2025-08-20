@@ -1,0 +1,31 @@
+{
+    "appId": "9caeb8f9-e34c-4fa3-b6b4-0f265d6f0813",
+    "appName": "ha_customize.57c1114f-e7bb-439a-b8cd-bc7a0d3cdb8d",
+    "appType": "WEBHOOK_SMART_APP",
+    "classifications": [
+        "AUTOMATION"
+    ],
+    "createdDate": "2025-08-20T12:41:18Z",
+    "description": "\uc9d1 via Nabu Casa",
+    "displayName": "HA Customize",
+    "installMetadata": {},
+    "lastUpdatedDate": "2025-08-20T12:41:20Z",
+    "owner": {
+        "ownerId": "cb05c59f-3f0b-5f90-4295-29db76d4fbfa",
+        "ownerType": "USER"
+    },
+    "principalType": "LOCATION",
+    "singleInstance": true,
+    "ui": {
+        "dashboardCardsEnabled": false,
+        "pluginId": "",
+        "pluginUri": "",
+        "preInstallDashboardCardsEnabled": false
+    },
+    "webhookSmartApp": {
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl1Be/Hy2hgpoTrftwvgQ0k65V5S3tgdp\r\ngqBjfBgUqC30+j9uvBOutwJEd49Zp+8td4NgZL01w0XKEzZ7dCaBTshQ9NDzY0DT8RFBPuQl8npM\r\nGcvBuVQpAHRZEckr4ZWh2eDt+CIWy5p3BSEpJ16aW2OBwsAdCw3NqMwkdmlmtfnpl16o8Dg+UHR9\r\nAMji5z1uLAC/zyubHprBrIwt9+2MA12Q9awwAb1IoKaWQYsS9XkIwjCI3yijbBtSYrtmQCxZuEV5\r\n46xJ0QzgcquZh+OD0HsJyyJnc09jnP5G3HVKtTYLeBrQ9LSE2lHj9eqBjoiOrbbrED9Y3jofSlcI\r\na2bGFQIDAQAB\n-----END PUBLIC KEY-----",
+        "signatureType": "APP_RSA",
+        "targetStatus": "CONFIRMED",
+        "targetUrl": "https://hooks.nabu.casa/gAAAAABopcIuceHT_l0Jp8qk4ehWf3UjbayTh1aeUKckWtDi5AknjNANv1DMtpE5uy66aF-onc89Cji5h5BgmwKeNbZTtk-asFGK85KKZQz1051YASbxbo7KGf8InvCdYpvo8L6SowdP7C17iTYI8ERS8-xHqJ4zpnOedBt5S5M_0Er7YaqNjvg="
+    }
+}
