@@ -18,6 +18,9 @@ http:
     - 172.30.33.0/24
     - 172.30.0.0/16
   ip_ban_enabled: false
+  # SmartThings를 위한 HTTPS 설정 (필요 시 주석 해제)
+  # ssl_certificate: /ssl/fullchain.pem
+  # ssl_key: /ssl/privkey.pem
 
 # ===========================
 # Lovelace 설정
@@ -60,3 +63,7 @@ logger:
     homeassistant.components.rpi_power: error
     custom_components.smartthinq_sensors: debug
     custom_components.ble_monitor: info
+    # SmartThings Customize 디버깅
+    custom_components.smartthings_customize: debug
+    custom_components.smartthings_customize.common: debug
+    custom_components.smartthings_customize.config_flow: debug

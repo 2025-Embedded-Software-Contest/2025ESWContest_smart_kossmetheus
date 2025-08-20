@@ -1,4 +1,9 @@
+# SmartThings Customize 설정
+# 디바이스 오류 발생 시 재시도 설정 및 안정성 향상
 globals:
+  # 토큰 재시도 설정
+  retry_count: 3
+  timeout: 30
 
 devices:
   - device_id: "8eb9103b-3979-4334-a35e-f9621ca5e7a2"
@@ -35,6 +40,20 @@ devices:
         on_state: ["on"]
         parent_entity_id: light.deseukeutab_jeonweon
 
+# 사용하지 않는 플랫폼 무시 (성능 향상)
 ignore_platforms: []
 
+# 디바이스 무시 목록 (문제가 있는 디바이스 임시 비활성화)
+ignore_devices: []
+
+# 엔티티 ID 포맷
 default_entity_id_format: 'st_custom_%{device_id}_%{label}_%{component}_%{capability}_%{attribute}_%{command}_%{name}'
+
+# 오류 처리 설정
+error_handling:
+  # 연결 실패 시 재시도
+  max_retries: 3
+  # 재시도 간격 (초)
+  retry_delay: 5
+  # 디바이스 상태 업데이트 실패 시 무시
+  ignore_failed_devices: true
