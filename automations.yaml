@@ -625,3 +625,21 @@
     entity_id: f88477c68d783968908c54499f788206
     domain: light
   mode: single
+- id: '1755744715659'
+  alias: 낮은 임계값 조명 알림
+  description: 특정 센서 값이 임계값 미만으로 떨어질 때 조명을 켜서 시각적으로 알립니다.
+  triggers:
+  - type: value
+    device_id: 42940cb04959837ed39a637fed0f69e2
+    entity_id: 64ba2d64e316df06c349b58054dcab48
+    domain: sensor
+    trigger: device
+    below: 2
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: 16c454176737aa10fa53bf309f24d111
+    entity_id: f88477c68d783968908c54499f788206
+    domain: light
+    brightness_pct: 100
+  mode: single
