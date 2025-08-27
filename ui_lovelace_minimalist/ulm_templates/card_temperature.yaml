@@ -1,0 +1,11 @@
+card_temperature:
+  template: ["ulm_language_variables"]
+  show_icon: true
+  show_name: true
+  show_state: true
+  styles:
+    card:
+      - padding: 12px
+    icon:
+      - width: 34px
+      - height: 34px
