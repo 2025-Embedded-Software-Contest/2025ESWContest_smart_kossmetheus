@@ -1,0 +1,23 @@
+card_light:
+  template: ["ulm_language_variables"]
+  variables:
+    ulm_card_light_enable_slider: false
+    ulm_card_light_enable_color: false
+  hold_action:
+    action: more-info
+  show_icon: true
+  show_name: true
+  show_label: false
+  styles:
+    card:
+      - padding: 12px
+    icon:
+      - width: 34px
+      - height: 34px
+  custom_fields:
+    slider: |
+      [[[ if (variables.ulm_card_light_enable_slider) {
+        return `<ha-slider min="1" max="255" value="${entity?.attributes?.brightness || 0}" @change="(e) => this._hass.callService('light','turn_on',{entity_id:entity.entity_id,brightness: e.target.value})"></ha-slider>`
+      } else { return `` } ]]]
+    color: |
+      [[[ return `` ]]]

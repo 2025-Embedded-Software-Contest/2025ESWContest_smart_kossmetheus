@@ -1,0 +1,15 @@
+card_battery:
+  template: ["ulm_language_variables"]
+  variables:
+    ulm_card_battery_battery_state_entity_id: null
+    ulm_card_battery_battery_level_warning: 50
+    ulm_card_battery_battery_level_danger: 20
+  show_icon: true
+  show_name: true
+  show_state: true
+  styles:
+    card:
+      - padding: 12px
+    icon:
+      - width: 34px
+      - height: 34px

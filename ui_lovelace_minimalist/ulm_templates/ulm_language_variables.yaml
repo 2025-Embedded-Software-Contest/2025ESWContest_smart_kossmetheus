@@ -1,0 +1,8 @@
+ulm_language_variables:
+  variables:
+    ulm_card_name: ""
+    ulm_card_light_enable_slider: false
+    ulm_card_light_enable_color: false
+    ulm_card_battery_battery_state_entity_id: null
+    ulm_card_battery_battery_level_warning: 50
+    ulm_card_battery_battery_level_danger: 20
