@@ -49,6 +49,12 @@ lovelace:
       icon: mdi:home
       show_in_sidebar: true
       filename: ui_lovelace_minimalist/dashboard/ui-lovelace.yaml
+    adaptive-dash:
+      mode: yaml
+      title: "Adaptive"
+      icon: mdi:apps
+      show_in_sidebar: true
+      filename: ui_lovelace_minimalist/dashboard/adaptive-dash/adaptive-ui.yaml
 
 # 로거 설정 이동(센서 파일에서 분리)
 logger:
