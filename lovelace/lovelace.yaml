@@ -950,7 +950,7 @@ views:
                     show_background: false
                     tap_action:
                       action: perform-action
-                      perform_action: script.unknown
+                      perform_action: script.turn_off_all_lights
                       target: {}
                     icon: mdi:lightbulb-off-outline
                 styles: |

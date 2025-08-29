@@ -1,1 +1,25 @@
-{}
+turn_off_all_lights:
+  alias: "일괄 소등"
+  sequence:
+    - service: homeassistant.turn_off
+      target:
+        entity_id:
+          - light.living_floor_light
+          - switch.geosil_jeondeung_top_left
+          - switch.geosil_jeondeung_top_right
+          - switch.geosil_jeondeung_center_left
+          - switch.geosil_jeondeung_bottom_left
+          - switch.geosil_jeondeung_bottom_right
+          - light.coupy_floor_light
+          - light.coupy_indirect_light
+          - light.coupy_reading_light
+          - switch.hyeogjinbang_jeondeung
+          - light.hagyeong_floor
+          - switch.hagyeongbang_jeondeung
+          - switch.jubang_jeondeung_top
+          - switch.jubang_jeondeung_center
+          - switch.jubang_jeondeung_bottom
+          - light.zigbee_dimmer
+          - light.smart_bulb
+          - light.deseukeutab_jeonweon
+  mode: single
