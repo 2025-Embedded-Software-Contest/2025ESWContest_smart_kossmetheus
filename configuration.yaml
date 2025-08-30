@@ -37,7 +37,7 @@ lovelace:
     - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
       type: module
   dashboards:
-    minimalist:
+    ui-minimalist:
       mode: yaml
       filename: ui_lovelace_minimalist/dashboard/ui-lovelace.yaml
       title: UI Lovelace Minimalist
