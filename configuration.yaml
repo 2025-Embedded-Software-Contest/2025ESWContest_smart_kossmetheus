@@ -29,6 +29,21 @@ recorder:
 # YAML 편집 모드 해제 (UI 편집 모드 사용)
 lovelace:
   mode: storage
+  resources:
+    - url: /hacsfiles/button-card/button-card.js
+      type: module
+    - url: /hacsfiles/lovelace-card-mod/card-mod.js
+      type: module
+    - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+      type: module
+  dashboards:
+    minimalist:
+      mode: yaml
+      filename: ui_lovelace_minimalist/dashboard/ui-lovelace.yaml
+      title: UI Lovelace Minimalist
+      icon: mdi:flower
+      show_in_sidebar: true
+
 
 # 로거 설정 이동(센서 파일에서 분리)
 logger:
