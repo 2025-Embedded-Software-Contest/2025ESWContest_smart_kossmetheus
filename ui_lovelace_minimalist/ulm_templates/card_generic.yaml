@@ -10,7 +10,7 @@ card_generic:
     card:
       - padding: 12px
     grid:
-      - grid-template-areas: "i n" "s s" "l l"
+      - grid-template-areas: '"i n" "s s" "l l"'
       - grid-template-columns: 40px 1fr
       - grid-template-rows: min-content min-content min-content
     icon:
