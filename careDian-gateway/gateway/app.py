@@ -1,13 +1,15 @@
-from __future__ import annotations
+from __future__ import annotations # 타입 힌트 평가 X, 문자열로 저장
 import os, time, json, logging, base64
+from pydantic import BaseModel # 데이터 모델 정의
+from pydantic import Field # 데이터 모델의 Field 정의
 from typing import Any, Dict, Optional, Callable # 타입 힌트
-from pydantic import BaseModel, Field
 
 from .settings import Settings
 from .ssl_util import ssl_available
 from .jwt_util import jwt_decode_hs256, jwt_encode_hs256, claims_access, claims_refresh, RefreshStore, JWTError
 from .rate_limit import MemoryRateLimiter, RateConfig
 from .ha_client import HAClient
+
 
 _logger = logging.getLogger("gateway")
 

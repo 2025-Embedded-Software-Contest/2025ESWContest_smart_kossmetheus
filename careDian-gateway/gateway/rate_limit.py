@@ -1,7 +1,7 @@
-from __future__ import annotations
+from __future__ import annotations # 타입 힌트 평가 X, 문자열로 저장
 import time
-from dataclasses import dataclass
-from collections import defaultdict, deque
+from collections import defaultdict, deque # 컨테이너 데이터형
+from dataclasses import dataclass # 데이터 클래스
 from typing import Deque, Dict, Optional, Tuple # 타입 힌트
 
 @dataclass

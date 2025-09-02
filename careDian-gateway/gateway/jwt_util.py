@@ -1,5 +1,5 @@
-from __future__ import annotations
-import base64, hashlib, hmac, json, time, os
+from __future__ import annotations # 타입 힌트 평가 X, 문자열로 저장
+import base64, hashlib, hmac, json, time
 from typing import Any, Dict, Optional # 타입 힌트
 
 

@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__  import annotations # 타입 힌트 평가 X, 문자열로 저장
 from typing import Any, Dict # 타입 힌트
 
 

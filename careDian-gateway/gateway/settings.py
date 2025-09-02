@@ -1,6 +1,7 @@
-from __future__ import annotations
+from __future__ import annotations # 타입 힌트 평가 X, 문자열로 저장
 import os
-from pydantic import BaseModel, Field # 데이터 유효성 검사 및 설정 관리
+from pydantic import BaseModel # 데이터 모델 정의
+from pydantic import Field # 데이터 모델의 Field 정의
 from typing import List, Optional # 타입 힌트
 
 
