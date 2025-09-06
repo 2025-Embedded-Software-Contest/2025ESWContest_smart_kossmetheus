@@ -12,11 +12,12 @@ sensor: !include sensors.yaml
 template: !include templates.yaml
 influxdb: !include influxdb.yaml
 
+# Reverse Proxy 설정
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 172.30.33.0/24
-    - 172.30.0.0/16
+    - 172.30.33.0/24 # Supervisor 애드온 네트워크
+    - 172.30.0.0/16 # NPM
 
 # 재연결 및 타임아웃 설정
 recorder:
@@ -43,7 +44,6 @@ lovelace:
       title: UI Lovelace Minimalist
       icon: mdi:flower
       show_in_sidebar: true
-
 
 # 로거 설정 이동(센서 파일에서 분리)
 logger:

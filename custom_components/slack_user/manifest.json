@@ -1,0 +1,10 @@
+{
+  "domain": "slack_user",
+  "name": "Slack User",
+  "config_flow": true,
+  "documentation": "https://github.com/GeorgeSG/ha-slack-user",
+  "issue_tracker": "https://github.com/GeorgeSG/ha-slack-user/issues",
+  "codeowners": ["@GeorgeSG"],
+  "requirements": ["slackclient==2.9.4"],
+  "version": "0.6"
+}

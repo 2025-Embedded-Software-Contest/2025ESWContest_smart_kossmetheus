@@ -2,6 +2,7 @@
 
 # Secrets and sensitive files
 secrets.yaml
+.ssh
 *.key
 *.pem
 *.crt
