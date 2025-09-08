@@ -1,0 +1,32 @@
+esphome:
+  name: esp32-cam
+  friendly_name: esp32-cam
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "KAiNlMz95sQeStFmBZMowrvNORM3tIaVnrybZgoFvXw="
+
+ota:
+  - platform: esphome
+    password: "20a3709c81da3c29a8031084cf39fa8b"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Cam Fallback Hotspot"
+    password: "YSzrOiu9YClb"
+
+captive_portal:
+    

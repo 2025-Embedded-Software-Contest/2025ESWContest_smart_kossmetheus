@@ -45,21 +45,3 @@ lovelace:
       icon: mdi:flower
       show_in_sidebar: true
 
-# 로거 설정 이동(센서 파일에서 분리)
-logger:
-  default: warning
-  logs:
-    homeassistant.components.xbox: critical
-    homeassistant.components.xbox.coordinator: critical
-    homeassistant.components.rpi_power: error
-    custom_components.smartthinq_sensors: debug
-    custom_components.ble_monitor: info
-    # SmartThings Customize 디버깅
-    custom_components.smartthings_customize: debug
-    custom_components.smartthings_customize.common: debug
-    custom_components.smartthings_customize.config_flow: debug
-    # 인증 관련 로그 조정
-    homeassistant.components.http.ban: warning
-    homeassistant.components.websocket_api: warning
-    # Bestin 컴포넌트 모니터링
-    custom_components.bestin: info
