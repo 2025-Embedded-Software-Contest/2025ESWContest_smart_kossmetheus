@@ -607,20 +607,20 @@
   - action: camera.snapshot
     metadata: {}
     data:
-      filename: /config/www/tmp/gas/gas_latest.jpg
+      filename: /config/media/gas/gas_latest.jpg
     target:
       entity_id: camera.esp_cam_gas_cam
   - action: pyscript.image_rotate
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest.jpg
-      output_image: /config/www/tmp/gas/gas_latest.jpg
+      input_image: /config/media/gas/gas_latest.jpg
+      output_image: /config/media/gas/gas_latest.jpg
       rotation_angle: 180
   - action: pyscript.image_crop
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop.jpg
+      input_image: /config/media/gas/gas_latest.jpg
+      output_image: /config/media/gas/gas_latest-crop.jpg
       rotation_angle_before: -0.9
       left: 155
       top: 330
@@ -630,16 +630,16 @@
   - action: pyscript.image_resize
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      input_image: /config/media/gas/gas_latest-crop.jpg
+      output_image: /config/media/gas/gas_latest-crop-resize.jpg
       width: 300
       height: 0
   - alias: 앞자리 분리
     action: pyscript.image_crop
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
+      input_image: /config/media/gas/gas_latest-crop-resize.jpg
+      output_image: /config/media/gas/gas_latest-crop-resize1.jpg
       rotation_angle_before: 0
       left: 0
       top: 0
@@ -650,8 +650,8 @@
     action: pyscript.image_crop
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      input_image: /config/media/gas/gas_latest-crop-resize.jpg
+      output_image: /config/media/gas/gas_latest-crop-resize2.jpg
       rotation_angle_before: 0
       left: 189
       top: 0
@@ -661,8 +661,8 @@
   - action: pyscript.image_rotate
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
-      output_image: /config/www/tmp/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
+      input_image: /config/media/gas/gas_latest-crop.jpg
+      output_image: /config/media/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
       rotation_angle: 0
     alias: 날짜폴더로 복사
     enabled: false
@@ -688,7 +688,7 @@
   - action: ai_task.generate_data
     data:
       attachments:
-        media_content_id: media-source://media_source/gas/gas_latest-crop-resize1.jpg
+        media_content_id: media-source://media_source/media/gas/gas_latest-crop-resize1.jpg
         media_content_type: image/jpeg
         metadata:
           title: gas_latest-crop-resize1.jpg
@@ -706,7 +706,7 @@
   - action: ai_task.generate_data
     data:
       attachments:
-        media_content_id: media-source://media_source/gas/gas_latest-crop-resize2.jpg
+        media_content_id: media-source://media_source/media/gas/gas_latest-crop-resize2.jpg
         media_content_type: image/jpeg
         metadata:
           title: gas_latest-crop-resize2.jpg
@@ -773,8 +773,8 @@
   - action: pyscript.image_rotate
     metadata: {}
     data:
-      input_image: /config/www/tmp/gas/gas_latest.jpg
-      output_image: /config/www/tmp/gas/month/gas_{{nowtimefile}}.jpg
+      input_image: /config/media/gas/gas_latest.jpg
+      output_image: /config/media/gas/month/gas_{{nowtimefile}}.jpg
       rotation_angle: 0
   - action: notify.telegram_home
     data:

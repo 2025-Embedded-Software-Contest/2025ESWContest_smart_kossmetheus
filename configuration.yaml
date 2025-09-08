@@ -50,7 +50,7 @@ lovelace:
 #################################
 homeassistant:
   media_dirs:
-    gas: /config/www/tmp/gas
+    media: /config/media
 
 input_number:
   gas_meter_2:
