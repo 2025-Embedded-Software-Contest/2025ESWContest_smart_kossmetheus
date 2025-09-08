@@ -66,6 +66,7 @@ output:
 
 light:
   - platform: monochromatic
+    id: esp_cam_gas_light
     name: esp_cam_gas_light
     output: esp32cam_flash
     default_transition_length: 0s
@@ -78,7 +79,7 @@ button:
     name: "Capture Gas Snapshot"
     on_press:
       - light.turn_on:
-          id: esp32cam_flash
+          id: esp_cam_gas_light
           brightness: 80%
       - delay: 2s
       - homeassistant.service:
@@ -87,7 +88,7 @@ button:
             entity_id: camera.esp_cam_gas_cam
             filename: "/config/www/tmp/gas/gas_latest.jpg"
       - light.turn_off:
-          id: esp32cam_flash
+          id: esp_cam_gas_light
 
 # 재부팅 스위치
 switch:
