@@ -45,3 +45,28 @@ lovelace:
       icon: mdi:flower
       show_in_sidebar: true
 
+#################################
+# Gas meter (ESP32-CAM + OCR)   #
+#################################
+homeassistant:
+  media_dirs:
+    gas: /config/www/tmp/gas
+
+input_number:
+  gas_meter_2:
+    name: box
+    min: 0
+    max: 99999
+    step: 0.001
+    unit_of_measurement: m³
+
+input_text:
+  gas_message_2:
+    name: gas message 2
+    max: 255
+
+utility_meter:
+  gas_meter_monthly:
+    source: sensor.gas_meter_2
+    cycle: monthly
+

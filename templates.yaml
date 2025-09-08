@@ -118,6 +118,16 @@
                      | map(attribute='entity_id') | list }}
       icon: mdi:code-json
 
+# ===========================
+# Gas meter OCR 템플릿 센서
+# ===========================
+- sensor:
+    - name: gas_meter_2
+      state: "{{ states('input_number.gas_meter_2') }}"
+      unit_of_measurement: m³
+      device_class: gas
+      state_class: total_increasing
+
 - binary_sensor:
     # 저배터리 알림
     - name: "low_battery_devices"

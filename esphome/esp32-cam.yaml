@@ -3,9 +3,9 @@ esphome:
   friendly_name: esp32-cam
 
 esp32:
-  board: esp32dev
+  board: esp32cam
   framework:
-    type: esp-idf
+    type: arduino
 
 # Enable logging
 logger:
@@ -29,4 +29,67 @@ wifi:
     password: "YSzrOiu9YClb"
 
 captive_portal:
-    
+  
+
+# =============================
+# ESP32-CAM Camera (AI-Thinker)
+# =============================
+esp32_camera:
+  name: esp_cam_gas_cam
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+  resolution: 1024x768
+  jpeg_quality: 10
+  vertical_flip: false
+  horizontal_mirror: false
+
+# 미리보기용 웹서버 (선택)
+web_server:
+  port: 80
+
+# =============================
+# 플래시(조명) - 밝기 제어 가능
+# =============================
+output:
+  - platform: ledc
+    pin: GPIO4
+    id: esp32cam_flash
+
+light:
+  - platform: monochromatic
+    name: esp_cam_gas_light
+    output: esp32cam_flash
+    default_transition_length: 0s
+
+# =============================
+# 캡처 테스트 버튼 (HA에서 호출 가능)
+# =============================
+button:
+  - platform: template
+    name: "Capture Gas Snapshot"
+    on_press:
+      - light.turn_on:
+          id: esp32cam_flash
+          brightness: 80%
+      - delay: 2s
+      - homeassistant.service:
+          service: camera.snapshot
+          data:
+            entity_id: camera.esp_cam_gas_cam
+            filename: "/config/www/tmp/gas/gas_latest.jpg"
+      - light.turn_off:
+          id: esp32cam_flash
+
+# 재부팅 스위치
+switch:
+  - platform: restart
+    name: "ESP32-CAM Restart"
