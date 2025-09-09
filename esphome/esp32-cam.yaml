@@ -38,6 +38,7 @@ captive_portal:
 # ESP32-CAM Camera (AI-Thinker)
 # =============================
 esp32_camera:
+  id: esp_cam_gas_cam
   name: esp_cam_gas_cam
   external_clock:
     pin: GPIO0
@@ -85,7 +86,9 @@ button:
           id: esp_cam_gas_light
           brightness: 80%
       - delay: 2s
-      - esp32_camera.capture:
+      - camera.capture:
+          id: esp_cam_gas_cam
+          file: /config/www/tmp/gas/gas_latest.jpg
       - delay: 1s
       - light.turn_off:
           id: esp_cam_gas_light
