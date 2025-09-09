@@ -589,11 +589,7 @@
   - action: light.turn_on
     metadata: {}
     data:
-      brightness_pct: 78
-      rgb_color:
-      - 255
-      - 255
-      - 255
+      brightness_pct: 80
     target:
       entity_id: light.esp_cam_gas_light
   - delay:
@@ -722,11 +718,13 @@
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      gas_value1: '{% set numbers = res1.data | regex_findall(''[0-9]'') | join('''')
-        | int %} {{ numbers | int if numbers else 0 }}'
-      gas_value2: '{% set numbers = res2.data | regex_findall(''[0-9]'') | join('''')
-        | int %} {{ numbers | int if numbers else 0 }}'
-      gas_value: '{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} '
+      gas_value1: >-
+        {% set numbers = res1.data | regex_findall('[0-9]') | join('') | int %}
+        {{ numbers | int if numbers else 0 }}
+      gas_value2: >-
+        {% set numbers = res2.data | regex_findall('[0-9]') | join('') | int %}
+        {{ numbers | int if numbers else 0 }}
+      gas_value: "{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} "
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
       condition: template
