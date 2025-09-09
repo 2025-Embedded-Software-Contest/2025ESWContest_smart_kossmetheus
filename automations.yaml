@@ -727,7 +727,7 @@
       gas_value: "{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} "
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
-      conditions: template
+      condition: template
       value_template: '{% set val = gas_value|float - states(''sensor.gas_meter_2'')|float
         %}
 
@@ -1005,7 +1005,7 @@
       gas_value: '{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} '
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
-      conditions: template
+      condition: template
       value_template: '{% set val = gas_value|float - states(''sensor.gas_meter_2'')|float
         %}
 
