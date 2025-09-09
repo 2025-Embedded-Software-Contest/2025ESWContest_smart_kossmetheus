@@ -85,11 +85,8 @@ button:
           id: esp_cam_gas_light
           brightness: 80%
       - delay: 2s
-      - homeassistant.service:
-          service: camera.snapshot
-          data:
-            entity_id: camera.esp_cam_gas_cam
-            filename: "/config/www/tmp/gas/gas_latest.jpg"
+      - esp32_camera.capture:
+      - delay: 1s
       - light.turn_off:
           id: esp_cam_gas_light
 
