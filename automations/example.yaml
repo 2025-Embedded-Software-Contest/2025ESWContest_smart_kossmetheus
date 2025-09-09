@@ -6,17 +6,17 @@
 - id: high_power_consumption_alert
   alias: "높은 전력 소비 알림"
   description: "총 전력 소비가 임계값을 초과했을 때 알림"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.total_power_consumption
       above: 500  # 500W 이상
       for: "00:05:00"  # 5분간 지속
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "⚡ 전력 소비 주의"
         message: >
@@ -28,19 +28,19 @@
 - id: energy_saving_mode
   alias: "에너지 절약 모드"
   description: "집에 아무도 없을 때 에너지 절약"
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.someone_home
       from: "on"
       to: "off"
       for: "00:30:00"  # 30분간 부재
-  action:
-    - service: light.turn_off
+  actions:
+    - action: light.turn_off
       target:
         entity_id:
           - light.zigbee_dimmer
           - light.smart_bulb
-    - service: persistent_notification.create
+    - action: persistent_notification.create
       data:
         title: "🏠 에너지 절약 모드 활성화"
         message: "부재 중이므로 조명을 자동으로 꺼두었습니다."
@@ -53,13 +53,13 @@
 - id: low_battery_device_alert
   alias: "저배터리 디바이스 알림"
   description: "배터리가 부족한 디바이스가 있을 때 알림"
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.low_battery_devices
       from: "off"
       to: "on"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🔋 배터리 부족 주의"
         message: >
@@ -82,16 +82,16 @@
 - id: critical_battery_alert
   alias: "극저배터리 알림"
   description: "배터리가 10% 이하일 때 즉시 알림"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: 
         - sensor.gimuhyeonyi_apple_watch_battery
         - sensor.gimuhyeonyi_macbook_pro_battery
         - sensor.uhyeonyi_ipad_pro_battery
         - sensor.uhyeonyi_iphone_xs_battery
       below: 10
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🚨 배터리 위험 수준"
         message: >
@@ -103,10 +103,10 @@
 - id: evening_brushing_reminder
   alias: "저녁 양치 알림"
   description: "저녁에 양치를 하지 않았을 때 알림"
-  trigger:
-    - platform: time
+  triggers:
+    - trigger: time
       at: "22:00:00"  # 저녁 10시
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
@@ -114,8 +114,8 @@
     - condition: template
       value_template: >
         {{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds() > 7200 }}
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🪥 양치 알림"
         message: "최근 2시간 동안 양치 기록이 없습니다."
@@ -125,13 +125,13 @@
 - id: high_heart_rate_alert
   alias: "심박수 경고"
   description: "심박수가 120bpm 이상일 때 경고"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.ble_heart_rate_e0e33e6221b5
       above: 120
       for: "00:01:00"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "❤️ 심박수 경고"
         message: "심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요."
@@ -141,16 +141,16 @@
 - id: daily_steps_goal_achievement
   alias: "일일 걸음수 목표 달성"
   description: "하루 걸음수 목표를 달성했을 때 축하 메시지"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.ble_steps_e0e33e6221b5
       above: 10000  # 일일 목표: 10,000보
-  condition:
+  conditions:
     - condition: template
       value_template: >
         {{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days == 0 }}
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🎉 걸음수 목표 달성!"
         message: >
@@ -162,17 +162,17 @@
 - id: kimchi_fridge_temperature_alert
   alias: "김치냉장고 온도 이상"
   description: "김치냉장고 온도가 적정 범위를 벗어났을 때 알림"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.kimchi_fridge_avg_temperature
       above: 5    # 5도 이상
       for: "00:30:00"  # 30분간 지속
-    - platform: numeric_state
+    - trigger: numeric_state
       entity_id: sensor.kimchi_fridge_avg_temperature
       below: -5   # -5도 이하
       for: "00:30:00"  # 30분간 지속
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🥬 김치냉장고 온도 주의"
         message: >
@@ -184,16 +184,16 @@
 - id: dishwasher_cycle_complete
   alias: "식기세척기 완료 알림"
   description: "식기세척기 세척이 완료되었을 때 알림"
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: sensor.jubang_siggiseceoggi_remaining_time
       to: "0"
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🍽️ 식기세척기 완료"
         message: >
@@ -205,13 +205,13 @@
 - id: rinse_aid_refill_reminder
   alias: "린스 보충 알림"
   description: "식기세척기 린스 보충이 필요할 때 알림"
-  trigger:
-    - platform: state
+  triggers:
+    - trigger: state
       entity_id: binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
       from: "off"
       to: "on"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "🧴 린스 보충 필요"
         message: >

@@ -1,15 +1,15 @@
 alias: Fix Unavailable Entities - Automated Recovery
 id: fix_unavailable_entities_recovery
 description: 자동으로 unavailable 엔티티들을 복구하는 자동화
-trigger:
+triggers:
   # 30분마다 실행 (진단보다 자주)
-  - platform: time_pattern
+  - trigger: time_pattern
     minutes: "/30"
   # Home Assistant 시작 시에도 실행
-  - platform: homeassistant
+  - trigger: homeassistant
     event: start
-condition: []
-action:
+conditions: []
+actions:
   - variables:
       # unavailable 엔티티 목록 수집
       unavailable_entities: >-
@@ -33,7 +33,7 @@ action:
   - choose:
       - conditions: "{{ thinq_unavailable | length > 0 }}"
         sequence:
-          - service: system_log.write
+          - action: system_log.write
             data:
               message: >-
                 LG ThinQ unavailable entities detected: {{ thinq_unavailable | join(', ') }}
@@ -41,7 +41,7 @@ action:
               level: warning
           
           # ThinQ 통합 재시작 시도
-          - service: homeassistant.reload_config_entry
+          - action: homeassistant.reload_config_entry
             target:
               entity_id: "{{ thinq_unavailable }}"
             continue_on_error: true
@@ -50,7 +50,7 @@ action:
   - choose:
       - conditions: "{{ ble_unavailable | length > 0 }}"
         sequence:
-          - service: system_log.write
+          - action: system_log.write
             data:
               message: >-
                 BLE unavailable entities detected: {{ ble_unavailable | join(', ') }}
@@ -61,7 +61,7 @@ action:
   - choose:
       - conditions: "{{ icloud_unavailable | length > 0 }}"
         sequence:
-          - service: system_log.write
+          - action: system_log.write
             data:
               message: >-
                 Apple device battery sensors unavailable: {{ icloud_unavailable | join(', ') }}
@@ -72,7 +72,7 @@ action:
   - choose:
       - conditions: "{{ xbox_unavailable | length > 0 }}"
         sequence:
-          - service: system_log.write
+          - action: system_log.write
             data:
               message: >-
                 Xbox entities remain unavailable: {{ xbox_unavailable | join(', ') }}
@@ -80,7 +80,7 @@ action:
               level: info
 
   # 전체 결과 요약
-  - service: persistent_notification.create
+  - action: persistent_notification.create
     data:
       title: "자동 복구 시도 완료"
       message: >-

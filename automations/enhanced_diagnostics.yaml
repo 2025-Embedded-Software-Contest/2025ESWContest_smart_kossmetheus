@@ -1,16 +1,16 @@
 alias: Enhanced Unavailable Entities Monitoring  
 id: enhanced_unavailable_monitoring
 description: 향상된 unavailable 엔티티 모니터링 및 분류 시스템
-trigger:
-  - platform: homeassistant
+triggers:
+  - trigger: homeassistant
     event: start
-  - platform: time_pattern
+  - trigger: time_pattern
     minutes: "/10"  # 10분마다 체크 (더 자주)
-  - platform: state
+  - trigger: state
     entity_id: sensor.unavailable_entities_count
     # 엔티티 개수가 변경될 때마다 트리거
-condition: []
-action:
+conditions: []
+actions:
   - variables:
       # 모든 unavailable 엔티티 수집
       all_unavailable: >-
@@ -41,7 +41,7 @@ action:
           {{ all_unavailable | reject('match', 'sensor.jubang_.*|sensor..*battery|.*ble.*|.*xbox.*|sensor..*router.*|sensor.fast_com.*') | list }}
 
   # 카테고리별 상세 진단
-  - service: system_log.write
+  - action: system_log.write
     data:
       message: >
         🔍 Unavailable Entities 분석 결과:

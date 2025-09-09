@@ -71,7 +71,7 @@
             {% endif %}
           {% endfor %}
           {{ available | join(', ') if available else 'none' }}
-        total_sensors: 4
+        total_sensors: "4"
         unavailable_sensors: >
           {% set ids = [
             'sensor.jubang_gimcinaengjanggo_left_temperature',

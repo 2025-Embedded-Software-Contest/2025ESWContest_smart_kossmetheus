@@ -1,7 +1,7 @@
 turn_off_all_lights:
   alias: "일괄 소등"
   sequence:
-    - service: homeassistant.turn_off
+    - action: homeassistant.turn_off
       target:
         entity_id:
           - light.living_floor_light

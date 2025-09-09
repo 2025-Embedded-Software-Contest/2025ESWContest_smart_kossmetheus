@@ -6,36 +6,36 @@
 - id: smart_ac_temperature_control
   alias: "스마트 에어컨 온도 제어"
   description: "실내 온도에 따라 에어컨 자동 조절"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
       above: 28  # 28도 이상
       for: "00:10:00"  # 10분간 지속
-    - platform: numeric_state
+    - trigger: numeric_state
       entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
       below: 22  # 22도 이하
       for: "00:10:00"  # 10분간 지속
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "on"  # 근무일에만
-  action:
+  actions:
     - choose:
         - conditions:
             - condition: numeric_state
               entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
               above: 28
           sequence:
-            - service: climate.set_temperature
+            - action: climate.set_temperature
               target:
                 entity_id: climate.seutaendeuhyeong_eeokeon
               data:
                 temperature: 24
                 hvac_mode: "cool"
-            - service: persistent_notification.create
+            - action: persistent_notification.create
               data:
                 title: "❄️ 에어컨 냉방 자동 시작"
                 message: "실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C로 높아져서 냉방을 시작했습니다."
@@ -44,10 +44,10 @@
               entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
               below: 22
           sequence:
-            - service: climate.turn_off
+            - action: climate.turn_off
               target:
                 entity_id: climate.seutaendeuhyeong_eeokeon
-            - service: persistent_notification.create
+            - action: persistent_notification.create
               data:
                 title: "🌡️ 에어컨 자동 정지"
                 message: "실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C로 적정해져서 에어컨을 껐습니다."
@@ -56,17 +56,17 @@
 - id: humidity_management_alert
   alias: "습도 관리 알림"
   description: "습도가 너무 높거나 낮을 때 알림"
-  trigger:
-    - platform: numeric_state
+  triggers:
+    - trigger: numeric_state
       entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
       above: 70  # 70% 이상
       for: "00:30:00"
-    - platform: numeric_state
+    - trigger: numeric_state
       entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
       below: 30  # 30% 이하
       for: "00:30:00"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "💧 습도 관리 필요"
         message: >
@@ -86,26 +86,26 @@
 - id: sunrise_gradual_lighting
   alias: "일출 조명 서서히 켜기"
   description: "일출 30분 전부터 조명을 서서히 켜서 자연스러운 기상 유도"
-  trigger:
-    - platform: sun
+  triggers:
+    - trigger: sun
       event: sunrise
       offset: "-00:30:00"  # 일출 30분 전
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "on"  # 근무일에만
-  action:
-    - service: light.turn_on
+  actions:
+    - action: light.turn_on
       target:
         entity_id: light.zigbee_dimmer
       data:
         brightness_pct: 10
         transition: 300  # 5분에 걸쳐 서서히
     - delay: "00:15:00"  # 15분 후
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id: light.zigbee_dimmer
       data:
@@ -116,16 +116,16 @@
 - id: sunset_auto_lighting
   alias: "일몰 후 자동 조명"
   description: "일몰 후 집에 사람이 있으면 자동으로 조명 켜기"
-  trigger:
-    - platform: sun
+  triggers:
+    - trigger: sun
       event: sunset
       offset: "00:30:00"  # 일몰 30분 후
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  action:
-    - service: light.turn_on
+  actions:
+    - action: light.turn_on
       target:
         entity_id:
           - light.zigbee_dimmer
@@ -138,16 +138,16 @@
 - id: bedtime_lights_off
   alias: "취침 시간 조명 끄기"
   description: "취침 시간에 조명 자동으로 끄기"
-  trigger:
-    - platform: time
+  triggers:
+    - trigger: time
       at: "23:30:00"  # 밤 11시 30분
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  action:
+  actions:
     # 조명을 서서히 어둡게
-    - service: light.turn_on
+    - action: light.turn_on
       target:
         entity_id:
           - light.zigbee_dimmer
@@ -157,12 +157,12 @@
         transition: 300  # 5분에 걸쳐
     - delay: "00:05:00"
     # 완전히 끄기
-    - service: light.turn_off
+    - action: light.turn_off
       target:
         entity_id:
           - light.zigbee_dimmer
           - light.smart_bulb
-    - service: persistent_notification.create
+    - action: persistent_notification.create
       data:
         title: "🌙 좋은 꿈 되세요"
         message: "취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!"
@@ -172,18 +172,18 @@
 - id: workday_morning_briefing
   alias: "근무일 아침 브리핑"
   description: "근무일 아침에 오늘의 정보 요약 제공"
-  trigger:
-    - platform: time
+  triggers:
+    - trigger: time
       at: "07:30:00"  # 아침 7시 30분
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "on"
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "☀️ 좋은 아침입니다!"
         message: >
@@ -206,25 +206,25 @@
 - id: weekend_sleep_mode
   alias: "주말 늦잠 모드"
   description: "주말에는 조명을 늦게 켜서 늦잠 배려"
-  trigger:
-    - platform: sun
+  triggers:
+    - trigger: sun
       event: sunrise
       offset: "02:00:00"  # 일출 2시간 후
-  condition:
+  conditions:
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "off"  # 휴일
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  action:
-    - service: light.turn_on
+  actions:
+    - action: light.turn_on
       target:
         entity_id: light.zigbee_dimmer
       data:
         brightness_pct: 30  # 더 어둡게
         transition: 600    # 10분에 걸쳐 천천히
-    - service: persistent_notification.create
+    - action: persistent_notification.create
       data:
         title: "😴 주말 모드"
         message: "주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다."
@@ -234,15 +234,15 @@
 - id: weekly_system_report
   alias: "주간 시스템 리포트"
   description: "매주 일요일 저녁에 시스템 상태 요약 보고"
-  trigger:
-    - platform: time
+  triggers:
+    - trigger: time
       at: "20:00:00"  # 저녁 8시
-  condition:
+  conditions:
     - condition: time
       weekday:
         - sun  # 일요일
-  action:
-    - service: persistent_notification.create
+  actions:
+    - action: persistent_notification.create
       data:
         title: "📊 주간 시스템 리포트"
         message: >
@@ -265,12 +265,12 @@
 - id: ios_theme_dark_sunset
   alias: "iOS 테마 다크모드 (일몰)"
   description: "일몰 시간에 iOS 다크 테마로 자동 변경"
-  trigger:
-    - platform: sun
+  triggers:
+    - trigger: sun
       event: sunset
       offset: "00:00:00"
-  action:
-    - service: frontend.set_theme
+  actions:
+    - action: frontend.set_theme
       data:
         name: "ios-dark-mode"
 
@@ -278,11 +278,11 @@
 - id: ios_theme_light_sunrise
   alias: "iOS 테마 라이트모드 (일출)"
   description: "일출 시간에 iOS 라이트 테마로 자동 변경"
-  trigger:
-    - platform: sun
+  triggers:
+    - trigger: sun
       event: sunrise
       offset: "00:00:00"
-  action:
-    - service: frontend.set_theme
+  actions:
+    - action: frontend.set_theme
       data:
         name: "ios-light-mode"
