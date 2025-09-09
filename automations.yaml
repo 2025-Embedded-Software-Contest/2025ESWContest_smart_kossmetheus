@@ -627,7 +627,7 @@
       width: 300
       height: 0
   - alias: 앞자리 분리
-    actions: pyscript.image_crop
+    action: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -639,7 +639,7 @@
       bottom: 51
       rotation_angle: 0
   - alias: 뒷자리 분리
-    actions: pyscript.image_crop
+    action: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -745,7 +745,7 @@
   description: ''
   triggers:
   - at: 09:03:00
-    triggers: time
+    trigger: time
   conditions:
   - condition: template
     value_template: '{{now().day == 26}}'
@@ -820,7 +820,7 @@
     device_id: 42940cb04959837ed39a637fed0f69e2
     entity_id: 64ba2d64e316df06c349b58054dcab48
     domain: sensor
-    triggers: device
+    trigger: device
     above: 1
   conditions: []
   actions:
@@ -837,7 +837,7 @@
     device_id: 42940cb04959837ed39a637fed0f69e2
     entity_id: 64ba2d64e316df06c349b58054dcab48
     domain: sensor
-    triggers: device
+    trigger: device
     below: 2
   conditions: []
   actions:
@@ -907,7 +907,7 @@
       width: 300
       height: 0
   - alias: 앞자리 분리
-    actions: pyscript.image_crop
+    action: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -919,7 +919,7 @@
       bottom: 51
       rotation_angle: 0
   - alias: 뒷자리 분리
-    actions: pyscript.image_crop
+    action: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
