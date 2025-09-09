@@ -571,25 +571,21 @@
       title: "\U0001F634 주말 모드"
       message: 주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다.
       notification_id: weekend_mode
-
-# ======================================
-# Gas meter - ESP32-CAM snapshot & crop
-# ======================================
 - id: gas_cam_snapshot
   alias: gas cam snapshot
-  description: ""
+  description: ''
   triggers:
   - trigger: time_pattern
     minutes: /30
   conditions: []
   actions:
   - variables:
-      year: "{{ now().strftime('%Y') }}"
-      month: "{{ now().strftime('%m') }}"
-      day: "{{ now().strftime('%d') }}"
-      nowtime: "{{ now().strftime('%Y-%m-%d_%H:%M:%S') }}"
-      nowtimefile: "{{ now().strftime('%Y%m%d_%H%M%S') }}"
-      nowtimestamp: "{{ now().timestamp() }}"
+      year: '{{ now().strftime(''%Y'') }}'
+      month: '{{ now().strftime(''%m'') }}'
+      day: '{{ now().strftime(''%d'') }}'
+      nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
+      nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
+      nowtimestamp: '{{ now().timestamp() }}'
   - action: light.turn_on
     metadata: {}
     data:
@@ -672,17 +668,13 @@
     target:
       entity_id: light.esp_cam_gas_light
   mode: single
-
-# ============================
-# Gas meter OCR and set sensor
-# ============================
 - id: gas_meta_image_ocr
   alias: gas meta image OCR
-  description: ""
+  description: ''
   triggers:
   - trigger: time_pattern
     minutes: /30
-    seconds: "30"
+    seconds: '30'
   conditions: []
   actions:
   - action: ai_task.generate_data
@@ -692,14 +684,15 @@
         media_content_type: image/jpeg
         metadata:
           title: gas_latest-crop-resize1.jpg
-          thumbnail: null
+          thumbnail:
           media_class: image
-          children_media_class: null
+          children_media_class:
           navigateIds:
           - {}
           - media_content_type: app
             media_content_id: media-source://media_source
-      instructions: It's a photo of a gas meter. Read the numbers. Only answer the numbers.
+      instructions: It's a photo of a gas meter. Read the numbers. Only answer the
+        numbers.
       task_name: 가스 검침 숫자 읽기1
       entity_id: ai_task.google_ai_task
     response_variable: res1
@@ -710,66 +703,60 @@
         media_content_type: image/jpeg
         metadata:
           title: gas_latest-crop-resize2.jpg
-          thumbnail: null
+          thumbnail:
           media_class: image
-          children_media_class: null
+          children_media_class:
           navigateIds:
           - {}
           - media_content_type: app
             media_content_id: media-source://media_source
-      instructions: >-
-        It's a photo of a gas meter. Read the numbers. Only answer the numbers.
-        There are three numbers.
+      instructions: It's a photo of a gas meter. Read the numbers. Only answer the
+        numbers. There are three numbers.
       task_name: 가스 검침 숫자 읽기2
       entity_id: ai_task.google_ai_task
     response_variable: res2
   - action: input_text.set_value
     metadata: {}
     data:
-      value: "{{ res1.data | default('오류1: 응답 없음') }}"
+      value: '{{ res1.data | default(''오류1: 응답 없음'') }}'
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      gas_value1: >-
-        {% set numbers = res1.data | regex_findall('[0-9]') | join('') | int %}
-        {{ numbers | int if numbers else 0 }}
-      gas_value2: >-
-        {% set numbers = res2.data | regex_findall('[0-9]') | join('') | int %}
-        {{ numbers | int if numbers else 0 }}
-      gas_value: "{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} "
+      gas_value1: '{% set numbers = res1.data | regex_findall(''[0-9]'') | join('''')
+        | int %} {{ numbers | int if numbers else 0 }}'
+      gas_value2: '{% set numbers = res2.data | regex_findall(''[0-9]'') | join('''')
+        | int %} {{ numbers | int if numbers else 0 }}'
+      gas_value: '{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} '
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
       condition: template
-      value_template: |-
-        {% set val = gas_value|float - states('sensor.gas_meter_2')|float %}
-        {{ 0 <= val <= 10 }} 
+      value_template: '{% set val = gas_value|float - states(''sensor.gas_meter_2'')|float
+        %}
+
+        {{ 0 <= val <= 10 }} '
     then:
     - action: input_number.set_value
       metadata: {}
       data:
-        value: "{{ gas_value }}"
+        value: '{{ gas_value }}'
       target:
         entity_id: input_number.gas_meter_2
   mode: single
-
-# =====================================
-# Gas meter monthly Telegram notification
-# =====================================
 - id: gas_send_monthly_telegram
   alias: 가스 검침 사진 보내기
-  description: ""
+  description: ''
   triggers:
-  - at: "09:03:00"
+  - at: 09:03:00
     trigger: time
   conditions:
   - condition: template
-    value_template: "{{now().day == 26}}"
+    value_template: '{{now().day == 26}}'
   actions:
   - variables:
-      nowdate: "{{ now().strftime('%Y-%m-%d') }}"
-      nowtime: "{{ now().strftime('%Y-%m-%d_%H:%M:%S') }}"
-      nowtimefile: "{{ now().strftime('%Y%m%d_%H%M%S') }}"
-      nowtimestamp: "{{ now().timestamp() }}"
+      nowdate: '{{ now().strftime(''%Y-%m-%d'') }}'
+      nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
+      nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
+      nowtimestamp: '{{ now().timestamp() }}'
   - action: pyscript.image_rotate
     metadata: {}
     data:
@@ -779,14 +766,15 @@
   - action: notify.telegram_home
     data:
       title: 가스 검침 알림
-      message: "검침시간: {{nowdate}}"
+      message: '검침시간: {{nowdate}}'
       data:
         photo:
         - url: https://ha.aaaa.cc/local/tmp/gas/gas_latest.jpg
-          caption: |-
-            가스 검침일: {{nowdate}}
-            가스 검침: {{states('sensor.gas_meter_2')}}
-            월간 사용량: {{state_attr('sensor.gas_meter_monthly','last_period')}}
+          caption: '가스 검침일: {{nowdate}}
+
+            가스 검침: {{states(''sensor.gas_meter_2'')}}
+
+            월간 사용량: {{state_attr(''sensor.gas_meter_monthly'',''last_period'')}}'
     enabled: false
   mode: single
 - id: weekly_system_report
@@ -860,4 +848,175 @@
     entity_id: f88477c68d783968908c54499f788206
     domain: light
     brightness_pct: 100
+  mode: single
+- id: '1757400245264'
+  alias: 가스 검침 사진 촬영
+  description: 30분마다 가스 검침기의 조명을 켜고 사진을 촬영한 후, OCR을 위해 이미지를 회전, 자르고 크기를 조절합니다.
+  triggers:
+  - trigger: time_pattern
+    minutes: /30
+  conditions: []
+  actions:
+  - variables:
+      year: '{{ now().strftime(''%Y'') }}'
+      month: '{{ now().strftime(''%m'') }}'
+      day: '{{ now().strftime(''%d'') }}'
+      nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
+      nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
+      nowtimestamp: '{{ now().timestamp() }}'
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 78
+      rgb_color:
+      - 255
+      - 255
+      - 255
+    target:
+      entity_id: light.esp_cam_gas_light
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  - action: camera.snapshot
+    metadata: {}
+    data:
+      filename: /config/www/tmp/gas/gas_latest.jpg
+    target:
+      entity_id: camera.esp_cam_gas_cam
+  - action: pyscript.image_rotate
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      output_image: /config/www/tmp/gas/gas_latest.jpg
+      rotation_angle: 180
+  - action: pyscript.image_crop
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      output_image: /config/www/tmp/gas/gas_latest-crop.jpg
+      rotation_angle_before: -0.9
+      left: 155
+      top: 330
+      right: 1024
+      bottom: 480
+      rotation_angle: 0
+  - action: pyscript.image_resize
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
+      output_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      width: 300
+      height: 0
+  - alias: 앞자리 분리
+    action: pyscript.image_crop
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      output_image: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
+      rotation_angle_before: 0
+      left: 0
+      top: 0
+      right: 188
+      bottom: 51
+      rotation_angle: 0
+  - alias: 뒷자리 분리
+    action: pyscript.image_crop
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      output_image: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      rotation_angle_before: 0
+      left: 189
+      top: 0
+      right: 300
+      bottom: 51
+      rotation_angle: 0
+  - action: pyscript.image_rotate
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
+      output_image: /config/www/tmp/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
+      rotation_angle: 0
+    alias: 날짜폴더로 복사
+    enabled: false
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: light.esp_cam_gas_light
+  mode: single
+- id: '1757400336693'
+  alias: 가스 검침 숫자 자동 판독
+  description: 가스 미터 사진에서 숫자를 자동으로 읽어 가스 사용량을 업데이트합니다.
+  triggers:
+  - trigger: time_pattern
+    minutes: /30
+    seconds: '30'
+  conditions: []
+  actions:
+  - action: ai_task.generate_data
+    data:
+      attachments:
+        media_content_id: media-source://media_source/gas/gas_latest-crop-resize1.jpg
+        media_content_type: image/jpeg
+        metadata:
+          title: gas_latest-crop-resize1.jpg
+          thumbnail:
+          media_class: image
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+      instructions: It's a photo of a gas meter. Read the numbers. Only answer the
+        numbers.
+      task_name: 가스 검침 숫자 읽기1
+      entity_id: ai_task.google_ai_task
+    response_variable: res1
+  - action: ai_task.generate_data
+    data:
+      attachments:
+        media_content_id: media-source://media_source/gas/gas_latest-crop-resize2.jpg
+        media_content_type: image/jpeg
+        metadata:
+          title: gas_latest-crop-resize2.jpg
+          thumbnail:
+          media_class: image
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+      instructions: It's a photo of a gas meter. Read the numbers. Only answer the
+        numbers. There are three numbers.
+      task_name: 가스 검침 숫자 읽기2
+      entity_id: ai_task.google_ai_task
+    response_variable: res2
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: '{{ res1.data | default(''오류1: 응답 없음'') }}'
+    target:
+      entity_id: input_text.gas_message_2
+  - variables:
+      gas_value1: '{% set numbers = res1.data | regex_findall(''[0-9]'') | join('''')
+        | int %} {{ numbers | int if numbers else 0 }}'
+      gas_value2: '{% set numbers = res2.data | regex_findall(''[0-9]'') | join('''')
+        | int %} {{ numbers | int if numbers else 0 }}'
+      gas_value: '{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} '
+  - if:
+    - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
+      condition: template
+      value_template: '{% set val = gas_value|float - states(''sensor.gas_meter_2'')|float
+        %}
+
+        {{ 0 <= val <= 10 }} '
+    then:
+    - action: input_number.set_value
+      metadata: {}
+      data:
+        value: '{{ gas_value }}'
+      target:
+        entity_id: input_number.gas_meter_2
   mode: single
