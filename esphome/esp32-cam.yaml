@@ -89,7 +89,7 @@ button:
       - homeassistant.service:
           service: camera.snapshot
           data:
-            entity_id: camera.esp_cam_gas_cam
+            entity_id: camera.esp32_cam_esp_cam_gas_cam
             filename: /config/www/tmp/gas/gas_latest.jpg
       - delay: 1s
       - light.turn_off:
