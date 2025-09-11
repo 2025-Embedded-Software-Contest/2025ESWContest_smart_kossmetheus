@@ -18,6 +18,10 @@ http:
   trusted_proxies:
     - 172.30.33.0/24 # Supervisor 애드온 네트워크
     - 172.30.0.0/16 # NPM
+  # ssl 설정
+  # server_port: 443
+  # ssl_certificate: /ssl/fullchain.pem
+  # ssl_key: /ssl/privkey.pem
 
 # 재연결 및 타임아웃 설정
 recorder:
@@ -27,7 +31,6 @@ recorder:
 # ===========================
 # Lovelace 설정
 # ===========================
-# YAML 편집 모드 해제 (UI 편집 모드 사용)
 lovelace:
   mode: storage
   resources:
@@ -69,4 +72,3 @@ utility_meter:
   gas_meter_monthly:
     source: sensor.gas_meter_2
     cycle: monthly
-
