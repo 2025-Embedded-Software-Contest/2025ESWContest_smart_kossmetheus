@@ -6,6 +6,8 @@ esp32:
   board: esp32-s3-devkitc-1
   framework:
     type: esp-idf
+  # Camera requires PSRAM for higher resolutions
+  psram: true
 
 # Enable logging
 logger:
@@ -29,4 +31,52 @@ wifi:
     password: "YzyoZg77BGSr"
 
 captive_portal:
+
+# =============================
+# Camera (OV2640 on ESP32-S3-Korvo-2 v3.1)
+# Pins follow Espressif official docs (Camera Connector table)
+#   SIOD -> GPIO17, SIOC -> GPIO18
+#   XCLK -> GPIO40 (20 MHz)
+#   PCLK -> GPIO11, VSYNC -> GPIO21, HREF -> GPIO38
+#   Data bus (Y2..Y9) -> [GPIO13, GPIO47, GPIO14, GPIO3, GPIO12, GPIO42, GPIO41, GPIO39]
+# =============================
+
+i2c:
+  - id: camera_i2c
+    sda: GPIO17
+    scl: GPIO18
+    scan: true
+
+esp32_camera:
+  name: "ESP CAM gas cam"
+  external_clock:
+    pin: GPIO40
+    frequency: 20MHz
+  i2c_id: camera_i2c
+  data_pins: [GPIO13, GPIO47, GPIO14, GPIO3, GPIO12, GPIO42, GPIO41, GPIO39]
+  vsync_pin: GPIO21
+  href_pin: GPIO38
+  pixel_clock_pin: GPIO11
+  # power_down_pin: GPIOxx   # Not connected on Korvo-2; omit
+  # reset_pin: GPIOxx        # Not connected on Korvo-2; omit
+  resolution: 1024x768
+  jpeg_quality: 12
+  vertical_flip: false
+  horizontal_mirror: false
+
+# Optional: camera web server for quick testing (stream on :8080, snapshot on :8081)
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
+
+# Basic web server for device info
+web_server:
+  port: 80
+
+# Utilities
+switch:
+  - platform: restart
+    name: "Korvo2 v3.1 Restart"
     
