@@ -23,6 +23,11 @@ http:
   # ssl_certificate: /ssl/fullchain.pem
   # ssl_key: /ssl/privkey.pem
 
+auth_oidc:
+  client_id: "ha-oidc"
+  discovery_url: "https://auth.example.com/application/o/ha-oidc/.well-known/openid-configuration"
+  display_name: "Login with Authentik"
+
 # 재연결 및 타임아웃 설정
 recorder:
   commit_interval: 5
