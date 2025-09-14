@@ -82,18 +82,10 @@ button:
   - platform: template
     name: "Capture Gas Snapshot"
     on_press:
-      - light.turn_on:
-          id: esp_cam_gas_light
-          brightness: 80%
-      - delay: 2s
       - homeassistant.service:
-          service: camera.snapshot
+          service: automation.trigger
           data:
-            entity_id: camera.esp32_cam_esp_cam_gas_cam
-            filename: /config/www/tmp/gas/gas_latest.jpg
-      - delay: 1s
-      - light.turn_off:
-          id: esp_cam_gas_light
+            entity_id: automation.gas_cam_snapshot
 
 # 재부팅 스위치
 switch:
