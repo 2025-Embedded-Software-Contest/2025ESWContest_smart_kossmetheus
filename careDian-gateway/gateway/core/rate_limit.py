@@ -6,8 +6,8 @@ from typing import Deque, Dict, Optional, Tuple # 타입 힌트
 
 @dataclass
 class RateConfig:
-    limit: int = 60
-    window_sec: int = 60
+    limit: int = 60 # 윈도우 내 허용 횟수
+    window_sec: int = 60 # 윈도우 크기 (초 단위)
 
 class MemoryRateLimiter:
     def __init__(self, cfg: RateConfig):
@@ -19,15 +19,18 @@ class MemoryRateLimiter:
         window_start = now - self.cfg.window_sec
         dq = self._buckets[identity]
 
+        # 타임스탬프 제거
         while dq and dq[0] <= window_start:
             dq.popleft()
 
+        # 요청 허용 여부 확인
         if len(dq) < self.cfg.limit:
             dq.append(now)
             remaining = self.cfg.limit - len(dq)
             reset_in = int(self.cfg.window_sec - (now - (dq[0] if dq else now)))
             return True, remaining, reset_in
         
+        # 초과 시 거부
         remaining = 0
         reset_in = int(self.cfg.window_sec - (now - dq[0])) if dq else self.cfg.window_sec
         
