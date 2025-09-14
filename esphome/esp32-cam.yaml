@@ -1,6 +1,6 @@
 esphome:
   name: esp32-cam
-  friendly_name: esp32-cam
+  friendly_name: "ESP32 Camera Test"
 
 esp32:
   board: esp32cam
@@ -28,66 +28,69 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Esp32-Cam Fallback Hotspot"
+    ssid: "ESP32-CAM Fallback Hotspot"
     password: "YSzrOiu9YClb"
 
 captive_portal:
-  
+
+# =============================
+# I2C Bus for Camera
+# =============================
+i2c:
+  - id: camera_i2c
+    sda: GPIO26
+    scl: GPIO27
+    scan: true
 
 # =============================
 # ESP32-CAM Camera (AI-Thinker)
 # =============================
 esp32_camera:
-  id: esp_cam_gas_cam
-  name: esp_cam_gas_cam
+  name: "ESP32 Camera"
   external_clock:
     pin: GPIO0
     frequency: 20MHz
-  i2c_pins:
-    sda: GPIO26
-    scl: GPIO27
+  i2c_id: camera_i2c
   data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
   vsync_pin: GPIO25
   href_pin: GPIO23
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
-  resolution: 1024x768
+  resolution: 640x480
   jpeg_quality: 10
-  vertical_flip: false
-  horizontal_mirror: false
+  vertical_flip: true
+  horizontal_mirror: true
 
-# 미리보기용 웹서버 (선택)
+# =============================
+# Camera Web Server for Testing
+# =============================
+esp32_camera_web_server:
+  - port: 8080
+    mode: stream
+  - port: 8081
+    mode: snapshot
+
+# Basic web server for device info
 web_server:
   port: 80
 
 # =============================
-# 플래시(조명) - 밝기 제어 가능
+# Flash LED for better lighting
 # =============================
 output:
   - platform: ledc
     pin: GPIO4
-    id: esp32cam_flash
+    id: camera_flash
 
 light:
   - platform: monochromatic
-    id: esp_cam_gas_light
-    name: esp_cam_gas_light
-    output: esp32cam_flash
+    name: "Camera Flash"
+    output: camera_flash
     default_transition_length: 0s
 
 # =============================
-# 캡처 테스트 버튼 (HA에서 호출 가능)
+# Utility switches
 # =============================
-button:
-  - platform: template
-    name: "Capture Gas Snapshot"
-    on_press:
-      - homeassistant.service:
-          service: automation.trigger
-          data:
-            entity_id: automation.gas_cam_snapshot
-
-# 재부팅 스위치
 switch:
   - platform: restart
     name: "ESP32-CAM Restart"
