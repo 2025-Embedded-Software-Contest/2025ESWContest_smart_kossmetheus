@@ -23,3 +23,27 @@ turn_off_all_lights:
           - light.smart_bulb
           - light.deseukeutab_jeonweon
   mode: single
+
+test_gas_camera_snapshot:
+  alias: "가스 카메라 스냅샷 테스트"
+  description: ESP32-CAM 플래시를 켜고 단일 스냅샷을 /config/www/tmp/gas/test_snapshot.jpg 로 저장합니다.
+  mode: single
+  sequence:
+    - action: light.turn_on
+      target:
+        entity_id: light.esp32_cam_esp_cam_gas_light
+      data:
+        brightness_pct: 100
+    - delay: "00:00:02"
+    - action: camera.snapshot
+      target:
+        entity_id: camera.esp32_cam_esp_cam_gas_cam
+      data:
+        filename: "/config/www/tmp/gas/test_snapshot.jpg"
+    - action: light.turn_off
+      target:
+        entity_id: light.esp32_cam_esp_cam_gas_light
+    - action: system_log.write
+      data:
+        level: info
+        message: "[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg"
