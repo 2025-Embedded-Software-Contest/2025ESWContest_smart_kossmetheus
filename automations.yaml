@@ -586,30 +586,30 @@
       nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
       nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
       nowtimestamp: '{{ now().timestamp() }}'
-  - service: light.turn_on
-    metadata: {}
+  - metadata: {}
     data:
       brightness_pct: 80
     target:
       entity_id: light.esp32_cam_esp_cam_gas_light
+    action: light.turn_on
+    enabled: false
   - delay:
       hours: 0
       minutes: 0
       seconds: 2
-  - service: camera.snapshot
-    metadata: {}
+  - metadata: {}
     data:
       filename: /config/www/tmp/gas/gas_latest.jpg
+    action: camera.snapshot
     target:
-      entity_id: camera.esp32_cam_esp_cam_gas_cam
-  - service: pyscript.image_rotate
-    metadata: {}
+      entity_id: camera.korvo2_v31_esp_cam_gas_cam
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest.jpg
       rotation_angle: 180
-  - service: pyscript.image_crop
-    metadata: {}
+    action: pyscript.image_rotate
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop.jpg
@@ -619,15 +619,15 @@
       right: 1024
       bottom: 480
       rotation_angle: 0
-  - service: pyscript.image_resize
-    metadata: {}
+    action: pyscript.image_crop
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       width: 300
       height: 0
+    action: pyscript.image_resize
   - alias: 앞자리 분리
-    service: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -638,8 +638,8 @@
       right: 188
       bottom: 51
       rotation_angle: 0
+    action: pyscript.image_crop
   - alias: 뒷자리 분리
-    service: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -650,19 +650,21 @@
       right: 300
       bottom: 51
       rotation_angle: 0
-  - service: pyscript.image_rotate
-    metadata: {}
+    action: pyscript.image_crop
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop.jpg
       output_image: /config/www/tmp/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
       rotation_angle: 0
     alias: 날짜폴더로 복사
     enabled: false
-  - service: light.turn_off
-    metadata: {}
+    action: pyscript.image_rotate
+  - metadata: {}
     data: {}
     target:
       entity_id: light.esp32_cam_esp_cam_gas_light
+    action: light.turn_off
+    enabled: false
   mode: single
 - id: gas_meta_image_ocr
   alias: gas meta image OCR
@@ -718,13 +720,11 @@
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      gas_value1: >-
-        {% set numbers = res1.data | regex_findall('[0-9]') | join('') | int %}
-        {{ numbers | int if numbers else 0 }}
-      gas_value2: >-
-        {% set numbers = res2.data | regex_findall('[0-9]') | join('') | int %}
-        {{ numbers | int if numbers else 0 }}
-      gas_value: "{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} "
+      gas_value1: '{% set numbers = res1.data | regex_findall(''[0-9]'') | join('''')
+        | int %} {{ numbers | int if numbers else 0 }}'
+      gas_value2: '{% set numbers = res2.data | regex_findall(''[0-9]'') | join('''')
+        | int %} {{ numbers | int if numbers else 0 }}'
+      gas_value: '{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} '
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
       condition: template
@@ -862,8 +862,7 @@
       nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
       nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
       nowtimestamp: '{{ now().timestamp() }}'
-  - service: light.turn_on
-    metadata: {}
+  - metadata: {}
     data:
       brightness_pct: 78
       rgb_color:
@@ -872,24 +871,25 @@
       - 255
     target:
       entity_id: light.esp32_cam_esp_cam_gas_light
+    action: light.turn_on
+    enabled: false
   - delay:
       hours: 0
       minutes: 0
       seconds: 2
-  - service: camera.snapshot
-    metadata: {}
+  - metadata: {}
     data:
       filename: /config/www/tmp/gas/gas_latest.jpg
+    action: camera.snapshot
     target:
-      entity_id: camera.esp32_cam_esp_cam_gas_cam
-  - service: pyscript.image_rotate
-    metadata: {}
+      entity_id: camera.korvo2_v31_esp_cam_gas_cam
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest.jpg
       rotation_angle: 180
-  - service: pyscript.image_crop
-    metadata: {}
+    action: pyscript.image_rotate
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop.jpg
@@ -899,15 +899,15 @@
       right: 1024
       bottom: 480
       rotation_angle: 0
-  - service: pyscript.image_resize
-    metadata: {}
+    action: pyscript.image_crop
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       width: 300
       height: 0
+    action: pyscript.image_resize
   - alias: 앞자리 분리
-    service: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -918,8 +918,8 @@
       right: 188
       bottom: 51
       rotation_angle: 0
+    action: pyscript.image_crop
   - alias: 뒷자리 분리
-    service: pyscript.image_crop
     metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
@@ -930,19 +930,21 @@
       right: 300
       bottom: 51
       rotation_angle: 0
-  - service: pyscript.image_rotate
-    metadata: {}
+    action: pyscript.image_crop
+  - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop.jpg
       output_image: /config/www/tmp/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
       rotation_angle: 0
     alias: 날짜폴더로 복사
     enabled: false
-  - service: light.turn_off
-    metadata: {}
+    action: pyscript.image_rotate
+  - metadata: {}
     data: {}
     target:
       entity_id: light.esp32_cam_esp_cam_gas_light
+    action: light.turn_off
+    enabled: false
   mode: single
 - id: '1757400336693'
   alias: 가스 검침 숫자 자동 판독
