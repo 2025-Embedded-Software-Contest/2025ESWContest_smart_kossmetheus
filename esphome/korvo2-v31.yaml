@@ -13,11 +13,11 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "xkeUTj3NNM5h1/rXDymg+HeFf/MaO+UYVIcGdCK9QkU="
+    key: "j/WzM/a7Tfa87W9KXF/JaF5XHJ/yZZWrP76057oNFCo="
 
 ota:
   - platform: esphome
-    password: "0d8e74be14775cbefaead13ce6458e86"
+    password: "2cf7a586552778fa1a96fdc6c0fb0ec3"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -26,7 +26,7 @@ wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Korvo2-V31 Fallback Hotspot"
-    password: "NgGiX3n5YLL0"
+    password: "YzyoZg77BGSr"
 
 captive_portal:
     

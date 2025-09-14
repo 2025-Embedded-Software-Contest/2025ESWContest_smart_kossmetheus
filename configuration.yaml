@@ -1,10 +1,11 @@
-# Loads default set of integrations. Do not remove.
+# 디폴트 환경 설정
 default_config:
 
-# Load frontend themes from the themes folder
+# 프론트엔드 테마 설정
 frontend:
   themes: !include_dir_merge_named themes
 
+#
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include_dir_merge_list scenes
@@ -12,30 +13,38 @@ sensor: !include sensors.yaml
 template: !include templates.yaml
 influxdb: !include influxdb.yaml
 
-# Reverse Proxy 설정
+# SSO 환경 설정
+# 1. Reverse Proxy 설정
 http:
   use_x_forwarded_for: true
   trusted_proxies:
     - 172.30.33.0/24 # Supervisor 애드온 네트워크
-    - 172.30.0.0/16 # NPM
+    - 192.168.0.0/24 # NPM이 속한 내부 네트워크 대역
+    - 127.0.0.1 # 로컬 루프백
+
   # ssl 설정
   # server_port: 443
   # ssl_certificate: /ssl/fullchain.pem
   # ssl_key: /ssl/privkey.pem
 
-auth_oidc:
-  client_id: "ha-oidc"
-  discovery_url: "https://auth.example.com/application/o/ha-oidc/.well-known/openid-configuration"
-  display_name: "Login with Authentik"
+# 2. oicd 설정
+# openid:
+#   client_id: "<AUTHENTIK_CLIENT_ID>"
+#   client_secret: "<AUTHENTIK_CLIENT_SECRET>"
+#   configure_url: "https://auth.example.com/application/o/<provider-slug>/.well-known/openid-configuration"
+#   username_field: "preferred_username"   # Authentik에서 이 클레임이 나오게 매핑했을 것
+#   scope: "openid profile email"
+#   block_login: false
+#   openid_text: "Login with Authentik (OIDC)"
+# (IdP가 Authorization 헤더를 싫어하면)
+# use_auth_header: false
 
 # 재연결 및 타임아웃 설정
 recorder:
   commit_interval: 5
   purge_keep_days: 7
 
-# ===========================
 # Lovelace 설정
-# ===========================
 lovelace:
   mode: storage
   resources:
@@ -53,9 +62,7 @@ lovelace:
       icon: mdi:flower
       show_in_sidebar: false
 
-#################################
 # Gas meter (ESP32-CAM + OCR)   #
-#################################
 homeassistant:
   media_dirs:
     local: /config/www
