@@ -6,6 +6,7 @@ esp32:
   board: esp32-s3-devkitc-1
   framework:
     type: esp-idf
+  psram: true
 
 # Enable logging
 logger:
@@ -57,8 +58,9 @@ esp32_camera:
   pixel_clock_pin: GPIO11
   # power_down_pin: GPIOxx   # Not connected on Korvo-2; omit
   # reset_pin: GPIOxx        # Not connected on Korvo-2; omit
-  resolution: 1024x768
-  jpeg_quality: 12
+  resolution: 800x600
+  jpeg_quality: 14
+  max_framerate: 10 fps
   vertical_flip: false
   horizontal_mirror: false
 
