@@ -256,33 +256,3 @@
           
           모든 시스템이 정상 작동 중입니다! 👍
         notification_id: weekly_report
-
-# ==============================================
-# iOS 테마 자동 변경 (원본 기능 유지)
-# ==============================================
-
-# iOS 다크 모드 자동 변경 - 일몰시
-- id: ios_theme_dark_sunset
-  alias: "iOS 테마 다크모드 (일몰)"
-  description: "일몰 시간에 iOS 다크 테마로 자동 변경"
-  triggers:
-    - trigger: sun
-      event: sunset
-      offset: "00:00:00"
-  actions:
-    - action: frontend.set_theme
-      data:
-        name: "ios-dark-mode"
-
-# iOS 라이트 모드 자동 변경 - 일출시
-- id: ios_theme_light_sunrise
-  alias: "iOS 테마 라이트모드 (일출)"
-  description: "일출 시간에 iOS 라이트 테마로 자동 변경"
-  triggers:
-    - trigger: sun
-      event: sunrise
-      offset: "00:00:00"
-  actions:
-    - action: frontend.set_theme
-      data:
-        name: "ios-light-mode"

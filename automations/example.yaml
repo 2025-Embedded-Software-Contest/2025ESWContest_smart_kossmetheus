@@ -158,28 +158,6 @@
           건강한 하루를 보내고 계시는군요! 👏
         notification_id: steps_goal_achieved
 
-# 김치냉장고 온도 이상 알림
-- id: kimchi_fridge_temperature_alert
-  alias: "김치냉장고 온도 이상"
-  description: "김치냉장고 온도가 적정 범위를 벗어났을 때 알림"
-  triggers:
-    - trigger: numeric_state
-      entity_id: sensor.kimchi_fridge_avg_temperature
-      above: 5    # 5도 이상
-      for: "00:30:00"  # 30분간 지속
-    - trigger: numeric_state
-      entity_id: sensor.kimchi_fridge_avg_temperature
-      below: -5   # -5도 이하
-      for: "00:30:00"  # 30분간 지속
-  actions:
-    - action: persistent_notification.create
-      data:
-        title: "🥬 김치냉장고 온도 주의"
-        message: >
-          김치냉장고 평균 온도가 {{ states('sensor.kimchi_fridge_avg_temperature') }}°C입니다.
-          적정 온도 범위(-5°C ~ 5°C)를 확인해보세요.
-        notification_id: kimchi_fridge_temp_alert
-
 # 식기세척기 완료 알림
 - id: dishwasher_cycle_complete
   alias: "식기세척기 완료 알림"
