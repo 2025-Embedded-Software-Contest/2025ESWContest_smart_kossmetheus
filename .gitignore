@@ -125,6 +125,7 @@ area_registry.yaml
 
 # Temporary sync files
 pull-config.log
+
 # Cursor rules (do not sync editor rules)
 .cursor/
 !.cursor/rules/
