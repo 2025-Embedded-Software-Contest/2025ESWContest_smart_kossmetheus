@@ -653,3 +653,122 @@
       target:
         entity_id: input_number.gas_meter_2
   mode: single
+
+# ===================
+# Gas Meter OCR Automation
+# ===================
+
+- id: gas_meter_ocr_schedule
+  alias: 가스 검침 OCR 스케줄
+  description: 정기적으로 가스 검침기 사진을 촬영하고 OCR 처리
+  triggers:
+  - trigger: time_pattern
+    minutes: /30  # 30분마다 실행
+  - trigger: time
+    at: '09:00:00'  # 매일 오전 9시
+    id: morning_reading
+  - trigger: time
+    at: '21:00:00'  # 매일 오후 9시
+    id: evening_reading
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  actions:
+  - action: camera.snapshot
+    target:
+      entity_id: camera.esp_cam_gas_cam
+    data:
+      filename: '/config/www/tmp/gas/latest.jpg'
+  - delay:
+      seconds: 2  # 카메라 안정화 시간
+  - action: pyscript.gas_meter_image_ocr
+    data:
+      input_image: '/config/www/tmp/gas/latest.jpg'
+      output_image: '/config/www/tmp/gas/processed_{{ now().strftime("%Y%m%d_%H%M%S") }}.jpg'
+  mode: single
+
+- id: gas_meter_ocr_manual
+  alias: 가스 검침 OCR 수동 실행
+  description: 사용자가 수동으로 가스 검침 OCR 실행
+  triggers:
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: pyscript
+      service: gas_meter_image_ocr
+  actions:
+  - action: pyscript.gas_meter_image_ocr
+    data:
+      input_image: '/config/www/tmp/gas/latest.jpg'
+  mode: single
+
+- id: gas_meter_low_usage_alert
+  alias: 가스 사용량 적음 알림
+  description: 일정 시간 동안 가스 사용량이 증가하지 않으면 알림
+  triggers:
+  - trigger: time
+    at: '08:00:00'  # 매일 오전 8시 확인
+  conditions:
+  - condition: template
+    value_template: >
+      {% set current = states('sensor.gas_meter_2') | float(0) %}
+      {% set yesterday = state_attr('sensor.gas_meter_monthly', 'last_period') | float(0) %}
+      {{ current - yesterday < 1 }}  # 하루 1m³ 미만 사용시 알림
+  actions:
+  - action: persistent_notification.create
+    data:
+      title: "🔥 가스 사용량 적음"
+      message: "지난 24시간 동안 가스 사용량이 1m³ 미만입니다. 난방이나 온수 사용을 확인해보세요."
+      notification_id: gas_usage_low_alert
+  mode: single
+
+- id: gas_meter_high_usage_alert
+  alias: 가스 사용량 과다 알림
+  description: 일정 시간 동안 가스 사용량이 과다하면 알림
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.gas_meter_2
+    above: 50  # 월 50m³ 초과시
+    for:
+      hours: 24
+  actions:
+  - action: persistent_notification.create
+    data:
+      title: "⚠️ 가스 사용량 과다"
+      message: "월 가스 사용량이 50m³를 초과했습니다. 난방이나 온수 사용을 확인해보세요."
+      notification_id: gas_usage_high_alert
+  mode: single
+
+# ===================
+# Image Processing Services
+# ===================
+
+- id: gas_image_processing
+  alias: 가스 검침 이미지 처리
+  description: 가스 검침 이미지 전처리 및 저장
+  triggers:
+  - trigger: event
+    event_type: call_service
+    event_data:
+      domain: camera
+      service: snapshot
+      service_data:
+        entity_id: camera.esp_cam_gas_cam
+  actions:
+  - action: pyscript.image_rotate
+    data:
+      input_image: '/config/www/tmp/gas/latest.jpg'
+      output_image: '/config/www/tmp/gas/rotated.jpg'
+      rotation_angle: -90  # 필요시 조정
+  - action: pyscript.image_crop
+    data:
+      input_image: '/config/www/tmp/gas/rotated.jpg'
+      output_image: '/config/www/tmp/gas/cropped.jpg'
+      rotation_angle_before: 0
+      left: 100
+      top: 100
+      right: 700
+      bottom: 500
+      rotation_angle: 0
+  mode: single

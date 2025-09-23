@@ -1,3 +1,6 @@
+# 시크릿 설정
+secrets: !include secrets.yaml
+
 # 디폴트 환경 설정
 default_config:
 
@@ -68,9 +71,12 @@ homeassistant:
     local: /config/www
     gas: /config/www/tmp/gas
 
+# PyScript 설정
+pyscript: !include pyscript.yaml
+
 input_number:
   gas_meter_2:
-    name: box
+    name: 가스 검침값
     min: 0
     max: 99999
     step: 0.001
@@ -78,10 +84,20 @@ input_number:
 
 input_text:
   gas_message_2:
-    name: gas message 2
+    name: 가스 OCR 메시지
     max: 255
 
 utility_meter:
   gas_meter_monthly:
+    name: 월별 가스 사용량
     source: sensor.gas_meter_2
     cycle: monthly
+
+# 가스 검침 센서
+sensor:
+  - platform: template
+    sensors:
+      gas_meter_2:
+        friendly_name: "가스 검침기"
+        unit_of_measurement: "m³"
+        value_template: "{{ states('input_number.gas_meter_2') | float(0) }}"
