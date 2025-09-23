@@ -92,7 +92,7 @@ utility_meter:
 camera:
   - platform: mjpeg
     name: GasCam MJPEG
-    mjpeg_url: "http://korvo-gas-cam.local:8080/"
+    mjpeg_url: "http://192.168.1.151:8080/"
   - platform: generic
     name: GasCam Snapshot
-    still_image_url: "http://korvo-gas-cam.local:8081/"
+    still_image_url: "http://192.168.1.151:8081/"
