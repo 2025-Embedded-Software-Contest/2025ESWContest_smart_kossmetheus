@@ -50,13 +50,13 @@ recorder:
 # Lovelace 설정
 lovelace:
   mode: storage
-  resources:
-    - url: /hacsfiles/button-card/button-card.js
-      type: module
-    - url: /hacsfiles/lovelace-card-mod/card-mod.js
-      type: module
-    - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
-      type: module
+  # resources:
+  #   - url: /hacsfiles/button-card/button-card.js
+  #     type: module
+  #   - url: /hacsfiles/lovelace-card-mod/card-mod.js
+  #     type: module
+  #   - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+  #     type: module
   dashboards:
     ui-minimalist:
       mode: yaml
@@ -86,5 +86,13 @@ input_text:
 
 utility_meter:
   gas_meter_monthly:
-    source: sensor.gas_meter_2
+    source: input_number.gas_meter_2
     cycle: monthly
+
+camera:
+  - platform: mjpeg
+    name: GasCam MJPEG
+    mjpeg_url: "http://korvo-gas-cam.local:8080/"
+  - platform: generic
+    name: GasCam Snapshot
+    still_image_url: "http://korvo-gas-cam.local:8081/"
