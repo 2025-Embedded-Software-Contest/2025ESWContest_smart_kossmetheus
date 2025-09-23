@@ -44,4 +44,6 @@ esp32_camera:
 # 선택: 웹 스트림(MJPEG)도 열기
 esp32_camera_web_server:
   - port: 8080   # mjpeg
+    mode: stream
   - port: 8081   # snapshot
+    mode: snapshot
