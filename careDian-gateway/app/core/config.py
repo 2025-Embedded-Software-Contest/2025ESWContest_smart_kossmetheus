@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     # CORS
     allowed_origins: List[str] = Field(default_factory=list, alias="ALLOWED_ORIGINS")
 
+    # OIDC
+    oidc_issuer: Optional[str] = None              # e.g. https://auth.example.com/realms/main
+    oidc_client_id: Optional[str] = None
+    oidc_client_secret: Optional[str] = None
+    oidc_redirect_uri: Optional[str] = None        # e.g. https://gw.example.com/auth/oidc/callback
+    oidc_scopes: List[str] = ["openid", "profile", "email"]
+
     # JWT / 세션
     jwt_secret: str = Field(..., alias="JWT_SECRET")
     jwt_issuer: Optional[str] = Field(None, alias="JWT_ISSUER")

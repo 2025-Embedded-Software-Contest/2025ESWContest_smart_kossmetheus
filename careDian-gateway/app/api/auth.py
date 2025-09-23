@@ -1,11 +1,23 @@
-import os
+import os, time, httpx
 from fastapi import APIRouter, HTTPException, status, Depends, Request, Response
-from app.core.config import settings
+
+from app.core.config import Settings, settings
 from app.core.security import jwt_encode_hs256, jwt_decode_hs256, now_s, SESSION_COOKIE, JWTError
 from app.models.auth import TokenPair, ExchangeRequest, RefreshRequest
 
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+def _enabled(s: Settings) -> bool:
+    return bool(s.oidc_issuer and s.oidc_client_id and s.oidc_client_secret and s.oidc_redirect_uri)
+
+async def _discover(issuer: str) -> dict:
+    """OIDC discovery (권장: 간단한 in-memory 캐시)"""
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(issuer.rstrip("/") + "/.well-known/openid-configuration")
+        r.raise_for_status()
+        return r.json()
+    
 def _issue_tokens(sub: str) -> TokenPair:
     now = now_s()
     access = jwt_encode_hs256(
@@ -45,7 +57,88 @@ async def refresh(body: RefreshRequest, resp: Response):
     resp.set_cookie(SESSION_COOKIE, pair.access_token, httponly=True, secure=True, samesite="Lax", max_age=settings.access_ttl)
     return pair
 
+@router.get("/login")
+async def oidc_login():
+    s = Settings()
+    if not _enabled(s):
+        raise HTTPException(501, "OIDC not configured")
+
+    conf = await _discover(s.oidc_issuer)
+    state = secrets.token_urlsafe(16)
+    nonce = secrets.token_urlsafe(16)
+
+    # NOTE: 필요하면 서버 세션/서명쿠키에 state/nonce를 보관해서 CSRF/Replay 방지 강화
+    resp = RedirectResponse(
+        url=(f"{conf['authorization_endpoint']}?"
+             f"response_type=code&client_id={s.oidc_client_id}"
+             f"&redirect_uri={s.oidc_redirect_uri}"
+             f"&scope={' '.join(s.oidc_scopes)}"
+             f"&state={state}&nonce={nonce}")
+    )
+    resp.set_cookie("oidc_state", state, httponly=True, secure=True, samesite="lax")
+    resp.set_cookie("oidc_nonce", nonce, httponly=True, secure=True, samesite="lax")
+    return resp
+
+@router.get("/callback")
+async def oidc_callback(request: Request, code: str | None = None, state: str | None = None):
+    s = Settings()
+    if not _enabled(s):
+        raise HTTPException(501, "OIDC not configured")
+
+    # state 검증
+    cs = request.cookies.get("oidc_state")
+    if not code or not state or state != cs:
+        raise HTTPException(400, "Invalid state")
+
+    conf = await _discover(s.oidc_issuer)
+    token_endpoint = conf["token_endpoint"]
+
+    # code -> (access_token, id_token, refresh_token ...) 교환
+    async with httpx.AsyncClient(timeout=10) as client:
+        data = {
+            "grant_type": "authorization_code",
+            "code": code,
+            "redirect_uri": s.oidc_redirect_uri,
+            "client_id": s.oidc_client_id,
+            "client_secret": s.oidc_client_secret,
+        }
+        r = await client.post(token_endpoint, data=data)
+        if r.status_code >= 400:
+            raise HTTPException(401, f"OIDC token exchange failed: {r.text}")
+        tok = r.json()
+
+    # (선택) id_token을 JWKS로 서명 검증 — jose/pyjwt 사용 가능
+    # 여기선 최소안: /userinfo로 프로필 조회
+    userinfo = {}
+    if "userinfo_endpoint" in conf and tok.get("access_token"):
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(conf["userinfo_endpoint"], headers={"Authorization": f"Bearer {tok['access_token']}"})
+            if r.status_code < 400:
+                userinfo = r.json()
+
+    # 게이트웨이 세션(JWT) 발급 — /ha 프록시에 쓰일 쿠키
+    now = int(time.time())
+    sub = userinfo.get("preferred_username") or userinfo.get("email") or userinfo.get("sub") or "user"
+    claims = {
+        "sub": sub,
+        "iat": now, "nbf": now, "exp": now + 60*15,
+        "iss": s.jwt_issuer, "aud": s.jwt_audience, "typ": "access",
+        "name": userinfo.get("name"), "email": userinfo.get("email"),
+        "roles": userinfo.get("roles") or userinfo.get("groups") or []
+    }
+    session_jwt = jwt_encode_hs256(claims, s.jwt_secret)
+
+    resp = RedirectResponse(url="/")
+    # 개발환경이면 secure=False 가능; 운영 TLS면 반드시 secure=True
+    resp.set_cookie(SESSION_COOKIE, session_jwt, httponly=True, secure=True, samesite="lax", max_age=60*15)
+    # 임시 state/nonce 쿠키 정리
+    resp.delete_cookie("oidc_state")
+    resp.delete_cookie("oidc_nonce")
+    return resp
+
 @router.post("/logout")
 async def logout(resp: Response):
     resp.delete_cookie(SESSION_COOKIE)
-    return {"status":"ok"}
+    resp.delete_cookie("oidc_state")
+    resp.delete_cookie("oidc_nonce")
+    return resp
