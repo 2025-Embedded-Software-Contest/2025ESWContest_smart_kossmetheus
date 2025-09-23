@@ -1,5 +1,9 @@
-import os, time, httpx
-from fastapi import APIRouter, HTTPException, status, Depends, Request, Response
+from __future__ import annotations
+
+import os, time, httpx, secrets
+
+from fastapi import APIRouter, HTTPException, status, Request, Response
+from fastapi.responses import RedirectResponse
 
 from app.core.config import Settings, settings
 from app.core.security import jwt_encode_hs256, jwt_decode_hs256, now_s, SESSION_COOKIE, JWTError
