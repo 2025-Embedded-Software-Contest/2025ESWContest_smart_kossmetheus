@@ -1,12 +1,13 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
-from typing import List, Optional
+from pydantic import Field # 데이터 모델의 Field 정의
+from typing import List, Optional # 타입 힌트
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=False,
+        case_sensitive=False,       # 대소문자 혼용 허용
+        extra="ignore",             # 여분 키 무시 (향후 strict로 변경 가능)
     )
 
     # app
@@ -37,6 +38,7 @@ class Settings(BaseSettings):
     request_timeout: int = Field(10, alias="REQUEST_TIMEOUT_S")
 
     # SSO header (게이트웨이 -> HA 프록시 시 삽입)
+    sso_base_url: Optional[str] = Field(default=None, alias="SSO_BASE_URL")
     ha_sso_header: str = Field("X-Remote-User", alias="HA_SSO_HEADER")
     ha_sso_groups_header: Optional[str] = Field("X-Remote-Groups", alias="HA_SSO_GROUPS_HEADER")
     ha_sso_default_groups: Optional[str] = Field("ha-users", alias="HA_SSO_DEFAULT_GROUPS")
@@ -44,6 +46,9 @@ class Settings(BaseSettings):
     # Rate limit
     rate_limit: int = Field(60, alias="RATE_LIMIT")
     rate_window_sec: int = Field(60, alias="RATE_WINDOW_SEC")
+
+    # api keys list
+    api_keys: List[str] = [] # .env: API_KEYS=["k1","k2"] 또는 CSV
 
 settings = Settings()
 
