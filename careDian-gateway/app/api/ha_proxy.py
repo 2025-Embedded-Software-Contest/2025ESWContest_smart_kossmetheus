@@ -1,9 +1,14 @@
+from __future__ import annotations
+
 import httpx
 from typing import Any, Dict
 from urllib.parse import urljoin
+
 from fastapi import APIRouter, Request, Response, HTTPException, status, Depends
+
 from app.core.config import settings
 from app.core.security import SESSION_COOKIE, jwt_decode_hs256, JWTError
+
 
 router = APIRouter(prefix="/ha", tags=["ha-proxy"])
 

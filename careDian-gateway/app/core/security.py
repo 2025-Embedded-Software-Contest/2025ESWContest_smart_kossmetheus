@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import base64, hashlib, hmac, json, time
 from typing import Any, Dict, Optional, Sequence
+
 from app.core.config import settings
+
 
 SESSION_COOKIE = settings.session_cookie
 

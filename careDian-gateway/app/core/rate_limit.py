@@ -1,8 +1,10 @@
 from __future__ import annotations
+
 import time
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from typing import Deque, Dict, Optional, Tuple
+
 
 @dataclass
 class RateConfig:

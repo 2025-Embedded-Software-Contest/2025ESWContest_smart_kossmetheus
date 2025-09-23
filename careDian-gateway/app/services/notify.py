@@ -1,5 +1,9 @@
+from __future__ import annotations
+
 from typing import Optional, Dict, Any
+
 from app.services.ha_client import HAClient
+
 
 async def ha_notify(service: str, title: str, message: str, data: Optional[Dict[str, Any]] = None):
     # Home Assistant notify.xxx 서비스 호출

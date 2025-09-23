@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
+
 from app.models.alerts import FallAlert
 from app.services.notify import ha_notify
+
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 

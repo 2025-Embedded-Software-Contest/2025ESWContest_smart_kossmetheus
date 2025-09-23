@@ -1,6 +1,8 @@
+from __future__ import annotations
+
+from typing import Any, Dict, Optional
 # 선택: firebase-admin을 실제로 붙일 때 사용
 # pip install firebase-admin
-from typing import Any, Dict, Optional
 
 class FCMClient:
     def __init__(self, creds_path: Optional[str] = None):

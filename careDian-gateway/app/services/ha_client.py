@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import httpx
 from typing import Any, Dict
+
 from app.core.config import settings
+
 
 class HAClient:
     def __init__(self):

@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field # 데이터 모델의 Field 정의
 from typing import List, Optional # 타입 힌트
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
