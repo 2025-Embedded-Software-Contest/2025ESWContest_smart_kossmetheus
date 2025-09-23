@@ -245,11 +245,13 @@
   - action: persistent_notification.create
     data:
       title: "\U0001F4A7 습도 관리 필요"
-      message: '현재 습도가 {{ states(''sensor.seutaendeuhyeong_eeokeon_humidity'') }}%입니다.
-        {% if trigger.above is defined %} 습도가 높습니다. 제습을 고려해보세요. {% else %} 습도가 낮습니다.
-        가습을 고려해보세요. {% endif %}
-
-        '
+      message: >
+        현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
+        {% if trigger.platform == 'numeric_state' and trigger.above is not none %}
+          습도가 높습니다. 제습을 고려해보세요.
+        {% else %}
+          습도가 낮습니다. 가습을 고려해보세요.
+        {% endif %}
       notification_id: humidity_alert
 - id: sunrise_gradual_lighting
   alias: 일출 조명 서서히 켜기
@@ -633,11 +635,9 @@
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      gas_value1: '{% set numbers = res1.data | regex_findall(''[0-9]'') | join('''')
-        | int %} {{ numbers | int if numbers else 0 }}'
-      gas_value2: '{% set numbers = res2.data | regex_findall(''[0-9]'') | join('''')
-        | int %} {{ numbers | int if numbers else 0 }}'
-      gas_value: '{{ (((gas_value1 * 1000) + gas_value2) / 1000 ) | round(3) }} '
+      gas_value1: "{{ (res1.data | regex_findall('[0-9]') | join('')) | int }}"
+      gas_value2: "{{ (res2.data | regex_findall('[0-9]') | join('')) | int }}"
+      gas_value:  "{{ ((gas_value1*1000 + gas_value2) / 1000) | round(3) }}"
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
       condition: template
