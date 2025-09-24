@@ -88,11 +88,3 @@ utility_meter:
   gas_meter_monthly:
     source: input_number.gas_meter_2
     cycle: monthly
-
-camera:
-  - platform: mjpeg
-    name: GasCam MJPEG
-    mjpeg_url: "http://192.168.1.151:8080/"
-  - platform: generic
-    name: GasCam Snapshot
-    still_image_url: "http://192.168.1.151:8081/"
