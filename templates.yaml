@@ -148,3 +148,17 @@
       state: >
         {{ is_state('binary_sensor.iphone_presence', 'on') }}
       icon: mdi:home-account
+
+# ===========================
+# Bubble Card Modules storage
+# ===========================
+- trigger:
+    - platform: event
+      event_type: bubble_card_update_modules
+  sensor:
+    - name: "Bubble Card Modules"
+      state: "saved"
+      icon: mdi:puzzle
+      attributes:
+        modules: "{{ trigger.event.data.modules }}"
+        last_updated: "{{ trigger.event.data.last_updated }}"
