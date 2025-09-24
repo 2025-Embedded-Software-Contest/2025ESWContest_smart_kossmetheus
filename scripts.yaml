@@ -37,7 +37,7 @@ test_gas_camera_snapshot:
     - delay: "00:00:02"
     - action: camera.snapshot
       target:
-        entity_id: camera.esp32_cam_esp_cam_gas_cam
+        entity_id: camera.korvo2_v31_esp_cam_gas_cam
       data:
         filename: "/config/www/tmp/gas/test_snapshot.jpg"
     - action: light.turn_off
@@ -47,3 +47,22 @@ test_gas_camera_snapshot:
       data:
         level: info
         message: "[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg"
+
+# 수동 LED 제어 스크립트 (esp32-cam 내장 플래시)
+esp32_cam_flash_on:
+  alias: "ESP32-CAM 플래시 켜기"
+  mode: single
+  sequence:
+    - action: light.turn_on
+      target:
+        entity_id: light.esp32_cam_esp_cam_gas_light
+      data:
+        brightness_pct: 100
+
+esp32_cam_flash_off:
+  alias: "ESP32-CAM 플래시 끄기"
+  mode: single
+  sequence:
+    - action: light.turn_off
+      target:
+        entity_id: light.esp32_cam_esp_cam_gas_light

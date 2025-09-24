@@ -507,7 +507,7 @@
     target:
       entity_id: light.esp32_cam_esp_cam_gas_light
     action: light.turn_on
-    enabled: false
+    enabled: true
   - delay:
       hours: 0
       minutes: 0
@@ -579,7 +579,7 @@
     target:
       entity_id: light.esp32_cam_esp_cam_gas_light
     action: light.turn_off
-    enabled: false
+    enabled: true
   mode: single
 - id: '1757400336693'
   alias: 가스 검침 숫자 자동 판독
