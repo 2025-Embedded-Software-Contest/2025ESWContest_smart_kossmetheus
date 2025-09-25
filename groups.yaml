@@ -15,93 +15,91 @@ all_lights:
 all_switches:
   name: "모든 스위치"
   entities:
-    - switch.geosil_jeondeung_bottom_left
-    - switch.geosil_jeondeung_bottom_right
-    - switch.geosil_jeondeung_center_left
-    - switch.geosil_jeondeung_top_left
-    - switch.geosil_jeondeung_top_right
-    - switch.hagyeongbang_jeondeung
-    - switch.hyeogjinbang_jeondeung
-    - switch.jubang_jeondeung_top
-    - switch.jubang_jeondeung_center
-    - switch.jubang_jeondeung_bottom
+    - switch.geosil_jeondeung_bottom_left      # 거실 전등 (하단 좌)
+    - switch.geosil_jeondeung_bottom_right     # 거실 전등 (하단 우)
+    - switch.geosil_jeondeung_center_left      # 거실 전등 (중앙 좌)
+    - switch.geosil_jeondeung_top_left         # 거실 전등 (상단 좌)
+    - switch.geosil_jeondeung_top_right        # 거실 전등 (상단 우)
+    - switch.hagyeongbang_jeondeung            # 학영방 전등
+    - switch.hyeogjinbang_jeondeung            # 형진방 전등
+    - switch.jubang_jeondeung_top              # 주방 전등 (상단)
+    - switch.jubang_jeondeung_center           # 주방 전등 (중앙)
+    - switch.jubang_jeondeung_bottom           # 주방 전등 (하단)
+    - switch.sihas_switch_2                    # 싱크대등
+    - switch.sihas_switch_3                    # 식탁등
+    - switch.sihas_switch_1                    # 가스레인지등
+    - switch.sihas_switch_4                    # 아현이방 등
+    - switch.sihas_switch_5                    # 우현이방 등
+    - switch.deureseurum_deung                 # 드레스룸 등
+    - switch.hwajangdae_deung                  # 화장대 등
+    - switch.anbang_hwajangsil_deung           # 안방 화장실 등
+    - switch.anbang_syaweosil_deung            # 안방 샤워실 등
 
-# 팬 그룹
-all_fans:
-  name: "모든 팬"
+# 환기 그룹 (팬 기능)
+ventilation:
+  name: "환기 시설"
   entities:
-    - fan.living_room
-    - fan.bedroom
-    - fan.kitchen
-    - fan.bathroom
+    - switch.anbang_hwajangsil_hwangi          # 안방 화장실 환기
 
-# 커튼 그룹
-all_curtains:
-  name: "모든 커튼"
+# 조명 제어 그룹 (기존 커튼 그룹 대체)
+lighting_control:
+  name: "조명 제어"
   entities:
-    - cover.living_room_curtain
-    - cover.bedroom_curtain
+    - light.camera_hub_g5pro_9489_lightbulb   # 카메라 허브 조명
 
 # 디바이스 그룹
 all_devices:
   name: "모든 디바이스"
   entities:
-    - switch.computer_block
-    - switch.network_control
-    - switch.sync_box
-    - media_player.tv
-    - media_player.sound_system
+    - switch.wi_fi_smart_plug_1                # 세탁기 전원
+    - switch.wi_fi_smart_plug_2                # 서재 전원
+    - switch.naengjanggo_power_cool            # 냉장고 급속 냉장
+    - switch.naengjanggo_power_freeze          # 냉장고 급속 냉동
+    - switch.anbang_hwajangsil_hwangi          # 안방 화장실 환기
+    - media_player.spotify_gimuhyeon           # Spotify 김우현
 
 # 온도 센서 그룹
 temperature_sensors:
   name: "온도 센서"
   entities:
-    - sensor.jubang_gimcinaengjanggo_left_temperature
-    - sensor.jubang_gimcinaengjanggo_middle_temperature
-    - sensor.jubang_gimcinaengjanggo_right_temperature
-    - sensor.jubang_gimcinaengjanggo_bottom_temperature
-    - sensor.kimchi_fridge_avg_temperature
-    - sensor.seutaendeuhyeong_eeokeon_temperature
+    - sensor.jubang_gimcinaengjanggo_left_temperature      # 김치냉장고 좌측
+    - sensor.jubang_gimcinaengjanggo_middle_temperature    # 김치냉장고 중앙
+    - sensor.jubang_gimcinaengjanggo_right_temperature     # 김치냉장고 우측
+    - sensor.jubang_gimcinaengjanggo_bottom_temperature    # 김치냉장고 하단
+    - sensor.kimchi_fridge_avg_temperature                 # 김치냉장고 평균 온도
+    - sensor.seutaendeuhyeong_eeokeon_temperature         # 스탠드형 에어컨 온도
+    - sensor.gonggijil_ceugjeonggi_1528_temperature       # 공기질 측정기 온도
+    - sensor.multipurpose_sensor_1_temperature            # 거실 오른쪽 창문 온도
 
 # 습도 센서 그룹  
 humidity_sensors:
   name: "습도 센서"
   entities:
-    - sensor.living_room_humidity
-    - sensor.bedroom_humidity
-    - sensor.kitchen_humidity
-    - sensor.bathroom_humidity
-    - sensor.balcony_humidity
-    - sensor.small_room_humidity
+    - sensor.gonggijil_ceugjeonggi_1528_humidity          # 공기질 측정기 습도
 
 # 모션 센서 그룹
 motion_sensors:
   name: "모션 센서"
   entities:
-    - binary_sensor.living_room_motion
-    - binary_sensor.bedroom_motion
-    - binary_sensor.kitchen_motion
-    - binary_sensor.bathroom_motion
-    - binary_sensor.entrance_motion
+    - binary_sensor.camera_hub_g5pro_9489_motion_sensor          # 카메라 허브 모션 센서
+    - binary_sensor.presence_sensor_fp2_1ea6_presence_sensor_1   # 존재 감지 센서
 
-# 도어 센서 그룹
-door_sensors:
-  name: "도어 센서"
+# 보안 센서 그룹  
+security_sensors:
+  name: "보안 센서"
   entities:
-    - binary_sensor.front_door
-    - binary_sensor.back_door
-    - binary_sensor.bedroom_door
-    - binary_sensor.bathroom_door
+    - binary_sensor.smoke_sensor                                 # 연기 감지기
+    - alarm_control_panel.camera_hub_g5pro_9489_security_system # 보안 시스템
+    - camera.camera_hub_g5pro_9489                              # 카메라 허브
 
 # 공기질 센서 그룹
 air_quality_sensors:
   name: "공기질 센서"
   entities:
-    - sensor.co2_level
-    - sensor.air_quality_index
-    - sensor.pm25
-    - sensor.pm10
-    - sensor.voc_level
+    - sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide          # 공기질 측정기 이산화탄소
+    - sensor.gonggijil_ceugjeonggi_1528_pm10                    # 공기질 측정기 PM10
+    - sensor.gonggijil_ceugjeonggi_1528_pm2_5                   # 공기질 측정기 PM2.5
+    - sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts  # 공기질 측정기 VOC
 
 # 배터리 모니터링 그룹
 battery_monitoring:
@@ -129,6 +127,61 @@ ble_sensors:
   entities:
     - sensor.ble_heart_rate_e0e33e6221b5
     - sensor.ble_steps_e0e33e6221b5
+
+# 멀티퍼스 센서 그룹 (창문 센서)
+multipurpose_sensors:
+  name: "창문 센서"
+  entities:
+    - sensor.multipurpose_sensor_1_battery                # 거실 오른쪽 창문 배터리
+    - sensor.multipurpose_sensor_1_temperature            # 거실 오른쪽 창문 온도
+    - sensor.multipurpose_sensor_1_x_coordinate           # 거실 오른쪽 창문 X 좌표
+    - sensor.multipurpose_sensor_1_y_coordinate           # 거실 오른쪽 창문 Y 좌표
+    - sensor.multipurpose_sensor_1_z_coordinate           # 거실 오른쪽 창문 Z 좌표
+    - sensor.multipurpose_sensor_2_x_coordinate           # 안방 베란다 창문 X 좌표
+    - sensor.multipurpose_sensor_2_y_coordinate           # 안방 베란다 창문 Y 좌표
+    - sensor.multipurpose_sensor_2_z_coordinate           # 안방 베란다 창문 Z 좌표
+
+# 실험실 센서 그룹
+lab_sensors:
+  name: "실험실 센서"
+  entities:
+    - switch.jodo_senseo_silheomsil                       # 조도 센서 (실험실)
+    - switch.sori_senseo_silheomsil                       # 소리 센서 (실험실)
+
+# 조도 센서 그룹
+illuminance_sensors:
+  name: "조도 센서"
+  entities:
+    - sensor.presence_sensor_fp2_1ea6_light_sensor_light_level  # 존재 감지 센서 조도
+    - sensor.aqara_fp2_1ea6_illuminance                         # Aqara FP2 조도
+    - sensor.gonggijil_ceugjeonggi_1528_illuminance             # 공기질 측정기 조도
+
+# 가전제품 그룹
+appliances:
+  name: "가전제품"
+  entities:
+    - sensor.jubang_siggiseceoggi_remaining_time          # 식기세척기 남은 시간
+    - sensor.jubang_siggiseceoggi_current_course          # 식기세척기 현재 코스
+    - sensor.jubang_siggiseceoggi_run_state               # 식기세척기 실행 상태
+    - sensor.jubang_siggiseceoggi_process_state           # 식기세척기 프로세스 상태
+    - sensor.jubang_siggiseceoggi_error_message           # 식기세척기 오류 메시지
+    - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed  # 린스 보충 필요
+    - valve.sihas_gas_valve                               # SiHAS 가스 밸브
+
+# 헬스케어 센서 그룹
+healthcare_sensors:
+  name: "헬스케어 센서"
+  entities:
+    - sensor.mi_body_composition_scale_fda2_weight           # 체중계
+    - sensor.mi_body_composition_scale_fda2_weight_non_stabilized  # 체중계 (비안정화)
+    - sensor.smart_series_7000_6f50                          # 전동칫솔
+    - sensor.smart_series_7000_6f50_battery                  # 전동칫솔 배터리
+    - sensor.smart_series_7000_6f50_brushing_mode            # 전동칫솔 브러싱 모드
+    - sensor.smart_series_7000_6f50_pressure                 # 전동칫솔 압력
+    - sensor.smart_series_7000_6f50_sector                   # 전동칫솔 섹터
+    - sensor.smart_series_7000_6f50_duration                 # 전동칫솔 지속시간
+    - sensor.smart_series_7000_6f50_sector_timer             # 전동칫솔 섹터 타이머
+    - sensor.smart_series_7000_6f50_number_of_sectors        # 전동칫솔 섹터 수
 
 # 전력 모니터링 그룹
 energy_monitoring:
