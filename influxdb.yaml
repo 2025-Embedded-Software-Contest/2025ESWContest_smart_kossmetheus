@@ -7,6 +7,7 @@ influxdb:
   password: !secret influxdb_password
   max_retries: 3
   default_measurement: state
+  # SSL 설정 적용할까?
   ssl: false
   verify_ssl: false
   precision: s
@@ -22,7 +23,7 @@ influxdb:
       - weather
 
     # =======================
-    # 📍 방별 영역 그룹화
+    # 방별 영역 그룹화
     # =======================
     entities:
       # === 거실 ===
@@ -65,7 +66,7 @@ influxdb:
       - sensor.date
 
     # =======================
-    # ⚙ 기능별 그룹화
+    # 기능별 그룹화
     # =======================
     entity_globs:
       - sensor.*temperature*
