@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+firebase-admin
+python-dotenv
+pyserial
+numpy
+pandas
+scikit-learn
+tensorflow-macos       # Apple Silicon이면 이거
+# (인텔 맥이면) tensorflow==2.10.1
+# 선택: tensorflow-metal  # Apple GPU 가속
