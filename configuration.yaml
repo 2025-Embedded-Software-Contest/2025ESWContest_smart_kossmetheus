@@ -14,6 +14,7 @@ script: !include scripts.yaml
 sensor: !include sensors.yaml
 template: !include templates.yaml
 influxdb: !include influxdb.yaml
+group: !include groups.yaml
 
 # Enable Pyscript custom integration for image pipeline
 pyscript:
@@ -52,20 +53,36 @@ recorder:
 # Lovelace 설정
 lovelace:
   mode: storage
-  # resources: 
-  #   - url: /hacsfiles/button-card/button-card.js
-  #     type: module
-  #   - url: /hacsfiles/lovelace-card-mod/card-mod.js
-  #     type: module
-  #   - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
-  #     type: module
+  resources:
+    - url: /hacsfiles/button-card/button-card.js
+      type: module
+    - url: /hacsfiles/lovelace-card-mod/card-mod.js
+      type: module
+    - url: /hacsfiles/Bubble-Card/bubble-card.js
+      type: module
+    - url: /hacsfiles/Bubble-Card/bubble-pop-up-fix.js
+      type: module
+    - url: /hacsfiles/lovelace-mushroom/mushroom.js
+      type: module
   dashboards:
     ui-minimalist:
       mode: yaml
       filename: ui_lovelace_minimalist/dashboard/ui-lovelace.yaml
       title: UI Lovelace Minimalist
       icon: mdi:flower
-      show_in_sidebar: false
+      show_in_sidebar: true
+    mobile-dashboard:
+      mode: yaml
+      filename: ui_lovelace_minimalist/dashboard/mobile-dashboard.yaml
+      title: CareDian Mobile
+      icon: mdi:cellphone
+      show_in_sidebar: true
+    caredian-popup:
+      mode: yaml
+      filename: ui_lovelace_minimalist/dashboard/caredian-popup.yaml
+      title: CareDian Pop-up
+      icon: mdi:gesture-tap
+      show_in_sidebar: true
     bubble-dashboard:
       mode: yaml
       filename: lovelace/views/bubble-dashboard.yaml

@@ -1,0 +1,112 @@
+# CareDian 그룹 설정
+# UI Lovelace Minimalist와 커스텀 카드를 위한 엔티티 그룹
+
+# 조명 그룹
+all_lights:
+  name: "모든 조명"
+  entities:
+    - light.living_room
+    - light.bedroom
+    - light.kitchen
+    - light.bathroom
+    - light.balcony
+    - light.small_room
+
+# 스위치 그룹  
+all_switches:
+  name: "모든 스위치"
+  entities:
+    - switch.living_room_power
+    - switch.bedroom_power
+    - switch.kitchen_power
+    - switch.bathroom_power
+    - switch.balcony_power
+    - switch.computer_block
+    - switch.network_control
+
+# 팬 그룹
+all_fans:
+  name: "모든 팬"
+  entities:
+    - fan.living_room
+    - fan.bedroom
+    - fan.kitchen
+    - fan.bathroom
+
+# 커튼 그룹
+all_curtains:
+  name: "모든 커튼"
+  entities:
+    - cover.living_room_curtain
+    - cover.bedroom_curtain
+
+# 디바이스 그룹
+all_devices:
+  name: "모든 디바이스"
+  entities:
+    - switch.computer_block
+    - switch.network_control
+    - switch.sync_box
+    - media_player.tv
+    - media_player.sound_system
+
+# 온도 센서 그룹
+temperature_sensors:
+  name: "온도 센서"
+  entities:
+    - sensor.living_room_temperature
+    - sensor.bedroom_temperature
+    - sensor.kitchen_temperature
+    - sensor.bathroom_temperature
+    - sensor.balcony_temperature
+    - sensor.small_room_temperature
+
+# 습도 센서 그룹  
+humidity_sensors:
+  name: "습도 센서"
+  entities:
+    - sensor.living_room_humidity
+    - sensor.bedroom_humidity
+    - sensor.kitchen_humidity
+    - sensor.bathroom_humidity
+    - sensor.balcony_humidity
+    - sensor.small_room_humidity
+
+# 모션 센서 그룹
+motion_sensors:
+  name: "모션 센서"
+  entities:
+    - binary_sensor.living_room_motion
+    - binary_sensor.bedroom_motion
+    - binary_sensor.kitchen_motion
+    - binary_sensor.bathroom_motion
+    - binary_sensor.entrance_motion
+
+# 도어 센서 그룹
+door_sensors:
+  name: "도어 센서"
+  entities:
+    - binary_sensor.front_door
+    - binary_sensor.back_door
+    - binary_sensor.bedroom_door
+    - binary_sensor.bathroom_door
+
+# 공기질 센서 그룹
+air_quality_sensors:
+  name: "공기질 센서"
+  entities:
+    - sensor.co2_level
+    - sensor.air_quality_index
+    - sensor.pm25
+    - sensor.pm10
+    - sensor.voc_level
+
+# 전력 모니터링 그룹
+energy_monitoring:
+  name: "전력 모니터링"
+  entities:
+    - sensor.total_energy_consumption
+    - sensor.monthly_energy_cost
+    - sensor.daily_energy_usage
+    - sensor.current_power_usage
+    - sensor.gas_meter_2

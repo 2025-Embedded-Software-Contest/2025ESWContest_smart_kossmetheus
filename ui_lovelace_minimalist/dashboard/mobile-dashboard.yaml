@@ -1,0 +1,315 @@
+---
+button_card_templates: !include_dir_merge_named "../ulm_templates/"
+resources:
+  - url: /hacsfiles/button-card/button-card.js
+    type: module
+  - url: /hacsfiles/lovelace-card-mod/card-mod.js
+    type: module
+  - url: /hacsfiles/Bubble-Card/bubble-card.js
+    type: module
+  - url: /hacsfiles/lovelace-mushroom/mushroom.js
+    type: module
+  - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+    type: module
+
+title: "CareDian Mobile"
+theme: "minimalist-mobile"
+background: "var(--background-image)"
+
+views:
+  # 메인 대시보드 뷰
+  - title: "홈"
+    path: home
+    icon: "mdi:home"
+    panel: false
+    cards:
+      # 디바이스 제어 섹션
+      - type: "vertical-stack"
+        cards:
+          - type: "custom:button-card"
+            template: "card_title"
+            name: "Device"
+            
+          - type: "grid"
+            columns: 2
+            square: false
+            cards:
+              # Switch 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                entity: switch.all_switches
+                name: "Switch"
+                label: "[[[ return states['switch.all_switches'].attributes.count || '0' ]]]개 작동"
+                icon: "mdi:toggle-switch"
+                tap_action:
+                  action: navigate
+                  navigation_path: "/ui-minimalist/switches"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 20px;
+                    }
+                    
+              # Light 카드  
+              - type: "custom:button-card"
+                template: "card_generic"
+                entity: light.all_lights
+                name: "Light"
+                label: "[[[ return states['light.all_lights'].attributes.count || '0' ]]]개 작동"
+                icon: "mdi:lightbulb"
+                tap_action:
+                  action: navigate
+                  navigation_path: "/ui-minimalist/lights"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(255, 165, 0, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # Sync Box 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                name: "Sync Box"
+                label: "미러"
+                icon: "mdi:monitor"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 20px;
+                    }
+                    
+              # Curtain 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                entity: cover.all_curtains
+                name: "Curtain"
+                label: "거실 열림"
+                icon: "mdi:curtains"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(128, 0, 128, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # Device 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                name: "Device"
+                label: "컴퓨터 차단"
+                icon: "mdi:devices"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(255, 0, 0, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # Fan 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                entity: fan.all_fans
+                name: "Fan"
+                label: "3개 작동"
+                icon: "mdi:fan"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(0, 191, 255, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # Motion 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                entity: binary_sensor.motion_detected
+                name: "Motion"
+                label: "0개 감지"
+                icon: "mdi:motion-sensor"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 20px;
+                    }
+                    
+              # Door 카드
+              - type: "custom:button-card"
+                template: "card_generic"
+                entity: binary_sensor.door_status
+                name: "Door"
+                label: "0개 열림"
+                icon: "mdi:door"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 20px;
+                    }
+
+      # 센서 정보 섹션
+      - type: "vertical-stack"
+        cards:
+          - type: "grid"
+            columns: 2  
+            square: false
+            cards:
+              # 온도 센서
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.temperature
+                name: "온도"
+                icon: "mdi:thermometer"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(255, 0, 0, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # 습도 센서  
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.humidity
+                name: "습도"
+                icon: "mdi:water-percent"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(0, 0, 255, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # 전기 사용량
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.energy_consumption
+                name: "전기"
+                icon: "mdi:lightning-bolt"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(255, 255, 0, 0.1);
+                      border-radius: 20px;
+                    }
+                    
+              # CO2 센서
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.co2_level
+                name: "CO₂"
+                icon: "mdi:molecule-co2"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(0, 255, 0, 0.1);
+                      border-radius: 20px;
+                    }
+
+  # 일반소등 뷰 (방별 센서)
+  - title: "일반소등"
+    path: rooms
+    icon: "mdi:home-floor-1"  
+    cards:
+      - type: "vertical-stack"
+        cards:
+          - type: "custom:button-card"
+            template: "card_title"
+            name: "일반소등"
+            
+          - type: "grid"
+            columns: 2
+            square: false
+            cards:
+              # 거실
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.living_room_temperature
+                name: "거실"
+                icon: "mdi:sofa"
+                primary_info: name
+                secondary_info: last_changed
+                tap_action:
+                  action: more_info
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 15px;
+                    }
+                    
+              # 침실  
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.bedroom_temperature
+                name: "침실"
+                icon: "mdi:bed"
+                primary_info: name
+                secondary_info: last_changed
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 15px;
+                    }
+                    
+              # 주방
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.kitchen_temperature
+                name: "주방"
+                icon: "mdi:chef-hat"
+                primary_info: name
+                secondary_info: last_changed
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 15px;
+                    }
+                    
+              # 베란다
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.balcony_temperature
+                name: "베란다"
+                icon: "mdi:balcony"
+                primary_info: name
+                secondary_info: last_changed
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 15px;
+                    }
+                    
+              # 작은방
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.small_room_temperature
+                name: "작은방"
+                icon: "mdi:bed-single"
+                primary_info: name
+                secondary_info: last_changed
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 15px;
+                    }
+                    
+              # 화장실
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.bathroom_temperature
+                name: "화장실"
+                icon: "mdi:shower"
+                primary_info: name  
+                secondary_info: last_changed
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: var(--card-background-color);
+                      border-radius: 15px;
+                    }
