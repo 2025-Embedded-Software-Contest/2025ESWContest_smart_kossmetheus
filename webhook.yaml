@@ -1,0 +1,11 @@
+# HA -> FastAPI Webhook Trigger
+rest_command:
+  notify_backend:
+    url: "https://gw-caredian.gleeze.com/events/fall"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ states('input_text.backend_api_token') }}"
+      Content-Type: "application/json"
+    payload: >
+      { "entity": "{{ trigger.entity_id }}", "state": "{{ trigger.to_state.state }}", "at": "{{ now() }}" }
+    verify_ssl: true

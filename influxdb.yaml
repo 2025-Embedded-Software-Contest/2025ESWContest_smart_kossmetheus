@@ -1,4 +1,4 @@
-# InfluxDB 설정 (확장)
+# InfluxDB 설정
 api_version: 1
 host: 192.168.1.49
 port: 8086
@@ -21,7 +21,7 @@ include:
     - weather # 날씨 정보 포함
     - sun # 일출/일몰 정보
     - person # 사람 추적 (있을 경우)
-    - hae  # Healthy Apps Exporter (Apple Health)
+    - hae # Healthy Apps Exporter (Apple Health)
   entities:
     # 기존 엔티티들 유지
     - climate.seutaendeuhyeong_eeokeon
