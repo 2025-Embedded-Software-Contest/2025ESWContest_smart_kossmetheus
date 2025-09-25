@@ -37,9 +37,9 @@ views:
               # Switch 카드
               - type: "custom:button-card"
                 template: "card_generic"
-                entity: switch.all_switches
+                entity: group.all_switches
                 name: "Switch"
-                label: "[[[ return states['switch.all_switches'].attributes.count || '0' ]]]개 작동"
+                label: "[[[ return states['group.all_switches'].attributes.count || '0' ]]]개 작동"
                 icon: "mdi:toggle-switch"
                 tap_action:
                   action: navigate
@@ -54,9 +54,9 @@ views:
               # Light 카드  
               - type: "custom:button-card"
                 template: "card_generic"
-                entity: light.all_lights
+                entity: group.all_lights
                 name: "Light"
-                label: "[[[ return states['light.all_lights'].attributes.count || '0' ]]]개 작동"
+                label: "[[[ return states['group.all_lights'].attributes.count || '0' ]]]개 작동"
                 icon: "mdi:lightbulb"
                 tap_action:
                   action: navigate
@@ -159,7 +159,7 @@ views:
             cards:
               # 온도 센서
               - type: "custom:mushroom-entity-card"
-                entity: sensor.temperature
+                entity: sensor.kimchi_fridge_avg_temperature
                 name: "온도"
                 icon: "mdi:thermometer"
                 primary_info: name
@@ -187,7 +187,7 @@ views:
                     
               # 전기 사용량
               - type: "custom:mushroom-entity-card"
-                entity: sensor.energy_consumption
+                entity: sensor.total_power_consumption
                 name: "전기"
                 icon: "mdi:lightning-bolt"
                 primary_info: name
@@ -230,7 +230,7 @@ views:
             cards:
               # 거실
               - type: "custom:mushroom-entity-card"
-                entity: sensor.living_room_temperature
+                entity: light.living_floor_light
                 name: "거실"
                 icon: "mdi:sofa"
                 primary_info: name

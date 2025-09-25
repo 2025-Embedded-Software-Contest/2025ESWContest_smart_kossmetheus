@@ -5,24 +5,26 @@
 all_lights:
   name: "모든 조명"
   entities:
-    - light.living_room
-    - light.bedroom
-    - light.kitchen
-    - light.bathroom
-    - light.balcony
-    - light.small_room
+    - light.living_floor_light
+    - light.hagyeong_floor
+    - light.coupy_floor_light
+    - light.coupy_indirect_light
+    - light.coupy_reading_light
 
 # 스위치 그룹  
 all_switches:
   name: "모든 스위치"
   entities:
-    - switch.living_room_power
-    - switch.bedroom_power
-    - switch.kitchen_power
-    - switch.bathroom_power
-    - switch.balcony_power
-    - switch.computer_block
-    - switch.network_control
+    - switch.geosil_jeondeung_bottom_left
+    - switch.geosil_jeondeung_bottom_right
+    - switch.geosil_jeondeung_center_left
+    - switch.geosil_jeondeung_top_left
+    - switch.geosil_jeondeung_top_right
+    - switch.hagyeongbang_jeondeung
+    - switch.hyeogjinbang_jeondeung
+    - switch.jubang_jeondeung_top
+    - switch.jubang_jeondeung_center
+    - switch.jubang_jeondeung_bottom
 
 # 팬 그룹
 all_fans:
@@ -54,12 +56,12 @@ all_devices:
 temperature_sensors:
   name: "온도 센서"
   entities:
-    - sensor.living_room_temperature
-    - sensor.bedroom_temperature
-    - sensor.kitchen_temperature
-    - sensor.bathroom_temperature
-    - sensor.balcony_temperature
-    - sensor.small_room_temperature
+    - sensor.jubang_gimcinaengjanggo_left_temperature
+    - sensor.jubang_gimcinaengjanggo_middle_temperature
+    - sensor.jubang_gimcinaengjanggo_right_temperature
+    - sensor.jubang_gimcinaengjanggo_bottom_temperature
+    - sensor.kimchi_fridge_avg_temperature
+    - sensor.seutaendeuhyeong_eeokeon_temperature
 
 # 습도 센서 그룹  
 humidity_sensors:
@@ -101,12 +103,39 @@ air_quality_sensors:
     - sensor.pm10
     - sensor.voc_level
 
+# 배터리 모니터링 그룹
+battery_monitoring:
+  name: "배터리 모니터링"
+  entities:
+    - sensor.gimuhyeonyi_apple_watch_battery
+    - sensor.gimuhyeonyi_macbook_pro_battery
+    - sensor.uhyeonyi_ipad_pro_battery
+    - sensor.uhyeonyi_iphone_xs_battery
+    - sensor.average_device_battery
+    - binary_sensor.low_battery_devices
+
+# 시스템 모니터링 그룹  
+system_monitoring:
+  name: "시스템 모니터링"
+  entities:
+    - sensor.unavailable_entities_count
+    - sensor.unavailable_entities
+    - binary_sensor.someone_home
+    - binary_sensor.iphone_presence
+
+# BLE 센서 그룹
+ble_sensors:
+  name: "BLE 센서"
+  entities:
+    - sensor.ble_heart_rate_e0e33e6221b5
+    - sensor.ble_steps_e0e33e6221b5
+
 # 전력 모니터링 그룹
 energy_monitoring:
   name: "전력 모니터링"
   entities:
-    - sensor.total_energy_consumption
-    - sensor.monthly_energy_cost
-    - sensor.daily_energy_usage
-    - sensor.current_power_usage
+    - sensor.total_power_consumption
+    - sensor.seutaendeuhyeong_eeokeon_power
+    - sensor.zigbee_dimmer_power
+    - sensor.deseukeutab_jeonweon_power
     - sensor.gas_meter_2

@@ -80,18 +80,18 @@ views:
                         type: "vertical-stack"
                         cards:
                           - type: "custom:mushroom-light-card"
-                            entity: "light.living_room"
+                            entity: "light.living_floor_light"
                             name: "거실 조명"
                             use_light_color: true
                             show_brightness_control: true
                           - type: "custom:mushroom-light-card"
-                            entity: "light.bedroom"
-                            name: "침실 조명"
+                            entity: "light.hagyeong_floor"
+                            name: "학영방 조명"
                             use_light_color: true
                             show_brightness_control: true
                           - type: "custom:mushroom-light-card"
-                            entity: "light.kitchen"
-                            name: "주방 조명"
+                            entity: "light.coupy_floor_light"
+                            name: "쿠피방 조명"
                             use_light_color: true
                             show_brightness_control: true
                 card_mod:
@@ -117,14 +117,14 @@ views:
                       content:
                         type: "entities"
                         entities:
-                          - entity: "switch.living_room_power"
-                            name: "거실 전원"
-                          - entity: "switch.bedroom_power"
-                            name: "침실 전원"
-                          - entity: "switch.kitchen_power"
-                            name: "주방 전원"
-                          - entity: "switch.balcony_power"
-                            name: "베란다 전원"
+                          - entity: "switch.geosil_jeondeung_bottom_left"
+                            name: "거실 전등 (하단 좌)"
+                          - entity: "switch.geosil_jeondeung_bottom_right"
+                            name: "거실 전등 (하단 우)"
+                          - entity: "switch.hagyeongbang_jeondeung"
+                            name: "학영방 전등"
+                          - entity: "switch.jubang_jeondeung_top"
+                            name: "주방 전등 (상단)"
                 card_mod:
                   style: |
                     ha-card {
@@ -184,7 +184,7 @@ views:
               # 온도 센서 팝업
               - type: "custom:bubble-card"
                 card_type: "button"
-                entity: "sensor.average_temperature"
+                entity: "sensor.kimchi_fridge_avg_temperature"
                 name: "온도"
                 icon: "mdi:thermometer"
                 show_state: true
@@ -199,14 +199,14 @@ views:
                         type: "vertical-stack"
                         cards:
                           - type: "custom:mushroom-entity-card"
-                            entity: "sensor.living_room_temperature"
-                            name: "거실"
+                            entity: "sensor.jubang_gimcinaengjanggo_left_temperature"
+                            name: "김치냉장고 (좌)"
                           - type: "custom:mushroom-entity-card"
-                            entity: "sensor.bedroom_temperature"  
-                            name: "침실"
+                            entity: "sensor.jubang_gimcinaengjanggo_middle_temperature"  
+                            name: "김치냉장고 (중)"
                           - type: "custom:mushroom-entity-card"
-                            entity: "sensor.kitchen_temperature"
-                            name: "주방"
+                            entity: "sensor.jubang_gimcinaengjanggo_right_temperature"
+                            name: "김치냉장고 (우)"
                 card_mod:
                   style: |
                     ha-card {
@@ -249,7 +249,7 @@ views:
               # 전기 사용량 팝업
               - type: "custom:bubble-card"
                 card_type: "button"
-                entity: "sensor.total_energy_consumption"
+                entity: "sensor.total_power_consumption"
                 name: "전기"
                 icon: "mdi:lightning-bolt"
                 show_state: true
