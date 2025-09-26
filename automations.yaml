@@ -654,71 +654,72 @@
         entity_id: input_number.gas_meter_2
   mode: single
 
-# 라즈베리파이 5 액티브 쿨러 자동 제어
-- id: pi5_cooler_auto_on
-  alias: Pi5 쿨러 자동 켜기
-  description: CPU 온도가 높을 때 액티브 쿨러 자동 켜기
+## 라즈베리파이 5 액티브 쿨러 자동 제어 (PWM via Pyscript)
+- id: pi5_fan_auto_on
+  alias: Pi5 팬 자동 속도 상승
+  description: CPU 온도가 65°C 이상이면 팬을 80%로 설정하고 자동모드 해제
   triggers:
   - trigger: numeric_state
     entity_id: sensor.pi5_cpu_temperature
     above: 65
     for: 00:01:00
-  conditions:
-  - condition: state
-    entity_id: switch.rpi_gpio_pi5_active_cooler
-    state: 'off'
   actions:
-  - action: switch.turn_on
+  - action: pyscript.pi5_fan_set_auto
+    data:
+      enabled: false
+  - action: pyscript.pi5_fan_set_percent
+    data:
+      percent: 80
+  - action: input_boolean.turn_off
     target:
-      entity_id: switch.rpi_gpio_pi5_active_cooler
+      entity_id: input_boolean.pi5_fan_auto
   - action: persistent_notification.create
     data:
-      title: 🌡️ 라즈베리파이 5 쿨러 켜짐
-      message: 'CPU 온도가 {{ states(''sensor.pi5_cpu_temperature'') }}°C로 상승하여 액티브 쿨러를 켰습니다.'
-      notification_id: pi5_cooler_on
+      title: "🌡️ Pi5 팬 속도 80%"
+      message: "CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 상승하여 팬을 80%로 설정"
+      notification_id: pi5_fan_auto_on
   mode: single
 
-- id: pi5_cooler_auto_off
-  alias: Pi5 쿨러 자동 끄기
-  description: CPU 온도가 낮아졌을 때 액티브 쿨러 자동 끄기
+- id: pi5_fan_auto_down
+  alias: Pi5 팬 자동 속도 하향
+  description: CPU 온도가 55°C 이하이면 팬을 30%로 낮춤
   triggers:
   - trigger: numeric_state
     entity_id: sensor.pi5_cpu_temperature
     below: 55
     for: 00:02:00
-  conditions:
-  - condition: state
-    entity_id: switch.rpi_gpio_pi5_active_cooler
-    state: 'on'
   actions:
-  - action: switch.turn_off
-    target:
-      entity_id: switch.rpi_gpio_pi5_active_cooler
+  - action: pyscript.pi5_fan_set_percent
+    data:
+      percent: 30
   - action: persistent_notification.dismiss
     data:
-      notification_id: pi5_cooler_on
+      notification_id: pi5_fan_auto_on
   - action: persistent_notification.create
     data:
-      title: ❄️ 라즈베리파이 5 쿨러 꺼짐
-      message: 'CPU 온도가 {{ states(''sensor.pi5_cpu_temperature'') }}°C로 안정화되어 액티브 쿨러를 껐습니다.'
-      notification_id: pi5_cooler_off
+      title: "❄️ Pi5 팬 속도 30%"
+      message: "CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 떨어져 팬을 30%로 설정"
+      notification_id: pi5_fan_auto_off
   mode: single
 
-- id: pi5_cooler_critical_temp
-  alias: Pi5 CPU 임계 온도 알림
-  description: CPU 온도가 매우 높을 때 긴급 알림
+- id: pi5_fan_critical_temp
+  alias: Pi5 CPU 임계 온도 긴급 냉각
+  description: CPU 80°C 이상 시 최대속도 100% 설정
   triggers:
   - trigger: numeric_state
     entity_id: sensor.pi5_cpu_temperature
     above: 80
     for: 00:00:30
   actions:
+  - action: pyscript.pi5_fan_set_auto
+    data:
+      enabled: false
+  - action: pyscript.pi5_fan_set_percent
+    data:
+      percent: 100
   - action: persistent_notification.create
     data:
-      title: 🚨 라즈베리파이 5 위험 온도!
-      message: 'CPU 온도가 {{ states(''sensor.pi5_cpu_temperature'') }}°C입니다! 즉시 확인이 필요합니다.'
+      title: "🚨 Pi5 팬 100%"
+      message: "CPU {{ states('sensor.pi5_cpu_temperature') }}°C - 긴급 냉각 모드"
       notification_id: pi5_critical_temp
-  - action: switch.turn_on
-    target:
-      entity_id: switch.rpi_gpio_pi5_active_cooler
   mode: restart

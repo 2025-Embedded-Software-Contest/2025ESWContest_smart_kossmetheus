@@ -281,20 +281,46 @@ views:
                     }
           
           # 쿨러 제어 스위치 (전체 너비)
-          - type: "custom:mushroom-entity-card"
-            entity: switch.rpi_gpio_pi5_active_cooler
-            name: "액티브 쿨러"
-            icon: "mdi:fan-auto"
-            primary_info: name
-            secondary_info: last_changed
-            tap_action:
-              action: toggle
-            card_mod:
-              style: |
-                ha-card {
-                  background-color: {% if is_state('switch.rpi_gpio_pi5_active_cooler', 'on') %}rgba(0, 255, 0, 0.1){% else %}rgba(128, 128, 128, 0.1){% endif %};
-                  border-radius: 20px;
-                }
+          - type: "vertical-stack"
+            cards:
+              - type: "custom:mushroom-entity-card"
+                entity: input_boolean.pi5_fan_auto
+                name: "팬 자동 모드"
+                icon: "mdi:fan-auto"
+                tap_action:
+                  action: call-service
+                  service: pyscript.pi5_fan_set_auto
+                  data:
+                    enabled: "[[[ return entity.state === 'on' ]]]"
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: {% if is_state('input_boolean.pi5_fan_auto', 'on') %}rgba(0, 255, 0, 0.1){% else %}rgba(128, 128, 128, 0.1){% endif %};
+                      border-radius: 20px;
+                    }
+              - type: "custom:button-card"
+                template: "card_title"
+                name: "수동 속도 (%)"
+              - type: "custom:slider-entity-row"
+                entity: input_number.pi5_fan_percent
+                full_row: true
+                min: 0
+                max: 100
+                step: 5
+                card_mod:
+                  style: |
+                    ha-card {
+                      border-radius: 20px;
+                    }
+              - type: "custom:mushroom-entity-card"
+                entity: input_number.pi5_fan_percent
+                name: "적용하기"
+                icon: "mdi:fan-speed-3"
+                tap_action:
+                  action: call-service
+                  service: pyscript.pi5_fan_set_percent
+                  data:
+                    percent: "[[[ return states['input_number.pi5_fan_percent'].state ]]]"
 
   # 일반소등 뷰 (방별 센서)
   - title: "일반소등"
