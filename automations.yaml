@@ -653,3 +653,72 @@
       target:
         entity_id: input_number.gas_meter_2
   mode: single
+
+# 라즈베리파이 5 액티브 쿨러 자동 제어
+- id: pi5_cooler_auto_on
+  alias: Pi5 쿨러 자동 켜기
+  description: CPU 온도가 높을 때 액티브 쿨러 자동 켜기
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.pi5_cpu_temperature
+    above: 65
+    for: 00:01:00
+  conditions:
+  - condition: state
+    entity_id: switch.rpi_gpio_pi5_active_cooler
+    state: 'off'
+  actions:
+  - action: switch.turn_on
+    target:
+      entity_id: switch.rpi_gpio_pi5_active_cooler
+  - action: persistent_notification.create
+    data:
+      title: 🌡️ 라즈베리파이 5 쿨러 켜짐
+      message: 'CPU 온도가 {{ states(''sensor.pi5_cpu_temperature'') }}°C로 상승하여 액티브 쿨러를 켰습니다.'
+      notification_id: pi5_cooler_on
+  mode: single
+
+- id: pi5_cooler_auto_off
+  alias: Pi5 쿨러 자동 끄기
+  description: CPU 온도가 낮아졌을 때 액티브 쿨러 자동 끄기
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.pi5_cpu_temperature
+    below: 55
+    for: 00:02:00
+  conditions:
+  - condition: state
+    entity_id: switch.rpi_gpio_pi5_active_cooler
+    state: 'on'
+  actions:
+  - action: switch.turn_off
+    target:
+      entity_id: switch.rpi_gpio_pi5_active_cooler
+  - action: persistent_notification.dismiss
+    data:
+      notification_id: pi5_cooler_on
+  - action: persistent_notification.create
+    data:
+      title: ❄️ 라즈베리파이 5 쿨러 꺼짐
+      message: 'CPU 온도가 {{ states(''sensor.pi5_cpu_temperature'') }}°C로 안정화되어 액티브 쿨러를 껐습니다.'
+      notification_id: pi5_cooler_off
+  mode: single
+
+- id: pi5_cooler_critical_temp
+  alias: Pi5 CPU 임계 온도 알림
+  description: CPU 온도가 매우 높을 때 긴급 알림
+  triggers:
+  - trigger: numeric_state
+    entity_id: sensor.pi5_cpu_temperature
+    above: 80
+    for: 00:00:30
+  actions:
+  - action: persistent_notification.create
+    data:
+      title: 🚨 라즈베리파이 5 위험 온도!
+      message: 'CPU 온도가 {{ states(''sensor.pi5_cpu_temperature'') }}°C입니다! 즉시 확인이 필요합니다.'
+      notification_id: pi5_critical_temp
+  - action: switch.turn_on
+    target:
+      entity_id: switch.rpi_gpio_pi5_active_cooler
+  mode: restart

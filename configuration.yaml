@@ -24,6 +24,33 @@ command_line:
       command: "cat /sys/devices/platform/cooling_fan/hwmon/*/fan1_input"
       unit_of_measurement: "RPM"
       value_template: "{{ value }}"
+  - sensor:
+      name: Pi5 CPU Temperature
+      unique_id: pi5_cpu_temp
+      scan_interval: 10
+      command: "cat /sys/class/thermal/thermal_zone0/temp"
+      unit_of_measurement: "°C"
+      value_template: "{{ (value | float / 1000) | round(1) }}"
+      device_class: temperature
+  - sensor:
+      name: Pi5 CPU Usage
+      unique_id: pi5_cpu_usage
+      scan_interval: 30
+      command: "top -bn1 | grep 'Cpu(s)' | sed 's/.*, *\\([0-9.]*\\)%* id.*/\\1/' | awk '{print 100 - $1}'"
+      unit_of_measurement: "%"
+      value_template: "{{ value | float | round(1) }}"
+  - sensor:
+      name: Pi5 Memory Usage
+      unique_id: pi5_memory_usage
+      scan_interval: 30
+      command: "free | grep Mem | awk '{printf \"%.1f\", $3/$2 * 100.0}'"
+      unit_of_measurement: "%"
+      value_template: "{{ value | float | round(1) }}"
+
+# Raspberry Pi GPIO 제어
+rpi_gpio:
+  ports:
+    14: Pi5 Active Cooler
 
 # Enable Pyscript custom integration for image pipeline
 pyscript:

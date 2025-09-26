@@ -213,6 +213,89 @@ views:
                       border-radius: 20px;
                     }
 
+      # 라즈베리파이 5 시스템 모니터링 섹션
+      - type: "vertical-stack"
+        cards:
+          - type: "custom:button-card"
+            template: "card_title"
+            name: "Raspberry Pi 5"
+            
+          - type: "grid"
+            columns: 2
+            square: false
+            cards:
+              # CPU 온도
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.pi5_cpu_temperature
+                name: "CPU 온도"
+                icon: "mdi:thermometer"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: {% if states('sensor.pi5_cpu_temperature')|float > 70 %}rgba(255, 0, 0, 0.1){% elif states('sensor.pi5_cpu_temperature')|float > 60 %}rgba(255, 165, 0, 0.1){% else %}rgba(0, 255, 0, 0.1){% endif %};
+                      border-radius: 20px;
+                    }
+              
+              # CPU 사용률
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.pi5_cpu_usage
+                name: "CPU 사용률"
+                icon: "mdi:cpu-64-bit"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: {% if states('sensor.pi5_cpu_usage')|float > 80 %}rgba(255, 0, 0, 0.1){% elif states('sensor.pi5_cpu_usage')|float > 60 %}rgba(255, 165, 0, 0.1){% else %}rgba(0, 255, 0, 0.1){% endif %};
+                      border-radius: 20px;
+                    }
+              
+              # 메모리 사용률
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.pi5_memory_usage
+                name: "메모리 사용률"
+                icon: "mdi:memory"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: {% if states('sensor.pi5_memory_usage')|float > 80 %}rgba(255, 0, 0, 0.1){% elif states('sensor.pi5_memory_usage')|float > 60 %}rgba(255, 165, 0, 0.1){% else %}rgba(0, 255, 0, 0.1){% endif %};
+                      border-radius: 20px;
+                    }
+              
+              # 팬 속도
+              - type: "custom:mushroom-entity-card"
+                entity: sensor.pi5_fan_speed
+                name: "팬 속도"
+                icon: "mdi:fan"
+                primary_info: name
+                secondary_info: state
+                card_mod:
+                  style: |
+                    ha-card {
+                      background-color: rgba(0, 150, 255, 0.1);
+                      border-radius: 20px;
+                    }
+          
+          # 쿨러 제어 스위치 (전체 너비)
+          - type: "custom:mushroom-entity-card"
+            entity: switch.rpi_gpio_pi5_active_cooler
+            name: "액티브 쿨러"
+            icon: "mdi:fan-auto"
+            primary_info: name
+            secondary_info: last_changed
+            tap_action:
+              action: toggle
+            card_mod:
+              style: |
+                ha-card {
+                  background-color: {% if is_state('switch.rpi_gpio_pi5_active_cooler', 'on') %}rgba(0, 255, 0, 0.1){% else %}rgba(128, 128, 128, 0.1){% endif %};
+                  border-radius: 20px;
+                }
+
   # 일반소등 뷰 (방별 센서)
   - title: "일반소등"
     path: rooms
