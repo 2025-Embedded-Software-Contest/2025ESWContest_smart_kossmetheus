@@ -1,126 +1,125 @@
-influxdb:
-  api_version: 1
-  host: 192.168.1.49
-  port: 8086
-  database: !secret influxdb_database
-  username: !secret influxdb_username
-  password: !secret influxdb_password
-  max_retries: 3
-  default_measurement: state
-  # SSL 설정 적용할까?
-  ssl: false
-  verify_ssl: false
-  precision: s
+api_version: 1
+host: 192.168.1.49
+port: 8086
+database: !secret influxdb_database
+username: !secret influxdb_username
+password: !secret influxdb_password
+max_retries: 3
+default_measurement: state
+# SSL 설정 적용할까?
+ssl: false
+verify_ssl: false
+precision: s
 
-  include:
-    domains:
-      - sensor
-      - binary_sensor
-      - switch
-      - light
-      - device_tracker
-      - climate
-      - weather
+include:
+  domains:
+    - sensor
+    - binary_sensor
+    - switch
+    - light
+    - device_tracker
+    - climate
+    - weather
 
-    # =======================
-    # 방별 영역 그룹화
-    # =======================
-    entities:
-      # === 거실 ===
-      - climate.seutaendeuhyeong_eeokeon
-      - sensor.seutaendeuhyeong_eeokeon_temperature
-      - sensor.seutaendeuhyeong_eeokeon_humidity
-      - sensor.seutaendeuhyeong_eeokeon_power
-      - sensor.seutaendeuhyeong_eeokeon_energy
-      - light.smart_bulb
-      - sensor.fast_com_download
+  # =======================
+  # 방별 영역 그룹화
+  # =======================
+  entities:
+    # === 거실 ===
+    - climate.seutaendeuhyeong_eeokeon
+    - sensor.seutaendeuhyeong_eeokeon_temperature
+    - sensor.seutaendeuhyeong_eeokeon_humidity
+    - sensor.seutaendeuhyeong_eeokeon_power
+    - sensor.seutaendeuhyeong_eeokeon_energy
+    - light.smart_bulb
+    - sensor.fast_com_download
 
-      # === 주방 ===
-      - sensor.jubang_gimcinaengjanggo_middle_temperature
-      - sensor.jubang_siggiseceoggi_total_time
-      - switch.kitchen_hood
+    # === 주방 ===
+    - sensor.jubang_gimcinaengjanggo_middle_temperature
+    - sensor.jubang_siggiseceoggi_total_time
+    - switch.kitchen_hood
 
-      # === 우현이방 ===
-      - device_tracker.gimuhyeonyi_macbook_pro
-      - sensor.gimuhyeonyi_macbook_pro_storage_2
-      - binary_sensor.gimuhyeonyi_macbook_pro_camera_in_use
-      - light.smart_bulb_2
-      - sensor.uhyeonyi_ipad_pro_battery_level
+    # === 우현이방 ===
+    - device_tracker.gimuhyeonyi_macbook_pro
+    - sensor.gimuhyeonyi_macbook_pro_storage_2
+    - binary_sensor.gimuhyeonyi_macbook_pro_camera_in_use
+    - light.smart_bulb_2
+    - sensor.uhyeonyi_ipad_pro_battery_level
 
-      # === 안방 ===
-      - switch.anbang_hwajangsil_hwangi
-      - switch.anbang_syaweosil_deung
+    # === 안방 ===
+    - switch.anbang_hwajangsil_hwangi
+    - switch.anbang_syaweosil_deung
 
-      # === 화장실/샤워실 ===
-      - binary_sensor.jubang_siggiseceoggi_door
-      - sensor.jubang_siggiseceoggi_remaining_time
+    # === 화장실/샤워실 ===
+    - binary_sensor.jubang_siggiseceoggi_door
+    - sensor.jubang_siggiseceoggi_remaining_time
 
-      # === 실험실 ===
-      - switch.jodo_senseo_silheomsil
-      - switch.sori_senseo_silheomsil
+    # === 실험실 ===
+    - switch.jodo_senseo_silheomsil
+    - switch.sori_senseo_silheomsil
 
-      # === 기타 ===
-      - device_tracker.esp32_cam
-      - weather.forecast_jib
-      - sensor.time
-      - sensor.date
+    # === 기타 ===
+    - device_tracker.esp32_cam
+    - weather.forecast_jib
+    - sensor.time
+    - sensor.date
 
-    # =======================
-    # 기능별 그룹화
-    # =======================
-    entity_globs:
-      - sensor.*temperature*
-      - sensor.*humidity*
-      - sensor.*power*
-      - sensor.*energy*
-      - sensor.*battery*
-      - binary_sensor.*motion*
-      - binary_sensor.*presence*
-      - device_tracker.*
-      - sensor.*_download*
-      - sensor.*_upload*
+  # =======================
+  # 기능별 그룹화
+  # =======================
+  entity_globs:
+    - sensor.*temperature*
+    - sensor.*humidity*
+    - sensor.*power*
+    - sensor.*energy*
+    - sensor.*battery*
+    - binary_sensor.*motion*
+    - binary_sensor.*presence*
+    - device_tracker.*
+    - sensor.*_download*
+    - sensor.*_upload*
 
-  exclude:
-    domains:
-      - media_player
-      - automation
-      - script
-      - button
-      - number
-      - select
-      - camera
-      - update
-      - person
+exclude:
+  domains:
+    - media_player
+    - automation
+    - script
+    - button
+    - number
+    - select
+    - camera
+    - update
+    - person
 
-    entity_globs:
-      - sensor.*firmware*
-      - sensor.*status_text*
-      - sensor.*last_seen*
-      - sensor.*availability
-      - binary_sensor.*update_available
-      - sensor.*_focus*
-      - binary_sensor.*_focus*
-      - sensor.*_permission*
-      - sensor.*_location*
+  entity_globs:
+    - sensor.*firmware*
+    - sensor.*status_text*
+    - sensor.*last_seen*
+    - sensor.*availability
+    - binary_sensor.*update_available
+    - sensor.*_focus*
+    - binary_sensor.*_focus*
+    - sensor.*_permission*
+    - sensor.*_location*
 
-  tags_attributes:
-    - friendly_name
-    - device_class
-    - unit_of_measurement
-    - area_id
-    - state_class
+tags_attributes:
+  - friendly_name
+  - device_class
+  - unit_of_measurement
+  - area_id
+  - state_class
 
-  ignore_attributes:
-    - icon
-    - attribution
-    - entity_picture
-    - suggested_display_precision
-    - suggested_precision
-    - restore_state
-    - supported_features
-    - source_type
-    - context_user_id
-    - context_id
-    - context_parent_id
-    - last_changed
-    - last_updated
+ignore_attributes:
+  - icon
+  - attribution
+  - entity_picture
+  - suggested_display_precision
+  - suggested_precision
+  - restore_state
+  - supported_features
+  - source_type
+  - context_user_id
+  - context_id
+  - context_parent_id
+  - last_changed
+  - last_updated
