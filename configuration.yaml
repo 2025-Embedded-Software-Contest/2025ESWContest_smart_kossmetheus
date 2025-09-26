@@ -17,8 +17,8 @@ influxdb: !include influxdb.yaml
 group: !include groups.yaml
 
 command_line:
-  sensor:
-    - name: Pi5 Fan Speed
+  - sensor:
+      name: Pi5 Fan Speed
       unique_id: pi5_fan_rpm
       scan_interval: 15
       command: "cat /sys/devices/platform/cooling_fan/hwmon/*/fan1_input"
