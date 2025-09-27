@@ -1,5 +1,5 @@
 api_version: 1
-host: 192.168.1.49
+host: 192.168.1.175
 port: 8086
 database: !secret influxdb_database
 username: !secret influxdb_username
