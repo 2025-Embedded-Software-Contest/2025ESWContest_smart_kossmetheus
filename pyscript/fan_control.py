@@ -19,9 +19,22 @@ def _find_hwmon_path() -> Optional[str]:
     return None
 
 
-def _write_int(path: str, value: int) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(str(value))
+@pyscript_executor
+def _write_int(path: str, value: int):
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(str(value))
+        return None
+    except Exception as exc:
+        return exc
+
+@pyscript_executor
+def _read_int(path: str):
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return int(f.read().strip()), None
+    except Exception as exc:
+        return None, exc
 
 
 def _clamp(val: int, low: int, high: int) -> int:
@@ -48,10 +61,8 @@ def pi5_fan_set_percent(percent: int = None):
 
         # Determine pwm range
         max_path = os.path.join(hwmon, "pwm1_max")
-        try:
-            with open(max_path, "r", encoding="utf-8") as f:
-                pwm_max = int(f.read().strip())
-        except FileNotFoundError:
+        pwm_max, exc = _read_int(max_path)
+        if exc is not None or pwm_max is None:
             pwm_max = 255
 
         pwm_val = int(round(pwm_max * (percent / 100.0)))
@@ -61,7 +72,7 @@ def pi5_fan_set_percent(percent: int = None):
 
         log.info(f"Pi5 fan set to {percent}% (pwm={pwm_val}/{pwm_max})")
     except Exception as exc:  # noqa: BLE001
-        log.exception(f"Failed to set fan percent: {exc}")
+        log.error(f"Failed to set fan percent: {exc}")
 
 
 @service
@@ -77,6 +88,6 @@ def pi5_fan_set_auto(enabled: bool = True):
         _write_int(auto_path, 1 if enabled else 0)
         log.info(f"Pi5 fan auto mode {'enabled' if enabled else 'disabled'}")
     except Exception as exc:  # noqa: BLE001
-        log.exception(f"Failed to set auto mode: {exc}")
+        log.error(f"Failed to set auto mode: {exc}")
 
 
