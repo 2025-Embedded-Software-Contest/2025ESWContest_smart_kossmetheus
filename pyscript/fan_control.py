@@ -10,13 +10,11 @@ from typing import Optional
 
 
 def _find_hwmon_path() -> Optional[str]:
-    base = "/sys/devices/platform/cooling_fan/hwmon"
-    if not os.path.isdir(base):
+    hwmon, exc = task.executor(_py_find_hwmon_path)
+    if exc:
+        log.error(f"Failed to find hwmon path: {exc}")
         return None
-    for entry in os.scandir(base):
-        if entry.is_dir():
-            return entry.path
-    return None
+    return hwmon
 
 
 @pyscript_executor
@@ -40,6 +38,19 @@ def _read_int(path: str):
 def _clamp(val: int, low: int, high: int) -> int:
     return max(low, min(high, val))
 
+@pyscript_executor
+def _py_find_hwmon_path():
+    try:
+        base = "/sys/devices/platform/cooling_fan/hwmon"
+        if not os.path.isdir(base):
+            return None, None
+        for entry in os.scandir(base):
+            if entry.is_dir():
+                return entry.path, None
+        return None, None
+    except Exception as exc:
+        return None, exc
+
 
 @service
 def pi5_fan_set_percent(percent: int = None):
@@ -57,7 +68,9 @@ def pi5_fan_set_percent(percent: int = None):
     try:
         # Disable automatic control
         auto_path = os.path.join(hwmon, "pwm1_enable")
-        _write_int(auto_path, 0)
+        write_exc = _write_int(auto_path, 0)
+        if write_exc:
+            raise write_exc
 
         # Determine pwm range
         max_path = os.path.join(hwmon, "pwm1_max")
@@ -68,7 +81,9 @@ def pi5_fan_set_percent(percent: int = None):
         pwm_val = int(round(pwm_max * (percent / 100.0)))
         pwm_val = _clamp(pwm_val, 0, pwm_max)
         pwm_path = os.path.join(hwmon, "pwm1")
-        _write_int(pwm_path, pwm_val)
+        write_exc = _write_int(pwm_path, pwm_val)
+        if write_exc:
+            raise write_exc
 
         log.info(f"Pi5 fan set to {percent}% (pwm={pwm_val}/{pwm_max})")
     except Exception as exc:  # noqa: BLE001
@@ -85,7 +100,9 @@ def pi5_fan_set_auto(enabled: bool = True):
 
     try:
         auto_path = os.path.join(hwmon, "pwm1_enable")
-        _write_int(auto_path, 1 if enabled else 0)
+        write_exc = _write_int(auto_path, 1 if enabled else 0)
+        if write_exc:
+            raise write_exc
         log.info(f"Pi5 fan auto mode {'enabled' if enabled else 'disabled'}")
     except Exception as exc:  # noqa: BLE001
         log.error(f"Failed to set auto mode: {exc}")
