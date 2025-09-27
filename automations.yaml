@@ -662,14 +662,14 @@
   - trigger: numeric_state
     entity_id: sensor.pi5_cpu_temperature
     above: 65
-    for: 00:01:00
+    for: 00:00:30
   actions:
   - action: pyscript.pi5_fan_set_auto
     data:
       enabled: false
   - action: pyscript.pi5_fan_set_percent
     data:
-      percent: 80
+      percent: 100
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.pi5_fan_auto
