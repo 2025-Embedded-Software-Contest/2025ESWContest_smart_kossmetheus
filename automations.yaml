@@ -245,13 +245,9 @@
   - action: persistent_notification.create
     data:
       title: "\U0001F4A7 습도 관리 필요"
-      message: >
-        현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
-        {% if trigger.platform == 'numeric_state' and trigger.above is not none %}
-          습도가 높습니다. 제습을 고려해보세요.
-        {% else %}
-          습도가 낮습니다. 가습을 고려해보세요.
-        {% endif %}
+      message: "현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
+        {% if trigger.platform == 'numeric_state' and trigger.above is not none %}\n
+        \ 습도가 높습니다. 제습을 고려해보세요.\n{% else %}\n  습도가 낮습니다. 가습을 고려해보세요.\n{% endif %}\n"
       notification_id: humidity_alert
 - id: sunrise_gradual_lighting
   alias: 일출 조명 서서히 켜기
@@ -451,12 +447,12 @@
   alias: 주변 밝기 자동 조명 제어
   description: 주변 밝기가 충분할 때 자동으로 조명을 끕니다.
   triggers:
-  - type: value
-    device_id: 42940cb04959837ed39a637fed0f69e2
-    entity_id: 64ba2d64e316df06c349b58054dcab48
+  - type: illuminance
+    device_id: e28ebb70ec49039d225e74b202fdd91e
+    entity_id: 4ff6ecbace5417823e81b823fd5bd60e
     domain: sensor
     trigger: device
-    above: 1
+    below: 20
   conditions: []
   actions:
   - type: turn_off
@@ -635,9 +631,9 @@
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      gas_value1: "{{ (res1.data | regex_findall('[0-9]') | join('')) | int }}"
-      gas_value2: "{{ (res2.data | regex_findall('[0-9]') | join('')) | int }}"
-      gas_value:  "{{ ((gas_value1*1000 + gas_value2) / 1000) | round(3) }}"
+      gas_value1: '{{ (res1.data | regex_findall(''[0-9]'') | join('''')) | int }}'
+      gas_value2: '{{ (res2.data | regex_findall(''[0-9]'') | join('''')) | int }}'
+      gas_value: '{{ ((gas_value1*1000 + gas_value2) / 1000) | round(3) }}'
   - if:
     - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
       condition: template
@@ -653,8 +649,6 @@
       target:
         entity_id: input_number.gas_meter_2
   mode: single
-
-## 라즈베리파이 5 액티브 쿨러 자동 제어 (PWM via Pyscript)
 - id: pi5_fan_auto_on
   alias: Pi5 팬 자동 속도 상승
   description: CPU 온도가 65°C 이상이면 팬을 80%로 설정하고 자동모드 해제
@@ -675,11 +669,10 @@
       entity_id: input_boolean.pi5_fan_auto
   - action: persistent_notification.create
     data:
-      title: "🌡️ Pi5 팬 속도 80%"
-      message: "CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 상승하여 팬을 80%로 설정"
+      title: "\U0001F321️ Pi5 팬 속도 80%"
+      message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 상승하여 팬을 80%로 설정
       notification_id: pi5_fan_auto_on
   mode: single
-
 - id: pi5_fan_auto_down
   alias: Pi5 팬 자동 속도 하향
   description: CPU 온도가 55°C 이하이면 팬을 30%로 낮춤
@@ -697,11 +690,10 @@
       notification_id: pi5_fan_auto_on
   - action: persistent_notification.create
     data:
-      title: "❄️ Pi5 팬 속도 30%"
-      message: "CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 떨어져 팬을 30%로 설정"
+      title: ❄️ Pi5 팬 속도 30%
+      message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 떨어져 팬을 30%로 설정
       notification_id: pi5_fan_auto_off
   mode: single
-
 - id: pi5_fan_critical_temp
   alias: Pi5 CPU 임계 온도 긴급 냉각
   description: CPU 80°C 이상 시 최대속도 100% 설정
@@ -719,7 +711,7 @@
       percent: 100
   - action: persistent_notification.create
     data:
-      title: "🚨 Pi5 팬 100%"
-      message: "CPU {{ states('sensor.pi5_cpu_temperature') }}°C - 긴급 냉각 모드"
+      title: "\U0001F6A8 Pi5 팬 100%"
+      message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C - 긴급 냉각 모드
       notification_id: pi5_critical_temp
   mode: restart
