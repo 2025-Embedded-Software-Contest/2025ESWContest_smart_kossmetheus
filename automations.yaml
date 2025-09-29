@@ -482,7 +482,7 @@
       - 255
       - 255
     target:
-      entity_id: light.esp32_cam_esp_cam_gas_light
+      entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
     enabled: true
   - delay:
@@ -494,22 +494,22 @@
       filename: /config/www/tmp/gas/gas_latest.jpg
     action: camera.snapshot
     target:
-      entity_id: camera.korvo2_v31_esp_cam_gas_cam
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
   - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest.jpg
-      rotation_angle: 180
+      rotation_angle: 0
     action: pyscript.image_rotate
   - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop.jpg
-      rotation_angle_before: -0.9
-      left: 155
-      top: 330
-      right: 1024
-      bottom: 480
+      rotation_angle_before: 0
+      left: 200
+      top: 400
+      right: 1400
+      bottom: 650
       rotation_angle: 0
     action: pyscript.image_crop
   - metadata: {}
@@ -527,8 +527,8 @@
       rotation_angle_before: 0
       left: 0
       top: 0
-      right: 188
-      bottom: 51
+      right: 180
+      bottom: 60
       rotation_angle: 0
     action: pyscript.image_crop
   - alias: 뒷자리 분리
@@ -537,10 +537,10 @@
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
       rotation_angle_before: 0
-      left: 189
+      left: 181
       top: 0
       right: 300
-      bottom: 51
+      bottom: 60
       rotation_angle: 0
     action: pyscript.image_crop
   - metadata: {}
@@ -554,7 +554,7 @@
   - metadata: {}
     data: {}
     target:
-      entity_id: light.esp32_cam_esp_cam_gas_light
+      entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_off
     enabled: true
   mode: single
