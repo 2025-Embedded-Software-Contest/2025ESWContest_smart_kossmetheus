@@ -86,6 +86,7 @@ output:
 
 light:
   - platform: monochromatic
+    id: gas_light
     name: "ESP32 CAM Gas Light"
     output: camera_flash
     default_transition_length: 0s
@@ -106,12 +107,14 @@ button:
     icon: mdi:camera-iris
     on_press:
       - light.turn_on:
-          id: camera_flash
+          id: gas_light
           brightness: 100%
       - delay: 2s
-      - camera.snapshot:
-          camera: esp32_cam_esp32_cam_gas_cam
-          filename: /config/www/tmp/gas/gas_latest.jpg
+      - homeassistant.service:
+          service: camera.snapshot
+          data:
+            entity_id: camera.esp32_cam_esp32_cam_gas_cam
+            filename: /config/www/tmp/gas/gas_latest.jpg
       - delay: 1s
       - light.turn_off:
-          id: camera_flash
+          id: gas_light
