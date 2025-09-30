@@ -476,11 +476,11 @@
       nowtimestamp: '{{ now().timestamp() }}'
   - metadata: {}
     data:
-      brightness_pct: 15
       rgb_color:
       - 255
       - 255
       - 255
+      brightness_pct: 30
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
