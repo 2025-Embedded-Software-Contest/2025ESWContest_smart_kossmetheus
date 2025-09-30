@@ -1,0 +1,31 @@
+{
+    "appId": "61eb4367-99f5-433c-86fd-b26772db7f67",
+    "appName": "ha_customize.b761e52a-49ff-4a2d-b641-fa5cb8634882",
+    "appType": "WEBHOOK_SMART_APP",
+    "classifications": [
+        "AUTOMATION"
+    ],
+    "createdDate": "2025-09-30T13:48:36Z",
+    "description": "\uc9d1 at https://caredian.gleeze.com",
+    "displayName": "HA Customize",
+    "installMetadata": {},
+    "lastUpdatedDate": "2025-09-30T13:48:38Z",
+    "owner": {
+        "ownerId": "cb05c59f-3f0b-5f90-4295-29db76d4fbfa",
+        "ownerType": "USER"
+    },
+    "principalType": "LOCATION",
+    "singleInstance": true,
+    "ui": {
+        "dashboardCardsEnabled": false,
+        "pluginId": "",
+        "pluginUri": "",
+        "preInstallDashboardCardsEnabled": false
+    },
+    "webhookSmartApp": {
+        "publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAg6ZStz6UOEut1L+W0VUf+rc3z0wqrRZq\r\nt/XdJDB+NZ5QLUSJS8ENhCMHoyqZAu9zqK1kSScfAlJA50nalQM0jrFOn1lNq1h7M2X1RkwVGFld\r\n69Ju4/CIQG2ZxxZrRZOTPVgPFiUDShKs8pPW6klIrSh5GfapBtRq9U0iato3I7sDmHnt9jGictNC\r\n5H4Bq1H4fmUaD2GI54wbsTKkkxq6GJcktovRZadWpT54sL4G0Z3NWRgbaDzDnS0xKcun30Yi6FpL\r\nC+UG704w1lrshQ2X/QI2RRIuDBRA0DZHqXDygjVl+RW0xeyQZwznEkAwILEvdtpMmJycgBe0tIHl\r\n2VUt8wIDAQAB\n-----END PUBLIC KEY-----",
+        "signatureType": "APP_RSA",
+        "targetStatus": "CONFIRMED",
+        "targetUrl": "https://caredian.gleeze.com/api/webhook/3b22d598264897205eb6192336b10e2a16753e7f999ab1ff3cafc09ee90de4b1"
+    }
+}
