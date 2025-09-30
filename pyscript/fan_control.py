@@ -10,7 +10,7 @@ from typing import Optional
 
 
 def _find_hwmon_path() -> Optional[str]:
-    hwmon, exc = task.executor(_py_find_hwmon_path)
+    hwmon, exc = _py_find_hwmon_path()
     if exc:
         log.error(f"Failed to find hwmon path: {exc}")
         return None
@@ -74,7 +74,8 @@ def pi5_fan_set_percent(percent: int = None):
 
         # Determine pwm range
         max_path = os.path.join(hwmon, "pwm1_max")
-        pwm_max, exc = _read_int(max_path)
+        result = _read_int(max_path)
+        pwm_max, exc = result if result is not None else (None, None)
         if exc is not None or pwm_max is None:
             pwm_max = 255
 
