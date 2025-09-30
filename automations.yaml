@@ -507,10 +507,10 @@
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop.jpg
       rotation_angle_before: 0
-      left: 300
-      top: 470
+      left: 200
+      top: 520
       right: 800
-      bottom: 630
+      bottom: 680
       rotation_angle: 0
     action: pyscript.image_crop
   - metadata: {}
