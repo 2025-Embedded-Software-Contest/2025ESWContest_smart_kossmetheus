@@ -406,25 +406,6 @@
             월간 사용량: {{state_attr(''sensor.gas_meter_monthly'',''last_period'')}}'
     enabled: false
   mode: single
-- id: weekly_system_report
-  alias: 주간 시스템 리포트
-  triggers:
-  - trigger: time
-    at: '20:00:00'
-  conditions:
-  - condition: time
-    weekday:
-    - sun
-  actions:
-  - action: persistent_notification.create
-    data:
-      title: "\U0001F4CA 주간 시스템 리포트"
-      message: "이번 주 시스템 상태 요약:\n\U0001F3E0 시스템 가동시간: {{ states('sensor.last_boot')
-        }} \U0001F4BB 평균 CPU 사용률: {{ states('sensor.processor_use') }}% \U0001F4BE
-        메모리 사용률: {{ states('sensor.memory_use_percent') }}% \U0001F4BD 디스크 사용률: {{
-        states('sensor.disk_use_percent') }}% \U0001F310 네트워크 연결 기기: {{ states('sensor.192_168_1_1_devices_connected')
-        }}개\n모든 시스템이 정상 작동 중입니다! \U0001F44D\n"
-      notification_id: weekly_report
 - id: ios_theme_dark_sunset
   alias: iOS 테마 다크모드 (일몰)
   triggers:
@@ -715,3 +696,71 @@
       message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C - 긴급 냉각 모드
       notification_id: pi5_critical_temp
   mode: restart
+- id: '1759067786798'
+  alias: 이산화탄소 자동 환기 제어
+  description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
+  triggers:
+  - type: carbon_dioxide
+    device_id: 685dcb87a40f475d9698f209b98d9445
+    entity_id: 66c44ad10cf8d067a683d1d85643f661
+    domain: sensor
+    trigger: device
+    above: 1000
+  - type: carbon_dioxide
+    device_id: e259081ff966ca34e7e6348b855bcff8
+    entity_id: 6b254a896368c12d5edd764be23e81a6
+    domain: sensor
+    trigger: device
+    above: 1000
+  conditions:
+  - condition: device
+    type: is_off
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  actions:
+  - type: turn_on
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  - repeat:
+      count: 12
+      sequence:
+      - type: toggle
+        device_id: 98bda3e8ced3d5a12ee685841e367c15
+        entity_id: 08a45393493c019ceb1c55783651f7e1
+        domain: switch
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+  mode: single
+- id: '1759068039218'
+  alias: 이산화탄소 자동 환기 하향
+  description: 실내 이산화탄소 농도가 기준치 이하로 떨어지면 환기 시스템을 자동으로 끕니다.
+  triggers:
+  - type: carbon_dioxide
+    device_id: 685dcb87a40f475d9698f209b98d9445
+    entity_id: 66c44ad10cf8d067a683d1d85643f661
+    domain: sensor
+    trigger: device
+    below: 950
+  - type: carbon_dioxide
+    device_id: e259081ff966ca34e7e6348b855bcff8
+    entity_id: 6b254a896368c12d5edd764be23e81a6
+    domain: sensor
+    trigger: device
+    below: 950
+  conditions:
+  - condition: device
+    type: is_on
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  actions:
+  - type: turn_off
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  mode: single
