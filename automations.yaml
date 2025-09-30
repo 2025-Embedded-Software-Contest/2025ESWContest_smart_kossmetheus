@@ -480,7 +480,7 @@
       - 255
       - 255
       - 255
-      brightness_pct: 20
+      brightness_pct: 25
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
@@ -508,9 +508,9 @@
       output_image: /config/www/tmp/gas/gas_latest-crop.jpg
       rotation_angle_before: 0
       left: 280
-      top: 590
+      top: 580
       right: 920
-      bottom: 710
+      bottom: 720
       rotation_angle: 0
     action: pyscript.image_crop
   - metadata: {}
@@ -528,8 +528,8 @@
       rotation_angle_before: 0
       left: 5
       top: 0
-      right: 108
-      bottom: 60
+      right: 120
+      bottom: 70
       rotation_angle: 0
     action: pyscript.image_crop
   - alias: 뒷자리 분리 (소수부)
@@ -538,10 +538,10 @@
       input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
       rotation_angle_before: 0
-      left: 148
+      left: 140
       top: 0
-      right: 295
-      bottom: 60
+      right: 300
+      bottom: 70
       rotation_angle: 0
     action: pyscript.image_crop
   - metadata: {}
