@@ -567,6 +567,7 @@
     seconds: '30'
   conditions: []
   actions:
+  # ===== AI OCR: 정수부 (앞자리) 읽기 =====
   - action: ai_task.generate_data
     data:
       attachments:
@@ -581,11 +582,17 @@
           - {}
           - media_content_type: app
             media_content_id: media-source://media_source
-      instructions: It's a photo of a gas meter. Read the numbers. Only answer the
-        numbers.
-      task_name: 가스 검침 숫자 읽기1
+      instructions: >-
+        This is a gas meter display showing the integer part (whole numbers).
+        Read ONLY the visible digits from left to right.
+        Return ONLY the numbers without any spaces, units, or explanations.
+        Example: If you see "00123", answer "123".
+        If digits are unclear, make your best estimation based on the shape.
+      task_name: 가스 검침 숫자 읽기1 (정수부)
       entity_id: ai_task.google_ai_task
     response_variable: res1
+  
+  # ===== AI OCR: 소수부 (뒷자리) 읽기 =====
   - action: ai_task.generate_data
     data:
       attachments:
@@ -600,35 +607,101 @@
           - {}
           - media_content_type: app
             media_content_id: media-source://media_source
-      instructions: It's a photo of a gas meter. Read the numbers. Only answer the
-        numbers. There are three numbers.
-      task_name: 가스 검침 숫자 읽기2
+      instructions: >-
+        This is a gas meter display showing the decimal part (three digits after decimal point).
+        Read EXACTLY 3 digits from left to right, even if they start with zeros.
+        Return ONLY the 3-digit number without any spaces, decimal points, units, or explanations.
+        Example: If you see "045", answer "045" (not "45").
+        If digits are unclear, make your best estimation based on the shape.
+      task_name: 가스 검침 숫자 읽기2 (소수부)
       entity_id: ai_task.google_ai_task
     response_variable: res2
+  
+  # ===== 디버깅: OCR 결과를 input_text에 저장 =====
   - action: input_text.set_value
     metadata: {}
     data:
-      value: '{{ res1.data | default(''오류1: 응답 없음'') }}'
+      value: >-
+        {{ now().strftime('%H:%M:%S') }} | 
+        정수: {{ res1.data | default('X') }} | 
+        소수: {{ res2.data | default('X') }}
     target:
       entity_id: input_text.gas_message_2
+  
+  # ===== 숫자 추출 및 검증 =====
   - variables:
-      gas_value1: '{{ (res1.data | regex_findall(''[0-9]'') | join('''')) | int }}'
-      gas_value2: '{{ (res2.data | regex_findall(''[0-9]'') | join('''')) | int }}'
-      gas_value: '{{ ((gas_value1*1000 + gas_value2) / 1000) | round(3) }}'
+      # 정수부: 모든 숫자만 추출
+      gas_value1_raw: '{{ res1.data | default("0") | regex_findall("[0-9]") | join("") }}'
+      gas_value1: '{{ gas_value1_raw | int(default=0) }}'
+      
+      # 소수부: 모든 숫자만 추출 (3자리여야 함)
+      gas_value2_raw: '{{ res2.data | default("000") | regex_findall("[0-9]") | join("") }}'
+      gas_value2_padded: '{{ (gas_value2_raw + "000")[:3] }}'
+      gas_value2: '{{ gas_value2_padded | int(default=0) }}'
+      
+      # 최종 가스 검침값 (정수.소수)
+      gas_value: '{{ ((gas_value1 * 1000 + gas_value2) / 1000) | round(3) }}'
+      
+      # 현재 센서값
+      current_value: '{{ states("sensor.gas_meter_2") | float(default=0) }}'
+      
+      # 증가량 계산
+      delta: '{{ (gas_value | float - current_value) | round(3) }}'
+      
+      # OCR 성공 여부 체크
+      ocr1_success: '{{ gas_value1_raw | length > 0 }}'
+      ocr2_success: '{{ gas_value2_raw | length == 3 }}'
+  
+  # ===== 검증 및 업데이트 =====
   - if:
-    - alias: 가스값에서 기존센서값을 뺀값이 10보다 작거나 0보다 커야함.
-      condition: template
-      value_template: '{% set val = gas_value|float - states(''sensor.gas_meter_2'')|float
-        %}
-
-        {{ 0 <= val <= 10 }} '
+    # 조건 1: OCR 결과가 유효해야 함
+    - condition: template
+      value_template: '{{ ocr1_success and ocr2_success }}'
+    # 조건 2: 증가량이 합리적 범위 내 (0 <= delta <= 10 m³)
+    - condition: template
+      value_template: '{{ 0 <= delta <= 10 }}'
+    # 조건 3: 읽은 값이 현재값보다 작지 않아야 함 (가스는 누적)
+    - condition: template
+      value_template: '{{ gas_value >= current_value }}'
     then:
+    # ===== 성공: 센서 업데이트 =====
     - action: input_number.set_value
       metadata: {}
       data:
         value: '{{ gas_value }}'
       target:
         entity_id: input_number.gas_meter_2
+    
+    - action: persistent_notification.create
+      data:
+        title: "✅ 가스 검침 성공"
+        message: >-
+          🕐 시각: {{ now().strftime('%H:%M:%S') }}
+          
+          📊 검침값: {{ gas_value }} m³
+          
+          📈 증가량: +{{ delta }} m³
+          
+          🔢 OCR: {{ gas_value1 }}.{{ gas_value2_padded }}
+        notification_id: gas_ocr_success
+    else:
+    # ===== 실패: 알림만 생성 =====
+    - action: persistent_notification.create
+      data:
+        title: "⚠️ 가스 검침 실패"
+        message: >-
+          🕐 시각: {{ now().strftime('%H:%M:%S') }}
+          
+          ❌ 검증 실패 사유:
+          {% if not ocr1_success %}- OCR1 실패 (정수부){% endif %}
+          {% if not ocr2_success %}- OCR2 실패 (소수부 {{ gas_value2_raw | length }}자리){% endif %}
+          {% if delta < 0 %}- 음수 증가량 ({{ delta }} m³){% endif %}
+          {% if delta > 10 %}- 비정상적 증가 ({{ delta }} m³){% endif %}
+          
+          🔢 읽은 값: {{ gas_value }} m³ (현재: {{ current_value }} m³)
+          
+          📝 원본: "{{ res1.data | default('X') }}" | "{{ res2.data | default('X') }}"
+        notification_id: gas_ocr_failed
   mode: single
 - id: pi5_fan_auto_on
   alias: Pi5 팬 자동 속도 상승
