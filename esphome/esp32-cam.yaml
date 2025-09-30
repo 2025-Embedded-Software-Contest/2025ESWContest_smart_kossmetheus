@@ -1,6 +1,6 @@
 esphome:
   name: esp32-cam
-  friendly_name: "ESP32 Camera Test"
+  friendly_name: "ESP32-CAM Gas Meter"
 
 esp32:
   board: esp32cam
@@ -46,7 +46,7 @@ i2c:
 # ESP32-CAM Camera (AI-Thinker)
 # =============================
 esp32_camera:
-  name: "ESP32 Camera"
+  name: "ESP32 CAM Gas Cam"
   external_clock:
     pin: GPIO0
     frequency: 20MHz
@@ -56,8 +56,10 @@ esp32_camera:
   href_pin: GPIO23
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
-  resolution: 640x480
+  resolution: 1600x1200
   jpeg_quality: 10
+  max_framerate: 10 fps
+  idle_framerate: 0.2 fps
   vertical_flip: true
   horizontal_mirror: true
 
@@ -84,7 +86,8 @@ output:
 
 light:
   - platform: monochromatic
-    name: "Camera Flash"
+    id: gas_light
+    name: "ESP32 CAM Gas Light"
     output: camera_flash
     default_transition_length: 0s
 
@@ -94,3 +97,24 @@ light:
 switch:
   - platform: restart
     name: "ESP32-CAM Restart"
+
+# =============================
+# Gas Meter Snapshot Button
+# =============================
+button:
+  - platform: template
+    name: "ESP32 CAM Capture Gas Snapshot"
+    icon: mdi:camera-iris
+    on_press:
+      - light.turn_on:
+          id: gas_light
+          brightness: 100%
+      - delay: 2s
+      - homeassistant.service:
+          service: camera.snapshot
+          data:
+            entity_id: camera.esp32_cam_esp32_cam_gas_cam
+            filename: /config/www/tmp/gas/gas_latest.jpg
+      - delay: 1s
+      - light.turn_off:
+          id: gas_light

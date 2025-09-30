@@ -31,18 +31,18 @@ test_gas_camera_snapshot:
   sequence:
     - action: light.turn_on
       target:
-        entity_id: light.esp32_cam_esp_cam_gas_light
+        entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
     - delay: "00:00:02"
     - action: camera.snapshot
       target:
-        entity_id: camera.korvo2_v31_esp_cam_gas_cam
+        entity_id: camera.esp32_cam_esp32_cam_gas_cam
       data:
         filename: "/config/www/tmp/gas/test_snapshot.jpg"
     - action: light.turn_off
       target:
-        entity_id: light.esp32_cam_esp_cam_gas_light
+        entity_id: light.esp32_cam_esp32_cam_gas_light
     - action: system_log.write
       data:
         level: info
@@ -55,7 +55,7 @@ esp32_cam_flash_on:
   sequence:
     - action: light.turn_on
       target:
-        entity_id: light.esp32_cam_esp_cam_gas_light
+        entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
 
@@ -65,4 +65,4 @@ esp32_cam_flash_off:
   sequence:
     - action: light.turn_off
       target:
-        entity_id: light.esp32_cam_esp_cam_gas_light
+        entity_id: light.esp32_cam_esp32_cam_gas_light
