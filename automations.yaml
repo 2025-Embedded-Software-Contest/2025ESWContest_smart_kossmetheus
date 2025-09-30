@@ -476,7 +476,7 @@
       nowtimestamp: '{{ now().timestamp() }}'
   - metadata: {}
     data:
-      brightness_pct: 45
+      brightness_pct: 15
       rgb_color:
       - 255
       - 255
@@ -507,10 +507,10 @@
       input_image: /config/www/tmp/gas/gas_latest.jpg
       output_image: /config/www/tmp/gas/gas_latest-crop.jpg
       rotation_angle_before: 0
-      left: 350
-      top: 380
-      right: 850
-      bottom: 600
+      left: 300
+      top: 470
+      right: 800
+      bottom: 630
       rotation_angle: 0
     action: pyscript.image_crop
   - metadata: {}
