@@ -3,11 +3,15 @@ import requests
 from fastapi import FastAPI, BackgroundTasks
 from pydantic import BaseModel
 from app.rate_limit import should_alert
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 app = FastAPI(title="CareDian Fall Alert")
 
-HA_URL = "https://caredian.gleeeze.com/api/services/notify/mobile_app_gimyeji_iphone" # 홈어시스턴트 -> 개발자도구 -> 서비스 -> notify.로 시작하는 서비스 목록에서 확인 가능.. 
-HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIzMjNkNDQzMzI3YzQ0ZjQyYTFkNzI2Nzc4ZTMwYTRjMSIsImlhdCI6MTc1ODc5MDE1MSwiZXhwIjoyMDc0MTUwMTUxfQ.ZFbkRP-uq-xpvDAFyzahVRCqyyWDGTllxc53RBcl0vs"  #프로필 -> long-lived access tokens 메뉴에서 확인 -> create token 눌러서 토큰 생성
+HA_URL = os.getenv("HA_URL")
+HA_TOKEN = os.getenv("HA_TOKEN")
+
 
 """def send_ha_alert(title: str, message: str):
     print(f"[TEST ALERT] Title: {title} | Message: {message}")
