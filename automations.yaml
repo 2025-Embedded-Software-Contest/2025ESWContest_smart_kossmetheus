@@ -799,3 +799,16 @@
     entity_id: 99f72fc2d843060f243cb0f5979fe38d
     domain: switch
   mode: single
+- id: '1759395712039'
+  alias: 녹음본 저장 시 로컬 맥으로 복사
+  description: ''
+  triggers:
+  - event_type: voice_recorder_saved
+    trigger: event
+  actions:
+  - data:
+      url: '{{ ''https://caredian.gleeze.com'' ~ (trigger.event.data.path | replace(''/config/www'',''/local''))
+        }}'
+      filename: '{{ trigger.event.data.filename }}'
+    action: rest_command.push_record_to_mac
+  mode: queued
