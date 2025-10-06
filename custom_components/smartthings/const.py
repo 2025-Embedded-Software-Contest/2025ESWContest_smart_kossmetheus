@@ -1,4 +1,4 @@
-"""Constants used by the SmartThings custom integration."""
+"""Constants used by the SmartThings component and platforms."""
 
 from pysmartthings import Attribute, Capability, Category
 
