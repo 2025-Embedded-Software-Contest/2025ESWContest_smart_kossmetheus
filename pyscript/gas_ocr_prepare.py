@@ -205,7 +205,13 @@ fields:
         # 고대비/선명 버전 생성(선택)
         if generate_alt:
             if not (ImageEnhance and ImageFilter):
-                log.warning("gas_ocr_prepare: Pillow ImageEnhance/ImageFilter 미존재로 대체 버전 생성을 건너뜁니다")
+                log.warning(
+                    "gas_ocr_prepare: Pillow ImageEnhance/ImageFilter 미존재로 기본 이미지를 복제해 *_hc.jpg 를 생성합니다"
+                )
+                _ensure_dir(int_output_alt)
+                int_img.save(int_output_alt)
+                _ensure_dir(frac_output_alt)
+                frac_img.save(frac_output_alt)
             else:
                 enh = resized
                 # 밝기/대비/선명도 조정 후 약한 샤프닝
