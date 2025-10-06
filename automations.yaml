@@ -461,10 +461,10 @@
   mode: single
 - id: '1757400245264'
   alias: 가스 검침 사진 촬영
-  description: 30분마다 가스 검침기의 조명을 켜고 사진을 촬영한 후, OCR을 위해 이미지를 회전, 자르고 크기를 조절합니다.
+  description: 매일 지정된 시각에 가스 검침기의 조명을 켜고 촬영 후 OCR 전처리를 수행합니다.
   triggers:
-  - trigger: time_pattern
-    minutes: /30
+  - trigger: time
+    at: '09:00:00'
   conditions: []
   actions:
   - variables:
@@ -504,6 +504,8 @@
       resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
       frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      int_output_alt: /config/www/tmp/gas/gas_latest-crop-resize1_hc.jpg
+      frac_output_alt: /config/www/tmp/gas/gas_latest-crop-resize2_hc.jpg
       # success 예시 기준 좌표(1600x1200 스냅샷)
       crop_left: 420
       crop_top: 720
@@ -534,11 +536,10 @@
   mode: single
 - id: '1757400336693'
   alias: 가스 검침 숫자 자동 판독
-  description: 가스 미터 사진에서 숫자를 자동으로 읽어 가스 사용량을 업데이트합니다.
+  description: 매일 촬영된 가스 미터 사진을 기반으로 숫자를 읽고 사용량을 업데이트합니다.
   triggers:
-  - trigger: time_pattern
-    minutes: /30
-    seconds: '30'
+  - trigger: time
+    at: '09:01:00'
   conditions: []
   actions:
   - action: ai_task.generate_data
@@ -565,6 +566,26 @@
   - action: ai_task.generate_data
     data:
       attachments:
+        media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
+        media_content_type: image/jpeg
+        metadata:
+          title: gas_latest-crop-resize1_hc.jpg
+          thumbnail:
+          media_class: image
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+      instructions: 'This is a gas meter display showing the integer part (whole numbers).
+        Read ONLY the visible digits from left to right. Return ONLY the numbers without
+        any spaces, units, or explanations.'
+      task_name: 가스 검침 숫자 읽기1B (정수부,고대비)
+      entity_id: ai_task.google_ai_task
+    response_variable: res1b
+  - action: ai_task.generate_data
+    data:
+      attachments:
         media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2.jpg
         media_content_type: image/jpeg
         metadata:
@@ -584,6 +605,26 @@
       task_name: 가스 검침 숫자 읽기2 (소수부)
       entity_id: ai_task.google_ai_task
     response_variable: res2
+  - action: ai_task.generate_data
+    data:
+      attachments:
+        media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
+        media_content_type: image/jpeg
+        metadata:
+          title: gas_latest-crop-resize2_hc.jpg
+          thumbnail:
+          media_class: image
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+      instructions: 'This is a gas meter display showing the decimal part (four digits
+        after decimal point). Read EXACTLY 4 digits from left to right, even if they
+        start with zeros. Return ONLY the 4-digit number without any spaces.'
+      task_name: 가스 검침 숫자 읽기2B (소수부,고대비)
+      entity_id: ai_task.google_ai_task
+    response_variable: res2b
   - action: input_text.set_value
     metadata: {}
     data:
@@ -592,25 +633,43 @@
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      gas_value1_raw: '{{ res1.data | default("0") | regex_findall("[0-9]") | join("")
-        }}'
-      gas_value1: '{{ gas_value1_raw | int(default=0) }}'
-      gas_value2_raw: '{{ res2.data | default("0000") | regex_findall("[0-9]") | join("")
-        }}'
-      # 소수부를 항상 4자리로 유지(선행 0 포함)
-      gas_value2_padded: '{{ (gas_value2_raw + "0000")[:4] }}'
-      gas_value2: '{{ gas_value2_padded | int(default=0) }}'
-      # 4자리 소수로 계산(예: 133.5638)
+      # 후보군 수집
+      c1_raw: '{{ res1.data | default("0") | regex_findall("[0-9]") | join("") }}'
+      c2_raw: '{{ res1b.data | default("0") | regex_findall("[0-9]") | join("") }}'
+      c1: '{{ c1_raw | int(default=0) }}'
+      c2: '{{ c2_raw | int(default=0) }}'
+      f1_raw: '{{ res2.data | default("0000") | regex_findall("[0-9]") | join("") }}'
+      f2_raw: '{{ res2b.data | default("0000") | regex_findall("[0-9]") | join("") }}'
+      f1_pad: '{{ (f1_raw + "0000")[:4] }}'
+      f2_pad: '{{ (f2_raw + "0000")[:4] }}'
+      f1: '{{ f1_pad | int(default=0) }}'
+      f2: '{{ f2_pad | int(default=0) }}'
+      # 이전값 기반 근접 선택
+      prev_val: '{{ states("sensor.gas_meter_2") | float(0) }}'
+      prev_int: '{{ prev_val | int }}'
+      prev_frac: '{{ ((prev_val - prev_int) * 10000) | round(0) | int }}'
+      d1: '{{ (c1 - prev_int) | abs }}'
+      d2: '{{ (c2 - prev_int) | abs }}'
+      gas_value1: '{{ c1 if d1 <= d2 else c2 }}'
+      fd1: '{{ (f1 - prev_frac) | abs }}'
+      fd2: '{{ (f2 - prev_frac) | abs }}'
+      fd1w: '{{ 10000 - fd1 if fd1 > 5000 else fd1 }}'
+      fd2w: '{{ 10000 - fd2 if fd2 > 5000 else fd2 }}'
+      gas_value2: '{{ f1 if fd1w <= fd2w else f2 }}'
+      gas_value2_padded: '{{ "%04d" | format(gas_value2|int) }}'
       gas_value: '{{ ((gas_value1 * 10000 + gas_value2) / 10000) | round(4) }}'
       current_value: '{{ states("sensor.gas_meter_2") | float(default=0) }}'
-      delta: '{{ (gas_value | float - current_value) | round(3) }}'
-      ocr1_success: '{{ gas_value1_raw | length > 0 }}'
-      ocr2_success: '{{ gas_value2_raw | length == 4 }}'
+      delta: '{{ (gas_value | float - current_value) | round(4) }}'
+      last_ts: '{{ as_timestamp(states.sensor.gas_meter_2.last_changed) }}'
+      minutes_elapsed: '{{ ((as_timestamp(now()) - last_ts) / 60) | float(30) }}'
+      max_delta: '{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}'
+      ocr1_success: '{{ c1_raw | length > 0 or c2_raw | length > 0 }}'
+      ocr2_success: '{{ f1_pad | length == 4 or f2_pad | length == 4 }}'
   - if:
     - condition: template
       value_template: '{{ ocr1_success and ocr2_success }}'
     - condition: template
-      value_template: '{{ 0 <= delta <= 10 }}'
+      value_template: '{{ 0 <= delta <= max_delta }}'
     - condition: template
       value_template: '{{ gas_value >= current_value }}'
     then:
@@ -624,8 +683,8 @@
       data:
         title: ✅ 가스 검침 성공
         message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n\U0001F4CA 검침값:
-          {{ gas_value }} m³\n\U0001F4C8 증가량: +{{ delta }} m³\n\U0001F522 OCR: {{
-          gas_value1 }}.{{ gas_value2_padded }}"
+          {{ gas_value }} m³\n\U0001F4C8 증가량: +{{ delta }} m³ (허용 ≤ {{ max_delta }} m³)\n\U0001F522 확정: {{
+          gas_value1 }}.{{ gas_value2_padded }}\n候보(정수): {{ c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_success
     else:
     - action: persistent_notification.create
@@ -633,11 +692,10 @@
         title: ⚠️ 가스 검침 실패
         message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n❌ 검증 실패 사유: {%
           if not ocr1_success %}- OCR1 실패 (정수부){% endif %} {% if not ocr2_success
-          %}- OCR2 실패 (소수부 {{ gas_value2_raw | length }}자리){% endif %} {% if delta
-          < 0 %}- 음수 증가량 ({{ delta }} m³){% endif %} {% if delta > 10 %}- 비정상적 증가
-          ({{ delta }} m³){% endif %}\n\U0001F522 읽은 값: {{ gas_value }} m³ (현재: {{
-          current_value }} m³)\n\U0001F4DD 원본: \"{{ res1.data | default('X') }}\"
-          | \"{{ res2.data | default('X') }}\""
+          %}- OCR2 실패 (소수부){% endif %} {% if delta < 0 %}- 음수 증가량 ({{ delta }} m³){%
+          endif %} {% if delta > max_delta %}- 비정상적 증가 ({{ delta }} m³ > {{ max_delta }} m³){%
+          endif %}\n\U0001F522 읽은 값: {{ gas_value }} m³ (현재: {{ current_value }} m³)\n候보(정수): {{
+          c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_failed
   mode: single
 - id: pi5_fan_auto_on

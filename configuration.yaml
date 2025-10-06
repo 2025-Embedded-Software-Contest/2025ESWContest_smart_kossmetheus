@@ -135,20 +135,6 @@ input_number:
     step: 0.0001
     unit_of_measurement: m³
 
-  # Raspberry Pi 5 Fan Manual Speed (%)
-  pi5_fan_percent:
-    name: Pi5 Fan Manual Speed
-    min: 0
-    max: 100
-    step: 5
-    unit_of_measurement: "%"
-
-input_boolean:
-  # Raspberry Pi 5 Fan Auto mode toggle
-  pi5_fan_auto:
-    name: Pi5 Fan Auto Mode
-    icon: mdi:fan-auto
-
 input_text:
   gas_message_2:
     name: gas message 2

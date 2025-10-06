@@ -1,5 +1,5 @@
 import os
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 
 
 @service
@@ -9,6 +9,9 @@ def gas_ocr_prepare(
     resize_output: str = "/config/www/tmp/gas/gas_latest-crop-resize.jpg",
     int_output: str = "/config/www/tmp/gas/gas_latest-crop-resize1.jpg",
     frac_output: str = "/config/www/tmp/gas/gas_latest-crop-resize2.jpg",
+    # 추가: 향상 처리(고대비/선명) 버전도 생성
+    int_output_alt: str = "/config/www/tmp/gas/gas_latest-crop-resize1_hc.jpg",
+    frac_output_alt: str = "/config/www/tmp/gas/gas_latest-crop-resize2_hc.jpg",
     # geometry defaults tuned for DS G1.6L sample (1600x1200 snapshot)
     rotation_angle_before: float = 0.0,
     # 새 기본값: success 예시에 맞춘 좌표(좌:420, 우:1220, 상:720, 하:880)
@@ -27,6 +30,7 @@ def gas_ocr_prepare(
     split_frac_left: int = 156,
     split_frac_right: int = 300,
     autocontrast: bool = True,
+    generate_alt: bool = True,
 ):
     """yaml
 name: gas_ocr_prepare
@@ -190,6 +194,23 @@ fields:
         frac_img = resized.crop((split_frac_left, top, split_frac_right, bottom))
         _ensure_dir(frac_output)
         frac_img.save(frac_output)
+
+        # 고대비/선명 버전 생성(선택)
+        if generate_alt:
+            enh = resized
+            # 밝기/대비/선명도 조정 후 약한 샤프닝
+            enh = ImageEnhance.Brightness(enh).enhance(1.15)
+            enh = ImageEnhance.Contrast(enh).enhance(1.8)
+            enh = ImageEnhance.Sharpness(enh).enhance(1.6)
+            enh = enh.filter(ImageFilter.UnsharpMask(radius=1, percent=120, threshold=3))
+
+            int_alt = enh.crop((split_int_left, top, split_int_right, bottom))
+            _ensure_dir(int_output_alt)
+            int_alt.save(int_output_alt)
+
+            frac_alt = enh.crop((split_frac_left, top, split_frac_right, bottom))
+            _ensure_dir(frac_output_alt)
+            frac_alt.save(frac_output_alt)
 
     except Exception as e:
         log.error(f"gas_ocr_prepare error: {e}")
