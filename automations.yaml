@@ -566,26 +566,6 @@
   - action: ai_task.generate_data
     data:
       attachments:
-        media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
-        media_content_type: image/jpeg
-        metadata:
-          title: gas_latest-crop-resize1_hc.jpg
-          thumbnail:
-          media_class: image
-          children_media_class:
-          navigateIds:
-          - {}
-          - media_content_type: app
-            media_content_id: media-source://media_source
-      instructions: 'This is a gas meter display showing the integer part (whole numbers).
-        Read ONLY the visible digits from left to right. Return ONLY the numbers without
-        any spaces, units, or explanations.'
-      task_name: 가스 검침 숫자 읽기1B (정수부,고대비)
-      entity_id: ai_task.google_ai_task
-    response_variable: res1b
-  - action: ai_task.generate_data
-    data:
-      attachments:
         media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2.jpg
         media_content_type: image/jpeg
         metadata:
@@ -605,26 +585,60 @@
       task_name: 가스 검침 숫자 읽기2 (소수부)
       entity_id: ai_task.google_ai_task
     response_variable: res2
-  - action: ai_task.generate_data
-    data:
-      attachments:
-        media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
-        media_content_type: image/jpeg
-        metadata:
-          title: gas_latest-crop-resize2_hc.jpg
-          thumbnail:
-          media_class: image
-          children_media_class:
-          navigateIds:
-          - {}
-          - media_content_type: app
-            media_content_id: media-source://media_source
-      instructions: 'This is a gas meter display showing the decimal part (four digits
-        after decimal point). Read EXACTLY 4 digits from left to right, even if they
-        start with zeros. Return ONLY the 4-digit number without any spaces.'
-      task_name: 가스 검침 숫자 읽기2B (소수부,고대비)
-      entity_id: ai_task.google_ai_task
-    response_variable: res2b
+  - variables:
+      res1_primary_raw: '{{ res1.data | default("") | regex_findall("[0-9]") | join("") }}'
+      res2_primary_raw: '{{ res2.data | default("") | regex_findall("[0-9]") | join("") }}'
+      need_alt_int: '{{ res1_primary_raw | length == 0 }}'
+      need_alt_frac: '{{ res2_primary_raw | length < 4 }}'
+  - choose:
+    - conditions:
+        - condition: template
+          value_template: '{{ need_alt_int }}'
+      sequence:
+        - action: ai_task.generate_data
+          data:
+            attachments:
+              media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
+              media_content_type: image/jpeg
+              metadata:
+                title: gas_latest-crop-resize1_hc.jpg
+                thumbnail:
+                media_class: image
+                children_media_class:
+                navigateIds:
+                - {}
+                - media_content_type: app
+                  media_content_id: media-source://media_source
+            instructions: 'This is a gas meter display showing the integer part (whole numbers).
+              Read ONLY the visible digits from left to right. Return ONLY the numbers without
+              any spaces, units, or explanations.'
+            task_name: 가스 검침 숫자 읽기1B (정수부,고대비)
+            entity_id: ai_task.google_ai_task
+          response_variable: res1b
+    - conditions:
+        - condition: template
+          value_template: '{{ need_alt_frac }}'
+      sequence:
+        - action: ai_task.generate_data
+          data:
+            attachments:
+              media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
+              media_content_type: image/jpeg
+              metadata:
+                title: gas_latest-crop-resize2_hc.jpg
+                thumbnail:
+                media_class: image
+                children_media_class:
+                navigateIds:
+                - {}
+                - media_content_type: app
+                  media_content_id: media-source://media_source
+            instructions: 'This is a gas meter display showing the decimal part (four digits
+              after decimal point). Read EXACTLY 4 digits from left to right, even if they
+              start with zeros. Return ONLY the 4-digit number without any spaces.'
+            task_name: 가스 검침 숫자 읽기2B (소수부,고대비)
+            entity_id: ai_task.google_ai_task
+          response_variable: res2b
   - action: input_text.set_value
     metadata: {}
     data:
