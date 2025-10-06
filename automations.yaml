@@ -640,8 +640,8 @@
       c2: '{{ c2_raw | int(default=0) }}'
       f1_raw: '{{ res2.data | default("0000") | regex_findall("[0-9]") | join("") }}'
       f2_raw: '{{ res2b.data | default("0000") | regex_findall("[0-9]") | join("") }}'
-      f1_pad: '{{ (f1_raw + "0000")[:4] }}'
-      f2_pad: '{{ (f2_raw + "0000")[:4] }}'
+      f1_pad: '{{ ((f1_raw | string) + "0000")[:4] }}'
+      f2_pad: '{{ ((f2_raw | string) + "0000")[:4] }}'
       f1: '{{ f1_pad | int(default=0) }}'
       f2: '{{ f2_pad | int(default=0) }}'
       # 이전값 기반 근접 선택

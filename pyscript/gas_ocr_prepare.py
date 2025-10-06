@@ -230,9 +230,35 @@ fields:
 
     except Exception as e:
         log.error(f"gas_ocr_prepare error: {e}")
+        _save_placeholder(
+            [
+                crop_output,
+                resize_output,
+                int_output,
+                frac_output,
+                int_output_alt,
+                frac_output_alt,
+            ]
+        )
 
 
 def _ensure_dir(path: str):
     folder = os.path.dirname(path)
     if folder and not os.path.exists(folder):
         os.makedirs(folder)
+
+
+def _save_placeholder(paths: list[str]):
+    """Ensure downstream automation has files even on failure."""
+    try:
+        placeholder = Image.new("RGB", (10, 10), color=(0, 0, 0))
+    except Exception as exc:  # pragma: no cover - Pillow unavailable
+        log.error(f"gas_ocr_prepare: placeholder image 생성 실패: {exc}")
+        return
+
+    for path in filter(None, paths):
+        try:
+            _ensure_dir(path)
+            placeholder.save(path)
+        except Exception as exc:
+            log.error(f"gas_ocr_prepare: placeholder 저장 실패 ({path}): {exc}")
