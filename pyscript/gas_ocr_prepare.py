@@ -1,5 +1,12 @@
 import os
-from PIL import Image, ImageOps, ImageEnhance, ImageFilter
+from PIL import Image, ImageOps
+
+# 일부 환경에서는 Pillow 부가 모듈이 누락될 수 있으므로 예외 처리 후 선택적으로 사용한다.
+try:
+    from PIL import ImageEnhance, ImageFilter
+except (ImportError, AttributeError):
+    ImageEnhance = None
+    ImageFilter = None
 
 
 @service
@@ -197,20 +204,23 @@ fields:
 
         # 고대비/선명 버전 생성(선택)
         if generate_alt:
-            enh = resized
-            # 밝기/대비/선명도 조정 후 약한 샤프닝
-            enh = ImageEnhance.Brightness(enh).enhance(1.15)
-            enh = ImageEnhance.Contrast(enh).enhance(1.8)
-            enh = ImageEnhance.Sharpness(enh).enhance(1.6)
-            enh = enh.filter(ImageFilter.UnsharpMask(radius=1, percent=120, threshold=3))
+            if not (ImageEnhance and ImageFilter):
+                log.warning("gas_ocr_prepare: Pillow ImageEnhance/ImageFilter 미존재로 대체 버전 생성을 건너뜁니다")
+            else:
+                enh = resized
+                # 밝기/대비/선명도 조정 후 약한 샤프닝
+                enh = ImageEnhance.Brightness(enh).enhance(1.15)
+                enh = ImageEnhance.Contrast(enh).enhance(1.8)
+                enh = ImageEnhance.Sharpness(enh).enhance(1.6)
+                enh = enh.filter(ImageFilter.UnsharpMask(radius=1, percent=120, threshold=3))
 
-            int_alt = enh.crop((split_int_left, top, split_int_right, bottom))
-            _ensure_dir(int_output_alt)
-            int_alt.save(int_output_alt)
+                int_alt = enh.crop((split_int_left, top, split_int_right, bottom))
+                _ensure_dir(int_output_alt)
+                int_alt.save(int_output_alt)
 
-            frac_alt = enh.crop((split_frac_left, top, split_frac_right, bottom))
-            _ensure_dir(frac_output_alt)
-            frac_alt.save(frac_output_alt)
+                frac_alt = enh.crop((split_frac_left, top, split_frac_right, bottom))
+                _ensure_dir(frac_output_alt)
+                frac_alt.save(frac_output_alt)
 
     except Exception as e:
         log.error(f"gas_ocr_prepare error: {e}")
