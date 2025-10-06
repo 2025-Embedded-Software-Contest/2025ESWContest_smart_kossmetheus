@@ -1,7 +1,7 @@
 # ESP32-CAM 가스 검침 AI OCR 자동화 배포 가이드
 
 ## 📋 개요
-ESP32-S3-Korvo2 v3.1에서 ESP32-CAM으로 마이그레이션하여 가스 검침 AI OCR 자동화 시스템을 구현합니다.
+ESP32-CAM을 활용해 가스 검침 AI OCR 자동화 시스템을 구축하는 전체 과정을 정리했습니다.
 
 ## 🛠️ 하드웨어 요구사항
 
@@ -39,8 +39,7 @@ TXD           <->     U0R (GPIO3)
 ```
 CareDian-backend/
 ├── esphome/
-│   ├── esp32-cam.yaml          # ESP32-CAM 설정 파일
-│   └── korvo2-v31.yaml        # 기존 Korvo-2 설정 (참고용)
+│   └── esp32-cam.yaml          # ESP32-CAM 설정 파일
 ├── automations.yaml           # 자동화 규칙 (업데이트됨)
 ├── scripts.yaml              # 스크립트 (업데이트됨)
 └── pyscript/                 # 이미지 처리 스크립트

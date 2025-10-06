@@ -460,8 +460,8 @@
     brightness_pct: 100
   mode: single
 - id: '1757400245264'
-  alias: 가스 검침 사진 촬영
-  description: 매일 지정된 시각에 가스 검침기의 조명을 켜고 촬영 후 OCR 전처리를 수행합니다.
+  alias: 가스 검침 촬영 및 자동 판독
+  description: ESP32-CAM 촬영부터 전처리와 AI OCR, 센서 업데이트까지 한 번에 수행합니다.
   triggers:
   - trigger: time
     at: '09:00:00'
@@ -519,29 +519,11 @@
       split_bottom: 75
       split_frac_left: 156
       split_frac_right: 300
-  - metadata: {}
-    data:
-      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
-      output_image: /config/www/tmp/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
-      rotation_angle: 0
-    alias: 날짜폴더로 복사
-    enabled: false
-    action: pyscript.image_rotate
-  - metadata: {}
-    data: {}
-    target:
-      entity_id: light.esp32_cam_esp32_cam_gas_light
-    action: light.turn_off
-    enabled: true
-  mode: single
-- id: '1757400336693'
-  alias: 가스 검침 숫자 자동 판독
-  description: 매일 촬영된 가스 미터 사진을 기반으로 숫자를 읽고 사용량을 업데이트합니다.
-  triggers:
-  - trigger: time
-    at: '09:01:00'
-  conditions: []
-  actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
   - action: ai_task.generate_data
     data:
       attachments:
@@ -648,12 +630,12 @@
       entity_id: input_text.gas_message_2
   - variables:
       # 후보군 수집
-      c1_raw: '{{ res1.data | default("0") | regex_findall("[0-9]") | join("") }}'
-      c2_raw: '{{ res1b.data | default("0") | regex_findall("[0-9]") | join("") }}'
+      c1_raw: '{{ res1.data | default("") | regex_findall("[0-9]") | join("") }}'
+      c2_raw: '{{ (res1b.data if res1b is defined else "") | regex_findall("[0-9]") | join("") }}'
       c1: '{{ c1_raw | int(default=0) }}'
       c2: '{{ c2_raw | int(default=0) }}'
-      f1_raw: '{{ res2.data | default("0000") | regex_findall("[0-9]") | join("") }}'
-      f2_raw: '{{ res2b.data | default("0000") | regex_findall("[0-9]") | join("") }}'
+      f1_raw: '{{ res2.data | default("") | regex_findall("[0-9]") | join("") }}'
+      f2_raw: '{{ (res2b.data if res2b is defined else "") | regex_findall("[0-9]") | join("") }}'
       f1_pad: '{{ ((f1_raw | string) + "0000")[:4] }}'
       f2_pad: '{{ ((f2_raw | string) + "0000")[:4] }}'
       f1: '{{ f1_pad | int(default=0) }}'
@@ -690,9 +672,15 @@
     - action: input_number.set_value
       metadata: {}
       data:
-        value: '{{ gas_value }}'
+        value: '{{ gas_value | float }}'
       target:
         entity_id: input_number.gas_meter_2
+    - action: homeassistant.update_entity
+      data: {}
+      target:
+        entity_id:
+        - sensor.gas_meter_2
+        - sensor.gas_meter_monthly
     - action: persistent_notification.create
       data:
         title: ✅ 가스 검침 성공
@@ -711,6 +699,20 @@
           endif %}\n\U0001F522 읽은 값: {{ gas_value }} m³ (현재: {{ current_value }} m³)\n候보(정수): {{
           c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_failed
+  - metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
+      output_image: /config/www/tmp/gas/{{year}}/{{month}}/{{day}}/gas_{{nowtimefile}}.jpg
+      rotation_angle: 0
+    alias: 날짜폴더로 복사
+    enabled: false
+    action: pyscript.image_rotate
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_off
+    enabled: true
   mode: single
 - id: pi5_fan_auto_on
   alias: Pi5 팬 자동 속도 상승

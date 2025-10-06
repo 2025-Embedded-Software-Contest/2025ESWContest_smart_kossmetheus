@@ -96,31 +96,6 @@ lovelace:
       type: module
     - url: /hacsfiles/lovelace-mushroom/mushroom.js
       type: module
-  dashboards:
-    ui-minimalist:
-      mode: yaml
-      filename: ui_lovelace_minimalist/dashboard/ui-lovelace.yaml
-      title: UI Lovelace Minimalist
-      icon: mdi:flower
-      show_in_sidebar: true
-    mobile-dashboard:
-      mode: yaml
-      filename: ui_lovelace_minimalist/dashboard/mobile-dashboard.yaml
-      title: CareDian Mobile
-      icon: mdi:cellphone
-      show_in_sidebar: true
-    caredian-popup:
-      mode: yaml
-      filename: ui_lovelace_minimalist/dashboard/caredian-popup.yaml
-      title: CareDian Pop-up
-      icon: mdi:gesture-tap
-      show_in_sidebar: true
-    bubble-dashboard:
-      mode: yaml
-      filename: lovelace/views/bubble-dashboard.yaml
-      title: Bubble
-      icon: mdi:circle
-      show_in_sidebar: true
 
 # Gas meter (ESP32-CAM + OCR)   #
 homeassistant:
@@ -144,7 +119,7 @@ input_text:
 
 utility_meter:
   gas_meter_monthly:
-    source: input_number.gas_meter_2
+    source: sensor.gas_meter_2
     cycle: monthly
 # HA -> FastAPI Webhook
 # rest_command: !include webhook.yaml
