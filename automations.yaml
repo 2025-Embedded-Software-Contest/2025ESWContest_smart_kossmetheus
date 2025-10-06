@@ -504,6 +504,19 @@
       resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
       frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      # success 예시 기준 좌표(1600x1200 스냅샷)
+      crop_left: 420
+      crop_top: 720
+      crop_right: 1220
+      crop_bottom: 880
+      resize_width: 300
+      # 리사이즈 기준 분할(정수 3자리 / 소수 4자리)
+      split_int_left: 10
+      split_int_right: 155
+      split_top: 0
+      split_bottom: 75
+      split_frac_left: 156
+      split_frac_right: 300
   - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop.jpg

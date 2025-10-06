@@ -11,17 +11,20 @@ def gas_ocr_prepare(
     frac_output: str = "/config/www/tmp/gas/gas_latest-crop-resize2.jpg",
     # geometry defaults tuned for DS G1.6L sample (1600x1200 snapshot)
     rotation_angle_before: float = 0.0,
-    crop_left: int = 280,
-    crop_top: int = 700,
-    crop_right: int = 920,
-    crop_bottom: int = 860,
+    # 새 기본값: success 예시에 맞춘 좌표(좌:420, 우:1220, 상:720, 하:880)
+    crop_left: int = 420,
+    crop_top: int = 720,
+    crop_right: int = 1220,
+    crop_bottom: int = 880,
     resize_width: int = 300,
     # split boundaries on resized image
-    split_int_left: int = 5,
-    split_int_right: int = 140,
+    # 리사이즈 폭 300 기준 정수부 3자리 영역
+    split_int_left: int = 10,
+    split_int_right: int = 155,
     split_top: int = 0,
     split_bottom: int = 70,
-    split_frac_left: int = 141,
+    # 소수부 4자리 영역
+    split_frac_left: int = 156,
     split_frac_right: int = 300,
     autocontrast: bool = True,
 ):
@@ -196,4 +199,3 @@ def _ensure_dir(path: str):
     folder = os.path.dirname(path)
     if folder and not os.path.exists(folder):
         os.makedirs(folder)
-
