@@ -496,54 +496,14 @@
     action: camera.snapshot
     target:
       entity_id: camera.esp32_cam_esp32_cam_gas_cam
-  - metadata: {}
+  - alias: OCR 준비(크롭/리사이즈/분할) – pyscript 단일 호출
+    action: pyscript.gas_ocr_prepare
     data:
       input_image: /config/www/tmp/gas/gas_latest.jpg
-      output_image: /config/www/tmp/gas/gas_latest.jpg
-      rotation_angle: 0
-    action: pyscript.image_rotate
-  - metadata: {}
-    data:
-      input_image: /config/www/tmp/gas/gas_latest.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop.jpg
-      rotation_angle_before: 0
-      left: 280
-      top: 580
-      right: 920
-      bottom: 720
-      rotation_angle: 0
-    action: pyscript.image_crop
-  - metadata: {}
-    data:
-      input_image: /config/www/tmp/gas/gas_latest-crop.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
-      width: 300
-      height: 0
-    action: pyscript.image_resize
-  - alias: 앞자리 분리 (정수부)
-    metadata: {}
-    data:
-      input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
-      rotation_angle_before: 0
-      left: 5
-      top: 0
-      right: 120
-      bottom: 70
-      rotation_angle: 0
-    action: pyscript.image_crop
-  - alias: 뒷자리 분리 (소수부)
-    metadata: {}
-    data:
-      input_image: /config/www/tmp/gas/gas_latest-crop-resize.jpg
-      output_image: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
-      rotation_angle_before: 0
-      left: 140
-      top: 0
-      right: 300
-      bottom: 70
-      rotation_angle: 0
-    action: pyscript.image_crop
+      crop_output: /config/www/tmp/gas/gas_latest-crop.jpg
+      resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
+      frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
   - metadata: {}
     data:
       input_image: /config/www/tmp/gas/gas_latest-crop.jpg
@@ -603,11 +563,11 @@
           - {}
           - media_content_type: app
             media_content_id: media-source://media_source
-      instructions: 'This is a gas meter display showing the decimal part (three digits
-        after decimal point). Read EXACTLY 3 digits from left to right, even if they
-        start with zeros. Return ONLY the 3-digit number without any spaces, decimal
-        points, units, or explanations. Example: If you see "045", answer "045" (not
-        "45"). If digits are unclear, make your best estimation based on the shape.'
+      instructions: 'This is a gas meter display showing the decimal part (four digits
+        after decimal point). Read EXACTLY 4 digits from left to right, even if they
+        start with zeros. Return ONLY the 4-digit number without any spaces, decimal
+        points, units, or explanations. Example: If you see "0638", answer "0638" (not
+        "638"). If digits are unclear, make your best estimation based on the shape.'
       task_name: 가스 검침 숫자 읽기2 (소수부)
       entity_id: ai_task.google_ai_task
     response_variable: res2
@@ -622,15 +582,17 @@
       gas_value1_raw: '{{ res1.data | default("0") | regex_findall("[0-9]") | join("")
         }}'
       gas_value1: '{{ gas_value1_raw | int(default=0) }}'
-      gas_value2_raw: '{{ res2.data | default("000") | regex_findall("[0-9]") | join("")
+      gas_value2_raw: '{{ res2.data | default("0000") | regex_findall("[0-9]") | join("")
         }}'
-      gas_value2_padded: '{{ (gas_value2_raw + "000")[:3] }}'
+      # 소수부를 항상 4자리로 유지(선행 0 포함)
+      gas_value2_padded: '{{ (gas_value2_raw + "0000")[:4] }}'
       gas_value2: '{{ gas_value2_padded | int(default=0) }}'
-      gas_value: '{{ ((gas_value1 * 1000 + gas_value2) / 1000) | round(3) }}'
+      # 4자리 소수로 계산(예: 133.5638)
+      gas_value: '{{ ((gas_value1 * 10000 + gas_value2) / 10000) | round(4) }}'
       current_value: '{{ states("sensor.gas_meter_2") | float(default=0) }}'
       delta: '{{ (gas_value | float - current_value) | round(3) }}'
       ocr1_success: '{{ gas_value1_raw | length > 0 }}'
-      ocr2_success: '{{ gas_value2_raw | length == 3 }}'
+      ocr2_success: '{{ gas_value2_raw | length == 4 }}'
   - if:
     - condition: template
       value_template: '{{ ocr1_success and ocr2_success }}'
