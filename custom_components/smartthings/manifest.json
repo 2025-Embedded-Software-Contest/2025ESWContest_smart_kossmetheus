@@ -1,7 +1,6 @@
 {
   "domain": "smartthings",
   "name": "SmartThings",
-  "version": "1.0.0",
   "codeowners": ["@joostlek"],
   "config_flow": true,
   "dependencies": ["application_credentials"],
