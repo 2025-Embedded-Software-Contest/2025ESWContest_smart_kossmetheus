@@ -1,7 +1,10 @@
 import os
-import cv2
-import numpy as np
 from PIL import Image
+
+try:
+    import cv2  # Optional dependency
+except ImportError:  # pragma: no cover
+    cv2 = None
 
 # Pyscript 환경에서만 서비스로 등록 (일반 파이썬에서는 함수로 사용)
 try:
@@ -32,6 +35,9 @@ def detect_digit_area(image_path):
     가스 검침기 이미지에서 숫자 영역을 자동으로 감지합니다.
     """
     try:
+        if cv2 is None:
+            raise RuntimeError("OpenCV(opencv-python)가 설치되어 있지 않습니다")
+
         # OpenCV로 이미지 로드
         image = cv2.imread(image_path)
         if image is None:
@@ -85,10 +91,11 @@ def detect_digit_area(image_path):
     except Exception as e:
         log.error(f"자동 숫자 영역 감지 실패: {e}")
         # 실패시 기본 영역 반환
-        image = cv2.imread(image_path)
-        if image is not None:
-            height, width = image.shape[:2]
-            return (width//4, height//3, width*3//4, height*2//3)
+        if cv2 is not None:
+            image = cv2.imread(image_path)
+            if image is not None:
+                height, width = image.shape[:2]
+                return (width // 4, height // 3, width * 3 // 4, height * 2 // 3)
         return (0, 0, 100, 100)
 
 
@@ -108,6 +115,8 @@ def test_gas_meter_detection(input_image=None):
     """
     """가스 검침기 숫자 영역 감지 테스트"""
     try:
+        if cv2 is None:
+            raise RuntimeError("OpenCV(opencv-python)가 설치되어 있지 않습니다")
         crop_box = detect_digit_area(input_image)
         log.info(f"감지된 숫자 영역: {crop_box}")
 
@@ -228,6 +237,8 @@ fields:
 
     # 크롭 영역 결정 (자동 감지 또는 수동 설정)
     if auto_detect:
+        if cv2 is None:
+            raise RuntimeError("auto_detect 기능을 사용하려면 OpenCV(opencv-python)가 필요합니다")
         # 자동 숫자 영역 감지
         crop_box = detect_digit_area(input_image)
         log.info(f"자동 감지된 숫자 영역: {crop_box}")
