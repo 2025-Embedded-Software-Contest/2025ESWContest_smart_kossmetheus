@@ -658,8 +658,8 @@
       last_ts: '{{ as_timestamp(states.sensor.gas_meter_2.last_changed) }}'
       minutes_elapsed: '{{ ((as_timestamp(now()) - last_ts) / 60) | float(30) }}'
       max_delta: '{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}'
-      ocr1_success: '{{ c1_raw | length > 0 or c2_raw | length > 0 }}'
-      ocr2_success: '{{ f1_pad | length == 4 or f2_pad | length == 4 }}'
+      ocr1_success: '{{ (c1_raw | string | length > 0) or (c2_raw | string | length > 0) }}'
+      ocr2_success: '{{ (f1_pad | string | length == 4) or (f2_pad | string | length == 4) }}'
   - if:
     - condition: template
       value_template: '{{ ocr1_success and ocr2_success }}'
