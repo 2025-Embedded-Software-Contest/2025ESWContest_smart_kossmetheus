@@ -570,8 +570,8 @@
   - variables:
       res1_primary_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("") }}'
       res2_primary_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("") }}'
-      need_alt_int: '{{ res1_primary_raw | length == 0 }}'
-      need_alt_frac: '{{ res2_primary_raw | length < 4 }}'
+      need_alt_int: '{{ res1_primary_raw | string | length == 0 }}'
+      need_alt_frac: '{{ res2_primary_raw | string | length < 4 }}'
   - if:
     - condition: template
       value_template: '{{ need_alt_int }}'
