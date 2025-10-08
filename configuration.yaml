@@ -36,14 +36,14 @@ command_line:
       name: Pi5 CPU Usage
       unique_id: pi5_cpu_usage
       scan_interval: 30
-      command: "ps -A -o %cpu | awk '{s+=$1} END {printf \"%.1f\", s}'"
+      command: 'ps -A -o %cpu | awk ''{s+=$1} END {printf "%.1f", s}'''
       unit_of_measurement: "%"
       value_template: "{{ value | float(default=0) | round(1) }}"
   - sensor:
       name: Pi5 Memory Usage
       unique_id: pi5_memory_usage
       scan_interval: 30
-      command: "free | grep Mem | awk '{printf \"%.1f\", $3/$2 * 100.0}'"
+      command: 'free | grep Mem | awk ''{printf "%.1f", $3/$2 * 100.0}'''
       unit_of_measurement: "%"
       value_template: "{{ value | float(default=0) | round(1) }}"
 # Enable Pyscript custom integration for image pipeline
@@ -67,8 +67,8 @@ http:
 
 # 2. oicd 설정
 # openid:
-#   client_id: "<AUTHENTIK_CLIENT_ID>"
-#   client_secret: "<AUTHENTIK_CLIENT_SECRET>"
+#   client_id: zMtmO7zrY19aS8plMLn3iKCbaWJzOqkBpZ82nY6M
+#   client_secret: "schRFu3WkHcUW5Tp5m5hOXo63OYtmXfCWk4U9lxx6sOoSWPkJs3qx1LpxOWkJgBJeRdAsOANaEHkGaPuO6h8BLrSA0fs5kYFZzX21HI1Yasq6Q5CulamrJ6I71wYhOAi
 #   configure_url: "https://auth.example.com/application/o/<provider-slug>/.well-known/openid-configuration"
 #   username_field: "preferred_username"   # Authentik에서 이 클레임이 나오게 매핑했을 것
 #   scope: "openid profile email"
@@ -123,7 +123,6 @@ utility_meter:
     cycle: monthly
 # HA -> FastAPI Webhook
 # rest_command: !include webhook.yaml
-
 
 rest_command:
   push_record_to_mac:
