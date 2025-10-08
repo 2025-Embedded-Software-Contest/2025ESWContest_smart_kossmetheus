@@ -9,11 +9,14 @@ class Settings(BaseSettings):
     log_json: bool = Field(default=False, alias="LOG_JSON")
     allowed_origins: List[str] = Field(default_factory=list, alias="ALLOWED_ORIGINS")
 
-    # Influx (옵션)
-    influx_url: Optional[str] = Field(default=None, alias="INFLUX_URL")
-    influx_token: Optional[str] = Field(default=None, alias="INFLUX_TOKEN")
-    influx_org: Optional[str] = Field(default=None, alias="INFLUX_ORG")
-    influx_bucket: Optional[str] = Field(default=None, alias="INFLUX_BUCKET")
+    # InfluxDB 1.x
+    influxdb_url: str = Field(default="http://127.0.0.1:8086", alias="INFLUXDB_URL")
+    influxdb_db: str = Field(default="caredian", alias="INFLUXDB_DB")
+    influxdb_user: str | None = Field(default=None, alias="INFLUXDB_USER")
+    influxdb_password: str | None = Field(default=None, alias="INFLUXDB_PASSWORD")
+    influxdb_timeout_ms: int = Field(default=5000, alias="INFLUXDB_TIMEOUT_MS")
+    influxdb_verify_ssl: bool = Field(default=False, alias="INFLUXDB_VERIFY_SSL")
+    influxdb_measurement: str = Field(default="fall_events", alias="INFLUXDB_MEASUREMENT")
 
     # HA
     ha_base_url: str = Field(..., alias="HA_BASE_URL")
