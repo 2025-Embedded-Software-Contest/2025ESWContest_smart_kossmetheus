@@ -149,6 +149,118 @@
         {{ is_state('binary_sensor.iphone_presence', 'on') }}
       icon: mdi:home-account
 
+    # CO₂ 센서(모든 carbon_dioxide) 중 하나라도 허용 범위를 벗어나면 true
+    - name: "any_co2_out_of_range"
+      unique_id: "any_co2_out_of_range"
+      state: >
+        {% set co2_min = states('input_number.co2_min_ppm') | float(0) %}
+        {% set co2_max = states('input_number.co2_max_ppm') | float(1000) %}
+        {% set sensors = states.sensor | selectattr('attributes.device_class', 'eq', 'carbon_dioxide') | list %}
+        {% set ns = namespace(bad=false) %}
+        {% for s in sensors %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable', 'none', None] %}
+            {% set fv = v | float(0) %}
+            {% if fv < co2_min or fv > co2_max %}
+              {% set ns.bad = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.bad }}
+      icon: >
+        {% if is_state('binary_sensor.any_co2_out_of_range','on') %} mdi:molecule-co2-alert
+        {% else %} mdi:molecule-co2
+        {% endif %}
+      attributes:
+        out_of_range_entities: >
+          {% set co2_min = states('input_number.co2_min_ppm') | float(0) %}
+          {% set co2_max = states('input_number.co2_max_ppm') | float(1000) %}
+          {% set sensors = states.sensor | selectattr('attributes.device_class', 'eq', 'carbon_dioxide') | list %}
+          {% set bad = [] %}
+          {% for s in sensors %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable', 'none', None] %}
+              {% set fv = v | float(0) %}
+              {% if fv < co2_min or fv > co2_max %}
+                {% set bad = bad + [s.entity_id] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ bad }}
+
+    # 공기질 센서(AQI/PM) 중 하나라도 허용 범위를 벗어나면 true
+    - name: "any_air_quality_out_of_range"
+      unique_id: "any_air_quality_out_of_range"
+      state: >
+        {% set aqi_max  = states('input_number.aqi_max')  | float(100) %}
+        {% set pm25_max = states('input_number.pm25_max') | float(35) %}
+        {% set pm10_max = states('input_number.pm10_max') | float(50) %}
+        {% set sensors_aqi  = states.sensor | selectattr('attributes.device_class', 'eq', 'aqi') | list %}
+        {% set sensors_pm25 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm25') | list %}
+        {% set sensors_pm10 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm10') | list %}
+        {% set ns = namespace(bad=false) %}
+        {% for s in sensors_aqi %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > aqi_max %}
+            {% set ns.bad = true %}
+          {% endif %}
+        {% endfor %}
+        {% for s in sensors_pm25 %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm25_max %}
+            {% set ns.bad = true %}
+          {% endif %}
+        {% endfor %}
+        {% for s in sensors_pm10 %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm10_max %}
+            {% set ns.bad = true %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.bad }}
+      icon: >
+        {% if is_state('binary_sensor.any_air_quality_out_of_range','on') %} mdi:cloud-alert
+        {% else %} mdi:cloud
+        {% endif %}
+      attributes:
+        out_of_range_entities: >
+          {% set aqi_max  = states('input_number.aqi_max')  | float(100) %}
+          {% set pm25_max = states('input_number.pm25_max') | float(35) %}
+          {% set pm10_max = states('input_number.pm10_max') | float(50) %}
+          {% set sensors_aqi  = states.sensor | selectattr('attributes.device_class', 'eq', 'aqi') | list %}
+          {% set sensors_pm25 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm25') | list %}
+          {% set sensors_pm10 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm10') | list %}
+          {% set bad = [] %}
+          {% for s in sensors_aqi %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > aqi_max %}
+              {% set bad = bad + [s.entity_id] %}
+            {% endif %}
+          {% endfor %}
+          {% for s in sensors_pm25 %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm25_max %}
+              {% set bad = bad + [s.entity_id] %}
+            {% endif %}
+          {% endfor %}
+          {% for s in sensors_pm10 %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm10_max %}
+              {% set bad = bad + [s.entity_id] %}
+            {% endif %}
+          {% endfor %}
+          {{ bad }}
+
+    # 환기 필요 여부(OR): CO₂ 또는 공기질 이상 시 true
+    - name: "ventilation_should_run"
+      unique_id: "ventilation_should_run"
+      state: >
+        {{ is_state('binary_sensor.any_co2_out_of_range','on') or is_state('binary_sensor.any_air_quality_out_of_range','on') }}
+      icon: >
+        {% if is_state('binary_sensor.ventilation_should_run','on') %} mdi:fan-alert
+        {% else %} mdi:fan
+        {% endif %}
+
 # ===========================
 # Bubble Card Modules storage
 # ===========================

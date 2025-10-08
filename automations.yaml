@@ -791,6 +791,9 @@
   alias: 이산화탄소 자동 환기 제어
   description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
   triggers:
+  - trigger: state
+    entity_id: binary_sensor.ventilation_should_run
+    to: 'on'
   - type: carbon_dioxide
     device_id: 685dcb87a40f475d9698f209b98d9445
     entity_id: 66c44ad10cf8d067a683d1d85643f661
@@ -831,6 +834,9 @@
   alias: 이산화탄소 자동 환기 하향
   description: 실내 이산화탄소 농도가 기준치 이하로 떨어지면 환기 시스템을 자동으로 끕니다.
   triggers:
+  - trigger: state
+    entity_id: binary_sensor.ventilation_should_run
+    to: 'off'
   - type: carbon_dioxide
     device_id: 685dcb87a40f475d9698f209b98d9445
     entity_id: 66c44ad10cf8d067a683d1d85643f661
