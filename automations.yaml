@@ -440,20 +440,8 @@
       attachments:
         media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1.jpg
         media_content_type: image/jpeg
-        metadata:
-          title: gas_latest-crop-resize1.jpg
-          thumbnail:
-          media_class: image
-          children_media_class:
-          navigateIds:
-          - {}
-          - media_content_type: app
-            media_content_id: media-source://media_source
-      instructions: 'This is a gas meter display showing the integer part (whole numbers).
-        Read ONLY the visible digits from left to right. Return ONLY the numbers without
-        any spaces, units, or explanations. Example: If you see "00123", answer "123".
-        If digits are unclear, make your best estimation based on the shape.'
-      task_name: 가스 검침 숫자 읽기1 (정수부)
+      instructions: '3 digits only'
+      task_name: 가스 검침 정수 3자리
       entity_id: ai_task.google_ai_task
     response_variable: res1
   - action: ai_task.generate_data
@@ -461,22 +449,8 @@
       attachments:
         media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2.jpg
         media_content_type: image/jpeg
-        metadata:
-          title: gas_latest-crop-resize2.jpg
-          thumbnail:
-          media_class: image
-          children_media_class:
-          navigateIds:
-          - {}
-          - media_content_type: app
-            media_content_id: media-source://media_source
-      instructions: 'This is a gas meter display showing the decimal part (four digits
-        after decimal point). Read EXACTLY 4 digits from left to right, even if they
-        start with zeros. Return ONLY the 4-digit number without any spaces, decimal
-        points, units, or explanations. Example: If you see "0638", answer "0638"
-        (not "638"). If digits are unclear, make your best estimation based on the
-        shape.'
-      task_name: 가스 검침 숫자 읽기2 (소수부)
+      instructions: '4 digits only'
+      task_name: 가스 검침 소수 4자리
       entity_id: ai_task.google_ai_task
     response_variable: res2
   - variables:
@@ -495,19 +469,8 @@
         attachments:
           media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
           media_content_type: image/jpeg
-          metadata:
-            title: gas_latest-crop-resize1_hc.jpg
-            thumbnail:
-            media_class: image
-            children_media_class:
-            navigateIds:
-            - {}
-            - media_content_type: app
-              media_content_id: media-source://media_source
-        instructions: This is a gas meter display showing the integer part (whole
-          numbers). Read ONLY the visible digits from left to right. Return ONLY the
-          numbers without any spaces, units, or explanations.
-        task_name: 가스 검침 숫자 읽기1B (정수부,고대비)
+        instructions: '3 digits only'
+        task_name: 가스 검침 정수 3자리(고대비)
         entity_id: ai_task.google_ai_task
       response_variable: res1b
   - if:
@@ -519,19 +482,8 @@
         attachments:
           media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
           media_content_type: image/jpeg
-          metadata:
-            title: gas_latest-crop-resize2_hc.jpg
-            thumbnail:
-            media_class: image
-            children_media_class:
-            navigateIds:
-            - {}
-            - media_content_type: app
-              media_content_id: media-source://media_source
-        instructions: This is a gas meter display showing the decimal part (four digits
-          after decimal point). Read EXACTLY 4 digits from left to right, even if
-          they start with zeros. Return ONLY the 4-digit number without any spaces.
-        task_name: 가스 검침 숫자 읽기2B (소수부,고대비)
+        instructions: '4 digits only'
+        task_name: 가스 검침 소수 4자리(고대비)
         entity_id: ai_task.google_ai_task
       response_variable: res2b
   - action: input_text.set_value
