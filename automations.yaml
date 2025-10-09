@@ -500,10 +500,8 @@
         | join("") }}'
       c1_len: '{{ c1_raw | string | length }}'
       c2_len: '{{ c2_raw | string | length }}'
-      c1_digits: '{{ (((c1_raw | string) ~ "000") | regex_findall("^\\d{3}") | first
-        | default("")) }}'
-      c2_digits: '{{ (((c2_raw | string) ~ "000") | regex_findall("^\\d{3}") | first
-        | default("")) }}'
+      c1_digits: '{{ (((c1_raw | string) ~ "000") | regex_findall("^\\d{3}") | first | default("")) }}'
+      c2_digits: '{{ (((c2_raw | string) ~ "000") | regex_findall("^\\d{3}") | first | default("")) }}'
       c1: '{{ c1_digits | int(default=0) }}'
       c2: '{{ c2_digits | int(default=0) }}'
       f1_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("")
@@ -514,11 +512,8 @@
       f2_len: '{{ f2_raw | string | length }}'
       primary_concat: '{{ (c1_raw | string) ~ (f1_raw | string) }}'
       primary_len: '{{ primary_concat | string | length }}'
-      f1_pad: '{{ (primary_concat | regex_findall("^\\d{3}(\\d{4})") | first | default(""))
-        if primary_len >= 7 else ((((f1_raw | string) ~ "0000") | regex_findall("^\\d{4}")
-        | first | default(""))) }}'
-      f2_pad: '{{ (((f2_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first
-        | default("")) }}'
+      f1_pad: '{{ (primary_concat | regex_findall("^\\d{3}(\\d{4})") | first | default("")) if primary_len >= 7 else ((((f1_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first | default(""))) }}'
+      f2_pad: '{{ (((f2_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first | default("")) }}'
       f1: '{{ f1_pad | int(default=0) }}'
       f2: '{{ f2_pad | int(default=0) }}'
       prev_val: '{{ states("sensor.gas_meter_2") | float(0) }}'
