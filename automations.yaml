@@ -440,7 +440,7 @@
       attachments:
         media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1.jpg
         media_content_type: image/jpeg
-      instructions: '3 digits only'
+      instructions: 3 digits only
       task_name: 가스 검침 정수 3자리
       entity_id: ai_task.google_ai_task
     response_variable: res1
@@ -449,7 +449,7 @@
       attachments:
         media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2.jpg
         media_content_type: image/jpeg
-      instructions: '4 digits only'
+      instructions: 4 digits only
       task_name: 가스 검침 소수 4자리
       entity_id: ai_task.google_ai_task
     response_variable: res2
@@ -469,7 +469,7 @@
         attachments:
           media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
           media_content_type: image/jpeg
-        instructions: '3 digits only'
+        instructions: 3 digits only
         task_name: 가스 검침 정수 3자리(고대비)
         entity_id: ai_task.google_ai_task
       response_variable: res1b
@@ -482,7 +482,7 @@
         attachments:
           media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
           media_content_type: image/jpeg
-        instructions: '4 digits only'
+        instructions: 4 digits only
         task_name: 가스 검침 소수 4자리(고대비)
         entity_id: ai_task.google_ai_task
       response_variable: res2b
@@ -500,8 +500,10 @@
         | join("") }}'
       c1_len: '{{ c1_raw | string | length }}'
       c2_len: '{{ c2_raw | string | length }}'
-      c1_digits: '{{ (((c1_raw | string) ~ "000") | regex_findall("^\\d{3}") | first | default("")) }}'
-      c2_digits: '{{ (((c2_raw | string) ~ "000") | regex_findall("^\\d{3}") | first | default("")) }}'
+      c1_digits: '{{ (((c1_raw | string) ~ "000") | regex_findall("^\\d{3}") | first
+        | default("")) }}'
+      c2_digits: '{{ (((c2_raw | string) ~ "000") | regex_findall("^\\d{3}") | first
+        | default("")) }}'
       c1: '{{ c1_digits | int(default=0) }}'
       c2: '{{ c2_digits | int(default=0) }}'
       f1_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("")
@@ -512,8 +514,11 @@
       f2_len: '{{ f2_raw | string | length }}'
       primary_concat: '{{ (c1_raw | string) ~ (f1_raw | string) }}'
       primary_len: '{{ primary_concat | string | length }}'
-      f1_pad: '{{ (primary_concat | regex_findall("^\\d{3}(\\d{4})") | first | default("")) if primary_len >= 7 else ((((f1_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first | default(""))) }}'
-      f2_pad: '{{ (((f2_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first | default("")) }}'
+      f1_pad: '{{ (primary_concat | regex_findall("^\\d{3}(\\d{4})") | first | default(""))
+        if primary_len >= 7 else ((((f1_raw | string) ~ "0000") | regex_findall("^\\d{4}")
+        | first | default(""))) }}'
+      f2_pad: '{{ (((f2_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first
+        | default("")) }}'
       f1: '{{ f1_pad | int(default=0) }}'
       f2: '{{ f2_pad | int(default=0) }}'
       prev_val: '{{ states("sensor.gas_meter_2") | float(0) }}'
@@ -598,20 +603,10 @@
   description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
   triggers:
   - trigger: state
-    entity_id: binary_sensor.ventilation_should_run
+    entity_id:
+    - binary_sensor.ventilation_should_run
     to: 'on'
-  - type: carbon_dioxide
-    device_id: 685dcb87a40f475d9698f209b98d9445
-    entity_id: 66c44ad10cf8d067a683d1d85643f661
-    domain: sensor
-    trigger: device
-    above: 1000
-  - type: carbon_dioxide
-    device_id: e259081ff966ca34e7e6348b855bcff8
-    entity_id: 6b254a896368c12d5edd764be23e81a6
-    domain: sensor
-    trigger: device
-    above: 1000
+    from:
   conditions:
   - condition: device
     type: is_off
@@ -641,20 +636,10 @@
   description: 실내 이산화탄소 농도가 기준치 이하로 떨어지면 환기 시스템을 자동으로 끕니다.
   triggers:
   - trigger: state
-    entity_id: binary_sensor.ventilation_should_run
+    entity_id:
+    - binary_sensor.ventilation_should_run
+    from:
     to: 'off'
-  - type: carbon_dioxide
-    device_id: 685dcb87a40f475d9698f209b98d9445
-    entity_id: 66c44ad10cf8d067a683d1d85643f661
-    domain: sensor
-    trigger: device
-    below: 950
-  - type: carbon_dioxide
-    device_id: e259081ff966ca34e7e6348b855bcff8
-    entity_id: 6b254a896368c12d5edd764be23e81a6
-    domain: sensor
-    trigger: device
-    below: 950
   conditions:
   - condition: device
     type: is_on
