@@ -126,26 +126,6 @@
       message: "축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요. 건강한
         하루를 보내고 계시는군요! \U0001F44F\n"
       notification_id: steps_goal_achieved
-- id: kimchi_fridge_temperature_alert
-  alias: 김치냉장고 온도 이상
-  triggers:
-  - trigger: numeric_state
-    entity_id: sensor.kimchi_fridge_avg_temperature
-    above: 5
-    for: 00:30:00
-  - trigger: numeric_state
-    entity_id: sensor.kimchi_fridge_avg_temperature
-    below: -5
-    for: 00:30:00
-  actions:
-  - action: persistent_notification.create
-    data:
-      title: "\U0001F96C 김치냉장고 온도 주의"
-      message: '김치냉장고 평균 온도가 {{ states(''sensor.kimchi_fridge_avg_temperature'') }}°C입니다.
-        적정 온도 범위(-5°C ~ 5°C)를 확인해보세요.
-
-        '
-      notification_id: kimchi_fridge_temp_alert
 - id: dishwasher_cycle_complete
   alias: 식기세척기 완료 알림
   triggers:
@@ -181,55 +161,6 @@
 
         '
       notification_id: rinse_aid_reminder
-- id: smart_ac_temperature_control
-  alias: 스마트 에어컨 온도 제어
-  triggers:
-  - trigger: numeric_state
-    entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-    above: 28
-    for: 00:10:00
-  - trigger: numeric_state
-    entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-    below: 22
-    for: 00:10:00
-  conditions:
-  - condition: state
-    entity_id: binary_sensor.someone_home
-    state: 'on'
-  - condition: state
-    entity_id: binary_sensor.workday_sensor
-    state: 'on'
-  actions:
-  - choose:
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-        above: 28
-      sequence:
-      - action: climate.set_temperature
-        target:
-          entity_id: climate.seutaendeuhyeong_eeokeon
-        data:
-          temperature: 24
-          hvac_mode: cool
-      - action: persistent_notification.create
-        data:
-          title: ❄️ 에어컨 냉방 자동 시작
-          message: 실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature')
-            }}°C로 높아져서 냉방을 시작했습니다.
-    - conditions:
-      - condition: numeric_state
-        entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
-        below: 22
-      sequence:
-      - action: climate.turn_off
-        target:
-          entity_id: climate.seutaendeuhyeong_eeokeon
-      - action: persistent_notification.create
-        data:
-          title: "\U0001F321️ 에어컨 자동 정지"
-          message: 실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature')
-            }}°C로 적정해져서 에어컨을 껐습니다.
 - id: humidity_management_alert
   alias: 습도 관리 알림
   triggers:
@@ -406,24 +337,6 @@
             월간 사용량: {{state_attr(''sensor.gas_meter_monthly'',''last_period'')}}'
     enabled: false
   mode: single
-- id: ios_theme_dark_sunset
-  alias: iOS 테마 다크모드 (일몰)
-  triggers:
-  - trigger: sun
-    event: sunset
-  actions:
-  - action: frontend.set_theme
-    data:
-      name: ios-dark-mode
-- id: ios_theme_light_sunrise
-  alias: iOS 테마 라이트모드 (일출)
-  triggers:
-  - trigger: sun
-    event: sunrise
-  actions:
-  - action: frontend.set_theme
-    data:
-      name: ios-light-mode
 - id: '1755698295141'
   alias: 주변 밝기 자동 조명 제어
   description: 주변 밝기가 충분할 때 자동으로 조명을 끕니다.
@@ -464,7 +377,7 @@
   description: ESP32-CAM 촬영부터 전처리와 AI OCR, 센서 업데이트까지 한 번에 수행합니다.
   triggers:
   - trigger: time
-    at: '09:00:00'
+    at: 09:00:00
   conditions: []
   actions:
   - variables:
@@ -506,13 +419,11 @@
       frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
       int_output_alt: /config/www/tmp/gas/gas_latest-crop-resize1_hc.jpg
       frac_output_alt: /config/www/tmp/gas/gas_latest-crop-resize2_hc.jpg
-      # success 예시 기준 좌표(1600x1200 스냅샷)
       crop_left: 420
       crop_top: 720
       crop_right: 1220
       crop_bottom: 880
       resize_width: 300
-      # 리사이즈 기준 분할(정수 3자리 / 소수 4자리)
       split_int_left: 10
       split_int_right: 155
       split_top: 0
@@ -562,64 +473,67 @@
       instructions: 'This is a gas meter display showing the decimal part (four digits
         after decimal point). Read EXACTLY 4 digits from left to right, even if they
         start with zeros. Return ONLY the 4-digit number without any spaces, decimal
-        points, units, or explanations. Example: If you see "0638", answer "0638" (not
-        "638"). If digits are unclear, make your best estimation based on the shape.'
+        points, units, or explanations. Example: If you see "0638", answer "0638"
+        (not "638"). If digits are unclear, make your best estimation based on the
+        shape.'
       task_name: 가스 검침 숫자 읽기2 (소수부)
       entity_id: ai_task.google_ai_task
     response_variable: res2
   - variables:
-      res1_primary_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("") }}'
-      res2_primary_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("") }}'
+      res1_primary_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]")
+        | join("") }}'
+      res2_primary_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]")
+        | join("") }}'
       need_alt_int: '{{ res1_primary_raw | string | length == 0 }}'
       need_alt_frac: '{{ res2_primary_raw | string | length < 4 }}'
   - if:
     - condition: template
       value_template: '{{ need_alt_int }}'
     then:
-      - action: ai_task.generate_data
-        data:
-          attachments:
-            media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
-            media_content_type: image/jpeg
-            metadata:
-              title: gas_latest-crop-resize1_hc.jpg
-              thumbnail:
-              media_class: image
-              children_media_class:
-              navigateIds:
-              - {}
-              - media_content_type: app
-                media_content_id: media-source://media_source
-          instructions: 'This is a gas meter display showing the integer part (whole numbers).
-            Read ONLY the visible digits from left to right. Return ONLY the numbers without
-            any spaces, units, or explanations.'
-          task_name: 가스 검침 숫자 읽기1B (정수부,고대비)
-          entity_id: ai_task.google_ai_task
-        response_variable: res1b
+    - action: ai_task.generate_data
+      data:
+        attachments:
+          media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
+          media_content_type: image/jpeg
+          metadata:
+            title: gas_latest-crop-resize1_hc.jpg
+            thumbnail:
+            media_class: image
+            children_media_class:
+            navigateIds:
+            - {}
+            - media_content_type: app
+              media_content_id: media-source://media_source
+        instructions: This is a gas meter display showing the integer part (whole
+          numbers). Read ONLY the visible digits from left to right. Return ONLY the
+          numbers without any spaces, units, or explanations.
+        task_name: 가스 검침 숫자 읽기1B (정수부,고대비)
+        entity_id: ai_task.google_ai_task
+      response_variable: res1b
   - if:
     - condition: template
       value_template: '{{ need_alt_frac }}'
     then:
-      - action: ai_task.generate_data
-        data:
-          attachments:
-            media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
-            media_content_type: image/jpeg
-            metadata:
-              title: gas_latest-crop-resize2_hc.jpg
-              thumbnail:
-              media_class: image
-              children_media_class:
-              navigateIds:
-              - {}
-              - media_content_type: app
-                media_content_id: media-source://media_source
-          instructions: 'This is a gas meter display showing the decimal part (four digits
-            after decimal point). Read EXACTLY 4 digits from left to right, even if they
-            start with zeros. Return ONLY the 4-digit number without any spaces.'
-          task_name: 가스 검침 숫자 읽기2B (소수부,고대비)
-          entity_id: ai_task.google_ai_task
-        response_variable: res2b
+    - action: ai_task.generate_data
+      data:
+        attachments:
+          media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
+          media_content_type: image/jpeg
+          metadata:
+            title: gas_latest-crop-resize2_hc.jpg
+            thumbnail:
+            media_class: image
+            children_media_class:
+            navigateIds:
+            - {}
+            - media_content_type: app
+              media_content_id: media-source://media_source
+        instructions: This is a gas meter display showing the decimal part (four digits
+          after decimal point). Read EXACTLY 4 digits from left to right, even if
+          they start with zeros. Return ONLY the 4-digit number without any spaces.
+        task_name: 가스 검침 숫자 읽기2B (소수부,고대비)
+        entity_id: ai_task.google_ai_task
+      response_variable: res2b
   - action: input_text.set_value
     metadata: {}
     data:
@@ -628,37 +542,43 @@
     target:
       entity_id: input_text.gas_message_2
   - variables:
-      # 후보군 수집 및 정규화
-      c1_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("") }}'
-      c2_raw: '{{ (res1b.data if res1b is defined else "") | string | regex_findall("[0-9]") | join("") }}'
+      c1_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("")
+        }}'
+      c2_raw: '{{ (res1b.data if res1b is defined else "") | string | regex_findall("[0-9]")
+        | join("") }}'
       c1_len: '{{ c1_raw | string | length }}'
       c2_len: '{{ c2_raw | string | length }}'
       c1_digits: '{{ c1_raw[:3] if c1_len >= 3 else ("000" + c1_raw)[-3:] }}'
       c2_digits: '{{ c2_raw[:3] if c2_len >= 3 else ("000" + c2_raw)[-3:] }}'
       c1: '{{ c1_digits | int(default=0) }}'
       c2: '{{ c2_digits | int(default=0) }}'
-      f1_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("") }}'
-      f2_raw: '{{ (res2b.data if res2b is defined else "") | string | regex_findall("[0-9]") | join("") }}'
+      f1_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("")
+        }}'
+      f2_raw: '{{ (res2b.data if res2b is defined else "") | string | regex_findall("[0-9]")
+        | join("") }}'
       f1_len: '{{ f1_raw | string | length }}'
       f2_len: '{{ f2_raw | string | length }}'
       primary_concat: '{{ (c1_raw | string) + (f1_raw | string) }}'
       primary_len: '{{ primary_concat | string | length }}'
-      f1_pad: '{{ primary_concat[3:7] if primary_len >= 7 else (f1_raw[:4] if f1_len >= 4 else (f1_raw + "0000")[:4]) }}'
+      f1_pad: '{{ primary_concat[3:7] if primary_len >= 7 else (f1_raw[:4] if f1_len
+        >= 4 else (f1_raw + "0000")[:4]) }}'
       f2_pad: '{{ f2_raw[:4] if f2_len >= 4 else (f2_raw + "0000")[:4] }}'
       f1: '{{ f1_pad | int(default=0) }}'
       f2: '{{ f2_pad | int(default=0) }}'
-      # 이전값 기반 근접 선택
       prev_val: '{{ states("sensor.gas_meter_2") | float(0) }}'
       prev_int: '{{ prev_val | int }}'
       prev_frac: '{{ ((prev_val - prev_int) * 10000) | round(0) | int }}'
       d1: '{{ (c1 - prev_int) | abs if c1_len > 0 else 9999 }}'
       d2: '{{ (c2 - prev_int) | abs if c2_len > 0 else 9999 }}'
-      gas_value1: '{{ c1 if (c1_len > 0 and (c2_len == 0 or d1 <= d2)) else (c2 if c2_len > 0 else c1) }}'
-      fd1: '{{ (f1 - prev_frac) | abs if (primary_len >= 7 or f1_len >= 4) else 10000 }}'
+      gas_value1: '{{ c1 if (c1_len > 0 and (c2_len == 0 or d1 <= d2)) else (c2 if
+        c2_len > 0 else c1) }}'
+      fd1: '{{ (f1 - prev_frac) | abs if (primary_len >= 7 or f1_len >= 4) else 10000
+        }}'
       fd2: '{{ (f2 - prev_frac) | abs if f2_len >= 4 else 10000 }}'
       fd1w: '{{ 10000 - fd1 if fd1 > 5000 else fd1 }}'
       fd2w: '{{ 10000 - fd2 if fd2 > 5000 else fd2 }}'
-      gas_value2: '{{ f1 if ((primary_len >= 7 or f1_len >= 4) and (f2_len < 4 or fd1w <= fd2w)) else (f2 if f2_len >= 4 else f1) }}'
+      gas_value2: '{{ f1 if ((primary_len >= 7 or f1_len >= 4) and (f2_len < 4 or
+        fd1w <= fd2w)) else (f2 if f2_len >= 4 else f1) }}'
       gas_value2_padded: '{{ "%04d" | format(gas_value2|int) }}'
       gas_value: '{{ ((gas_value1 * 10000 + gas_value2) / 10000) | round(4) }}'
       current_value: '{{ states("sensor.gas_meter_2") | float(default=0) }}'
@@ -692,8 +612,9 @@
       data:
         title: ✅ 가스 검침 성공
         message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n\U0001F4CA 검침값:
-          {{ gas_value }} m³\n\U0001F4C8 증가량: +{{ delta }} m³ (허용 ≤ {{ max_delta }} m³)\n\U0001F522 확정: {{
-          gas_value1 }}.{{ gas_value2_padded }}\n候보(정수): {{ c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
+          {{ gas_value }} m³\n\U0001F4C8 증가량: +{{ delta }} m³ (허용 ≤ {{ max_delta }}
+          m³)\n\U0001F522 확정: {{ gas_value1 }}.{{ gas_value2_padded }}\n候보(정수): {{
+          c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_success
     else:
     - action: persistent_notification.create
@@ -702,9 +623,9 @@
         message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n❌ 검증 실패 사유: {%
           if not ocr1_success %}- OCR1 실패 (정수부){% endif %} {% if not ocr2_success
           %}- OCR2 실패 (소수부){% endif %} {% if delta < 0 %}- 음수 증가량 ({{ delta }} m³){%
-          endif %} {% if delta > max_delta %}- 비정상적 증가 ({{ delta }} m³ > {{ max_delta }} m³){%
-          endif %}\n\U0001F522 읽은 값: {{ gas_value }} m³ (현재: {{ current_value }} m³)\n候보(정수): {{
-          c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
+          endif %} {% if delta > max_delta %}- 비정상적 증가 ({{ delta }} m³ > {{ max_delta
+          }} m³){% endif %}\n\U0001F522 읽은 값: {{ gas_value }} m³ (현재: {{ current_value
+          }} m³)\n候보(정수): {{ c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_failed
   - metadata: {}
     data:
@@ -721,72 +642,6 @@
     action: light.turn_off
     enabled: true
   mode: single
-- id: pi5_fan_auto_on
-  alias: Pi5 팬 자동 속도 상승
-  description: CPU 온도가 65°C 이상이면 팬을 80%로 설정하고 자동모드 해제
-  triggers:
-  - trigger: numeric_state
-    entity_id: sensor.pi5_cpu_temperature
-    above: 65
-    for: 00:00:30
-  actions:
-  - action: pyscript.pi5_fan_set_auto
-    data:
-      enabled: false
-  - action: pyscript.pi5_fan_set_percent
-    data:
-      percent: 100
-  - action: input_boolean.turn_off
-    target:
-      entity_id: input_boolean.pi5_fan_auto
-  - action: persistent_notification.create
-    data:
-      title: "\U0001F321️ Pi5 팬 속도 80%"
-      message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 상승하여 팬을 80%로 설정
-      notification_id: pi5_fan_auto_on
-  mode: single
-- id: pi5_fan_auto_down
-  alias: Pi5 팬 자동 속도 하향
-  description: CPU 온도가 55°C 이하이면 팬을 30%로 낮춤
-  triggers:
-  - trigger: numeric_state
-    entity_id: sensor.pi5_cpu_temperature
-    below: 55
-    for: 00:02:00
-  actions:
-  - action: pyscript.pi5_fan_set_percent
-    data:
-      percent: 30
-  - action: persistent_notification.dismiss
-    data:
-      notification_id: pi5_fan_auto_on
-  - action: persistent_notification.create
-    data:
-      title: ❄️ Pi5 팬 속도 30%
-      message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C로 떨어져 팬을 30%로 설정
-      notification_id: pi5_fan_auto_off
-  mode: single
-- id: pi5_fan_critical_temp
-  alias: Pi5 CPU 임계 온도 긴급 냉각
-  description: CPU 80°C 이상 시 최대속도 100% 설정
-  triggers:
-  - trigger: numeric_state
-    entity_id: sensor.pi5_cpu_temperature
-    above: 80
-    for: 00:00:30
-  actions:
-  - action: pyscript.pi5_fan_set_auto
-    data:
-      enabled: false
-  - action: pyscript.pi5_fan_set_percent
-    data:
-      percent: 100
-  - action: persistent_notification.create
-    data:
-      title: "\U0001F6A8 Pi5 팬 100%"
-      message: CPU {{ states('sensor.pi5_cpu_temperature') }}°C - 긴급 냉각 모드
-      notification_id: pi5_critical_temp
-  mode: restart
 - id: '1759067786798'
   alias: 이산화탄소 자동 환기 제어
   description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
