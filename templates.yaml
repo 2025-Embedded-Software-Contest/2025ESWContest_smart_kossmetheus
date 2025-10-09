@@ -264,8 +264,8 @@
 # ===========================
 # Bubble Card Modules storage
 # ===========================
-- trigger:
-    - platform: event
+- triggers:
+    - trigger: event
       event_type: bubble_card_update_modules
   sensor:
     - name: "Bubble Card Modules"
