@@ -744,7 +744,7 @@
       current_value: "{{ states('sensor.gas_meter_2') | float(0) }}"
       delta: "{{ (gas_value - current_value) | round(4) }}"
       last_ts: "{{ as_timestamp(states.sensor.gas_meter_2.last_changed) }}"
-      minutes_elapsed: "{{ ((as_timestamp(now()) - last_ts) / 60) | float(30)) }}"
+      minutes_elapsed: "{{ ((as_timestamp(now()) - last_ts) / 60) | float(30) }}"
       max_delta: "{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}"
   - choose:
     - conditions:
