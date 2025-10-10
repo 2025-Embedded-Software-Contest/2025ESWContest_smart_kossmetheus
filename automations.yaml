@@ -393,7 +393,7 @@
       - 255
       - 255
       - 255
-      brightness_pct: 25
+      brightness_pct: 80
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
@@ -401,7 +401,7 @@
   - delay:
       hours: 0
       minutes: 0
-      seconds: 5
+      seconds: 6
       milliseconds: 0
   - metadata: {}
     data:
@@ -489,8 +489,8 @@
   - action: input_text.set_value
     metadata: {}
     data:
-      value: '{{ now().strftime(''%H:%M:%S'') }} |  정수: {{ res1.data | default(''X'')
-        }} |  소수: {{ res2.data | default(''X'') }}'
+      value: >-
+        {{ now().strftime('%H:%M:%S') }} |  정수: {{ c1_digits if c1_len >= 3 else 'XXX' }} |  소수: {{ f1_pad if f1_len >= 4 or primary_len >= 7 else 'XXXX' }}
     target:
       entity_id: input_text.gas_message_2
   - variables:
@@ -521,8 +521,7 @@
       prev_frac: '{{ ((prev_val - prev_int) * 10000) | round(0) | int }}'
       d1: '{{ (c1 - prev_int) | abs if c1_len > 0 else 9999 }}'
       d2: '{{ (c2 - prev_int) | abs if c2_len > 0 else 9999 }}'
-      gas_value1: '{{ c1 if (c1_len > 0 and (c2_len == 0 or d1 <= d2)) else (c2 if
-        c2_len > 0 else c1) }}'
+      gas_value1: '{{ c1 if c1_len >= 3 else (c2 if c2_len >= 3 else (c1 if (c1_len > 0 and (c2_len == 0 or d1 <= d2)) else c2)) }}'
       fd1: '{{ (f1 - prev_frac) | abs if (primary_len >= 7 or f1_len >= 4) else 10000
         }}'
       fd2: '{{ (f2 - prev_frac) | abs if f2_len >= 4 else 10000 }}'
@@ -539,6 +538,26 @@
       max_delta: '{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}'
       ocr1_success: '{{ c1_len >= 3 or c2_len >= 3 }}'
       ocr2_success: '{{ primary_len >= 7 or f1_len >= 4 or f2_len >= 4 }}'
+  - choose:
+    - conditions:
+        - condition: template
+          value_template: '{{ current_value | float(0) == 0 and ocr1_success and ocr2_success }}'
+      sequence:
+      - action: input_number.set_value
+        data:
+          value: '{{ gas_value | float }}'
+        target:
+          entity_id: input_number.gas_meter_2
+      - action: homeassistant.update_entity
+        target:
+          entity_id:
+          - sensor.gas_meter_2
+          - sensor.gas_meter_monthly
+      - action: persistent_notification.create
+        data:
+          title: ✅ 가스 검침 초기 설정
+          message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n\U0001F522 초기값 확정: {{ gas_value1 }}.{{ gas_value2_padded }}"
+        enabled: true
   - if:
     - condition: template
       value_template: '{{ ocr1_success and ocr2_success }}'
@@ -564,8 +583,8 @@
         title: ✅ 가스 검침 성공
         message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n\U0001F4CA 검침값:
           {{ gas_value }} m³\n\U0001F4C8 증가량: +{{ delta }} m³ (허용 ≤ {{ max_delta }}
-          m³)\n\U0001F522 확정: {{ gas_value1 }}.{{ gas_value2_padded }}\n候보(정수): {{
-          c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
+          m³)\n\U0001F522 확정: {{ gas_value1 }}.{{ gas_value2_padded }}\n후보(정수): {{
+          c1 }}, {{ c2 }} | 후보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_success
     else:
     - action: persistent_notification.create
@@ -576,7 +595,7 @@
           %}- OCR2 실패 (소수부){% endif %} {% if delta < 0 %}- 음수 증가량 ({{ delta }} m³){%
           endif %} {% if delta > max_delta %}- 비정상적 증가 ({{ delta }} m³ > {{ max_delta
           }} m³){% endif %}\n\U0001F522 읽은 값: {{ gas_value }} m³ (현재: {{ current_value
-          }} m³)\n候보(정수): {{ c1 }}, {{ c2 }} | 候보(소수): {{ f1_pad }}, {{ f2_pad }}"
+          }} m³)\n후보(정수): {{ c1 }}, {{ c2 }} | 후보(소수): {{ f1_pad }}, {{ f2_pad }}"
         notification_id: gas_ocr_failed
   - metadata: {}
     data:
