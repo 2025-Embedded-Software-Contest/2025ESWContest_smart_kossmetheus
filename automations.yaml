@@ -722,23 +722,9 @@
         media_content_type: image/jpeg
   - variables:
       res_text: '{{ res.data | default('' '') | string }}'
-      normalized: '{{ (res_text | regex_findall(''\d{3}\.\d{4}'') | first | default(''''))
-        if (res_text | regex_search(''\d{3}\.\d{4}'')) else ( ((res_text | regex_findall(''\d'')
-        | join(''''))[:3] ~ ''.'' ~ (res_text | regex_findall(''\d'') | join(''''))[3:7])
-        if ((res_text | regex_findall(''\d'') | length) >= 7) else '''' ) }}'
-      int_str: '{{ normalized | string | regex_findall(''^\\d{3}'') | first | default(''
-        '') | string }}'
-      frac_str: '{{ normalized | string | regex_findall(''(?<=\\.)\\d{4}$'') | first
-        | default('' '') | string }}'
-      ok_fmt: '{{ (int_str | string | length) == 3 and (frac_str | string | length)
-        == 4 }}'
-      gas_value: '{{ ((int_str | int(0)) * 10000 + (frac_str | int(0))) / 10000 if
-        ok_fmt else (states(''sensor.gas_meter_2'') | float(0)) }}'
+      gas_value: '{{ (res_text | regex_findall(''[0-9]+(?:\.[0-9]+)?'') | first | default(''0'')) | float(0) | round(4) }}'
       current_value: '{{ states(''sensor.gas_meter_2'') | float(0) }}'
       delta: '{{ (gas_value - current_value) | round(4) }}'
-      last_ts: '{{ as_timestamp(states.sensor.gas_meter_2.last_changed) }}'
-      minutes_elapsed: '{{ ((as_timestamp(now()) - last_ts) / 60) | float(30) }}'
-      max_delta: '{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}'
   - action: input_number.set_value
     metadata: {}
     data:
@@ -756,7 +742,5 @@
       title: ✅ 가스 검침(단일 프롬프트) 기록됨
       message: '{{ now().strftime(''%H:%M:%S'') }} | 응답: "{{ res_text }}"
 
-        적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)
-
-        형식 판별: {{ ''성공'' if ok_fmt else ''실패'' }}'
+        적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)'
   mode: single
