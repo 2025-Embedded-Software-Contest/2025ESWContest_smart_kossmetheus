@@ -1,6 +1,6 @@
-# app/services/__init__.py
 from app.core.config import settings
 from .influx_v1 import InfluxServiceV1
+
 
 influx = InfluxServiceV1(
     url=settings.influxdb_url,

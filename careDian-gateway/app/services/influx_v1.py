@@ -5,6 +5,7 @@ from typing import Any, Dict
 from influxdb import InfluxDBClient  # 1.x client
 from app.core.config import settings
 
+
 class InfluxServiceV1:
     def __init__(
         self,
@@ -22,6 +23,7 @@ class InfluxServiceV1:
         self.timeout = int(timeout_ms / 1000)  # seconds
         self.verify_ssl = verify_ssl
         self._client: InfluxDBClient | None = None
+        self._ensure_client()
 
     def _ensure_client(self) -> InfluxDBClient:
         if self._client:
@@ -79,4 +81,12 @@ class InfluxServiceV1:
             "tags": tags,
             "fields": fields,
         }]
+        
         return cli.write_points(point)
+    
+    def close(self) -> None:
+        if self._client is not None:
+            try:
+                self._client.close()
+            finally:
+                self._client = None

@@ -1,8 +1,10 @@
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+
 from app.services.ha_notify import send_fall_alert
 from app.services import influx_v1 as influx
+
 
 router = APIRouter(prefix="/events", tags=["fall"])
 

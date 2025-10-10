@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any
 import httpx
 from app.core.config import settings
 
+
 async def _call_notify(service: str, payload: Dict[str, Any]) -> int:
     url = f"{settings.ha_base_url.rstrip('/')}/api/services/{service.replace('.','/')}"
     headers = {

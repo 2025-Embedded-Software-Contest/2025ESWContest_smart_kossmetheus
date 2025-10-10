@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api import fall as fall_router
-from app.services import influx
+from app.services import influx_v1 as influx
+
 
 def create_app() -> FastAPI:
     setup_logging(level=settings.log_level, json_mode=settings.log_json)
@@ -22,7 +24,8 @@ def create_app() -> FastAPI:
     app.include_router(fall_router.router)
 
     @app.get("/healthz")
-    async def healthz(): return {"status": "ok"}
+    async def healthz():
+        return {"status": "ok"}
 
     @app.get("/readyz")
     async def readyz():

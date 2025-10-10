@@ -36,8 +36,8 @@ CareDian-backend/
 ### 1) 로컬 실행 (개발용)
 
 ```bash
-$ cd fastapi/CareDian-backend/careDian-gateway
-$ uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
+cd fastapi/CareDian-backend/careDian-gateway
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 ```
 
 ### 2) 프로덕션 실행 (Gunicorn + Uvicorn workers)
