@@ -66,8 +66,7 @@ esp32_camera:
   brightness: 0
   saturation: 0
   aec2: true
-  agc: true
-  awb: true
+  # auto gain / white balance는 기본값(활성화) 유지
   vertical_flip: true
   horizontal_mirror: true
 
