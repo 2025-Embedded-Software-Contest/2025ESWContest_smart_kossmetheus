@@ -36,7 +36,12 @@ def gas_ocr_prepare(
     # 소수부 4자리 영역
     split_frac_left: int = 156,
     split_frac_right: int = 300,
+    # 자동 분할 사용 (7자리 숫자 가정: 앞 3자리 정수, 뒤 4자리 소수)
+    auto_split: bool = True,
+    split_margin: int = 0,
     autocontrast: bool = True,
+    denoise_median_size: int = 0,
+    to_grayscale: bool = False,
     generate_alt: bool = True,
 ):
     """yaml
@@ -183,6 +188,13 @@ fields:
 
         if autocontrast:
             resized = ImageOps.autocontrast(resized)
+        if denoise_median_size and denoise_median_size >= 3:
+            try:
+                resized = resized.filter(ImageFilter.MedianFilter(size=denoise_median_size))
+            except Exception as _:
+                pass
+        if to_grayscale:
+            resized = resized.convert("L")
 
         _ensure_dir(resize_output)
         resized.save(resize_output)
@@ -191,6 +203,24 @@ fields:
         h = resized.height
         bottom = split_bottom if (split_bottom and split_bottom > 0 and split_bottom <= h) else h
         top = split_top if (split_top and split_top >= 0) else 0
+
+        # 자동 분할: 세로 투영 최소치를 이용해 7자리 각 칸 경계 추정
+        if auto_split:
+            try:
+                bnds = _auto_digit_splits(resized, top, bottom, expected_digits=7)
+                # 3자리 정수 / 4자리 소수 경계
+                x0, x3, x7 = 0, bnds[3], resized.width
+                if split_margin:
+                    x0 = max(0, x0 + split_margin)
+                    x3 = max(0, x3 - split_margin)
+                    x7 = min(resized.width, x7 - split_margin)
+                split_int_left, split_int_right = x0, x3
+                split_frac_left, split_frac_right = x3, x7
+                log.info(
+                    f"auto_split: bounds={bnds}, int=({split_int_left},{split_int_right}), frac=({split_frac_left},{split_frac_right})"
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.warning(f"auto_split 실패, 수동 분할로 진행: {exc}")
 
         # Integer part crop
         int_img = resized.crop((split_int_left, top, split_int_right, bottom))
@@ -262,3 +292,55 @@ def _save_placeholder(paths: list[str]):
             placeholder.save(path)
         except Exception as exc:
             log.error(f"gas_ocr_prepare: placeholder 저장 실패 ({path}): {exc}")
+
+
+def _auto_digit_splits(img: Image.Image, top: int, bottom: int, expected_digits: int = 7):
+    """세로 투영을 이용해 expected_digits 자리의 경계 x 좌표들을 반환.
+    반환값: 경계 리스트 길이 expected_digits+1 (0 포함, width 포함)
+    """
+    from statistics import mean
+
+    gray = img.convert("L")
+    w, h = gray.width, gray.height
+    top = max(0, min(top, h - 1))
+    bottom = max(top + 1, min(bottom, h))
+
+    # 세로 투영(밝기 반전 합) 계산
+    proj = []
+    crop_height = bottom - top
+    px = gray.load()
+    for x in range(w):
+        s = 0
+        for y in range(top, bottom):
+            s += 255 - px[x, y]
+        proj.append(s / crop_height)
+
+    # 이동 평균으로 평활화
+    window = max(3, int(w * 0.01))
+    sm = []
+    acc = 0
+    for i, v in enumerate(proj):
+        acc += v
+        if i >= window:
+            acc -= proj[i - window]
+        sm.append(acc / min(i + 1, window))
+
+    # 각 자리 사이 경계를 대략 w/expected_digits 간격으로 탐색, 로컬 최소값 선택
+    approx = w / expected_digits
+    radius = max(3, int(approx * 0.25))
+    cuts = [0]
+    for k in range(1, expected_digits):
+        center = int(round(k * approx))
+        left = max(1, center - radius)
+        right = min(w - 2, center + radius)
+        # 최소값 위치
+        local = min(range(left, right + 1), key=lambda x: sm[x])
+        cuts.append(local)
+    cuts.append(w)
+
+    # 단조 증가 보정
+    for i in range(1, len(cuts)):
+        if cuts[i] <= cuts[i - 1]:
+            cuts[i] = min(w, cuts[i - 1] + 1)
+
+    return cuts
