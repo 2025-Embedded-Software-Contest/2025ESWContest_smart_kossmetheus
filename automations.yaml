@@ -393,7 +393,7 @@
       - 255
       - 255
       - 255
-      brightness_pct: 80
+      brightness_pct: 60
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
@@ -435,6 +435,12 @@
       minutes: 0
       seconds: 2
       milliseconds: 0
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_off
+    enabled: true
   - action: ai_task.generate_data
     data:
       attachments:
@@ -486,7 +492,6 @@
         task_name: 가스 검침 소수 4자리(고대비)
         entity_id: ai_task.google_ai_task
       response_variable: res2b
-  
   - variables:
       c1_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("")
         }}'
@@ -494,8 +499,10 @@
         | join("") }}'
       c1_len: '{{ c1_raw | string | length }}'
       c2_len: '{{ c2_raw | string | length }}'
-      c1_digits: '{{ (((c1_raw | string) ~ "000") | regex_findall("^\\d{3}") | first | default("")) }}'
-      c2_digits: '{{ (((c2_raw | string) ~ "000") | regex_findall("^\\d{3}") | first | default("")) }}'
+      c1_digits: '{{ (((c1_raw | string) ~ "000") | regex_findall("^\\d{3}") | first
+        | default("")) }}'
+      c2_digits: '{{ (((c2_raw | string) ~ "000") | regex_findall("^\\d{3}") | first
+        | default("")) }}'
       c1: '{{ c1_digits | int(default=0) }}'
       c2: '{{ c2_digits | int(default=0) }}'
       f1_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]") | join("")
@@ -506,8 +513,11 @@
       f2_len: '{{ f2_raw | string | length }}'
       primary_concat: '{{ (c1_raw | string) ~ (f1_raw | string) }}'
       primary_len: '{{ primary_concat | string | length }}'
-      f1_pad: '{{ (primary_concat | regex_findall("^\\d{3}(\\d{4})") | first | default("")) if primary_len >= 7 else ((((f1_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first | default(""))) }}'
-      f2_pad: '{{ (((f2_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first | default("")) }}'
+      f1_pad: '{{ (primary_concat | regex_findall("^\\d{3}(\\d{4})") | first | default(""))
+        if primary_len >= 7 else ((((f1_raw | string) ~ "0000") | regex_findall("^\\d{4}")
+        | first | default(""))) }}'
+      f2_pad: '{{ (((f2_raw | string) ~ "0000") | regex_findall("^\\d{4}") | first
+        | default("")) }}'
       f1: '{{ f1_pad | int(default=0) }}'
       f2: '{{ f2_pad | int(default=0) }}'
       prev_val: '{{ states("sensor.gas_meter_2") | float(0) }}'
@@ -515,7 +525,8 @@
       prev_frac: '{{ ((prev_val - prev_int) * 10000) | round(0) | int }}'
       d1: '{{ (c1 - prev_int) | abs if c1_len > 0 else 9999 }}'
       d2: '{{ (c2 - prev_int) | abs if c2_len > 0 else 9999 }}'
-      gas_value1: '{{ c1 if c1_len >= 3 else (c2 if c2_len >= 3 else (c1 if (c1_len > 0 and (c2_len == 0 or d1 <= d2)) else c2)) }}'
+      gas_value1: '{{ c1 if c1_len >= 3 else (c2 if c2_len >= 3 else (c1 if (c1_len
+        > 0 and (c2_len == 0 or d1 <= d2)) else c2)) }}'
       fd1: '{{ (f1 - prev_frac) | abs if (primary_len >= 7 or f1_len >= 4) else 10000
         }}'
       fd2: '{{ (f2 - prev_frac) | abs if f2_len >= 4 else 10000 }}'
@@ -535,14 +546,16 @@
   - action: input_text.set_value
     metadata: {}
     data:
-      value: >-
-        {{ now().strftime('%H:%M:%S') }} |  정수: {{ c1_digits if c1_len >= 3 else 'XXX' }} |  소수: {{ f1_pad if f1_len >= 4 or primary_len >= 7 else 'XXXX' }}
+      value: '{{ now().strftime(''%H:%M:%S'') }} |  정수: {{ c1_digits if c1_len >=
+        3 else ''XXX'' }} |  소수: {{ f1_pad if f1_len >= 4 or primary_len >= 7 else
+        ''XXXX'' }}'
     target:
       entity_id: input_text.gas_message_2
   - choose:
     - conditions:
-        - condition: template
-          value_template: '{{ current_value | float(0) == 0 and ocr1_success and ocr2_success }}'
+      - condition: template
+        value_template: '{{ current_value | float(0) == 0 and ocr1_success and ocr2_success
+          }}'
       sequence:
       - action: input_number.set_value
         data:
@@ -557,7 +570,8 @@
       - action: persistent_notification.create
         data:
           title: ✅ 가스 검침 초기 설정
-          message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n\U0001F522 초기값 확정: {{ gas_value1 }}.{{ gas_value2_padded }}"
+          message: "\U0001F550 시각: {{ now().strftime('%H:%M:%S') }}\n\U0001F522 초기값
+            확정: {{ gas_value1 }}.{{ gas_value2_padded }}"
         enabled: true
   - if:
     - condition: template
@@ -606,12 +620,6 @@
     alias: 날짜폴더로 복사
     enabled: false
     action: pyscript.image_rotate
-  - metadata: {}
-    data: {}
-    target:
-      entity_id: light.esp32_cam_esp32_cam_gas_light
-    action: light.turn_off
-    enabled: true
   mode: single
 - id: '1759067786798'
   alias: 이산화탄소 자동 환기 제어
