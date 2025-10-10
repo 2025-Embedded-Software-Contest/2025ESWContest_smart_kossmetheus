@@ -661,3 +661,120 @@
       filename: '{{ trigger.event.data.filename }}'
     action: rest_command.push_record_to_mac
   mode: queued
+
+- id: '1759500010000'
+  alias: 가스 검침 단일 프롬프트 (Gemini 2.5 Pro)
+  description: 하나의 크롭 이미지에서 프롬프트만으로 7자리(DDD.dddd) 판독
+  triggers:
+  - trigger: time
+    at: '09:00:00'
+  conditions: []
+  actions:
+  - metadata: {}
+    data:
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      brightness_pct: 60
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_on
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - metadata: {}
+    data:
+      filename: /config/www/tmp/gas/gas_latest.jpg
+    action: camera.snapshot
+    target:
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
+  - alias: 크롭만 수행(리사이즈 미사용)
+    action: pyscript.gas_ocr_prepare
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      crop_output: /config/www/tmp/gas/gas_latest-crop.jpg
+      resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
+      frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      crop_left: 420
+      crop_top: 720
+      crop_right: 1220
+      crop_bottom: 880
+      resize_width: 0
+      to_grayscale: true
+      denoise_median_size: 3
+      auto_vertical: true
+      vpad: 2
+      hpad: 2
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_off
+  - action: ai_task.generate_data
+    response_variable: res
+    data:
+      entity_id: ai_task.google_ai_task
+      task_name: 가스 검침 단일 프롬프트
+      instructions: >-
+        이 이미지는 기계식 가스 계량기의 7자리 숫자 표시부입니다. 3자리 정수부와 4자리 소수부를 읽고,
+        숫자만으로 DDD.dddd 형식으로 반환하세요. 공백·단위·설명·줄바꿈 없이 결과만 출력하세요.
+      attachments:
+        media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop.jpg
+        media_content_type: image/jpeg
+  - variables:
+      res_text: "{{ res.data | default('') | string }}"
+      normalized: >-
+        {{
+          (res_text | regex_findall('\\d{3}\\.\\d{4}') | first | default(''))
+          if (res_text | regex_search('\\d{3}\\.\\d{4}'))
+          else (
+            ((res_text | regex_findall('\\d') | join(''))[:3]
+             ~ '.' ~ (res_text | regex_findall('\\d') | join(''))[3:7])
+            if ((res_text | regex_findall('\\d') | length) >= 7) else ''
+          )
+        }}
+      int_str: "{{ normalized | regex_findall('^(\\d{3})') | first | default('') }}"
+      frac_str: "{{ normalized | regex_findall('(?<=\\.)\\d{4}$') | first | default('') }}"
+      ok_fmt: "{{ int_str|length == 3 and frac_str|length == 4 }}"
+      gas_value: "{{ ((int_str | int(0)) * 10000 + (frac_str | int(0))) / 10000 if ok_fmt else (states('sensor.gas_meter_2') | float(0)) }}"
+      current_value: "{{ states('sensor.gas_meter_2') | float(0) }}"
+      delta: "{{ (gas_value - current_value) | round(4) }}"
+      last_ts: "{{ as_timestamp(states.sensor.gas_meter_2.last_changed) }}"
+      minutes_elapsed: "{{ ((as_timestamp(now()) - last_ts) / 60) | float(30)) }}"
+      max_delta: "{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}"
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: "{{ ok_fmt }}"
+      - condition: template
+        value_template: "{{ 0 <= delta <= max_delta }}"
+      - condition: template
+        value_template: "{{ gas_value >= current_value }}"
+      sequence:
+      - action: input_number.set_value
+        metadata: {}
+        data:
+          value: "{{ gas_value | float }}"
+        target:
+          entity_id: input_number.gas_meter_2
+      - action: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id:
+          - sensor.gas_meter_2
+          - sensor.gas_meter_monthly
+      - action: persistent_notification.create
+        data:
+          title: "✅ 가스 검침(단일 프롬프트) 성공"
+          message: "{{ now().strftime('%H:%M:%S') }} | 결과: {{ normalized }} ({{ gas_value }} m³)\n증가량: +{{ delta }} m³ (허용 ≤ {{ max_delta }} m³)"
+    - conditions: []
+      sequence:
+      - action: persistent_notification.create
+        data:
+          title: "⚠️ 가스 검침(단일 프롬프트) 실패"
+          message: "{{ now().strftime('%H:%M:%S') }} | 응답: \"{{ res_text }}\"\n정규화 실패 또는 검증 미통과(Δ={{ delta }} m³, 허용 ≤ {{ max_delta }} m³)"
+  mode: single
