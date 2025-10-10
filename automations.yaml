@@ -672,7 +672,7 @@
       - 255
       - 255
       - 255
-      brightness_pct: 60
+      brightness_pct: 40
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
@@ -722,18 +722,16 @@
         media_content_type: image/jpeg
   - variables:
       res_text: '{{ res.data | default('' '') | string }}'
-      normalized: "{{
-  (res_text | regex_findall('\\d{3}\\.\\d{4}') | first | default(''))
-  if (res_text | regex_search('\\d{3}\\.\\d{4}'))
-  else (
-    ((res_text | regex_findall('\\d') | join(''))[:3]
-     ~ '.' ~ (res_text | regex_findall('\\d') | join(''))[3:7])
-    if ((res_text | regex_findall('\\d') | length) >= 7) else ''
-  )
-}}"
-      int_str: '{{ normalized | string | regex_findall(''^\\d{3}'') | first | default('' '') | string }}'
-      frac_str: '{{ normalized | string | regex_findall(''(?<=\\.)\\d{4}$'') | first | default('' '') | string }}'
-      ok_fmt: '{{ (int_str | string | length) == 3 and (frac_str | string | length) == 4 }}'
+      normalized: '{{ (res_text | regex_findall(''\d{3}\.\d{4}'') | first | default(''''))
+        if (res_text | regex_search(''\d{3}\.\d{4}'')) else ( ((res_text | regex_findall(''\d'')
+        | join(''''))[:3] ~ ''.'' ~ (res_text | regex_findall(''\d'') | join(''''))[3:7])
+        if ((res_text | regex_findall(''\d'') | length) >= 7) else '''' ) }}'
+      int_str: '{{ normalized | string | regex_findall(''^\\d{3}'') | first | default(''
+        '') | string }}'
+      frac_str: '{{ normalized | string | regex_findall(''(?<=\\.)\\d{4}$'') | first
+        | default('' '') | string }}'
+      ok_fmt: '{{ (int_str | string | length) == 3 and (frac_str | string | length)
+        == 4 }}'
       gas_value: '{{ ((int_str | int(0)) * 10000 + (frac_str | int(0))) / 10000 if
         ok_fmt else (states(''sensor.gas_meter_2'') | float(0)) }}'
       current_value: '{{ states(''sensor.gas_meter_2'') | float(0) }}'
