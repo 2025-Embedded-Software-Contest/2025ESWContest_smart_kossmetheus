@@ -731,7 +731,7 @@
         }}'
       frac_str: '{{ normalized | regex_findall(''(?<=\.)\d{4}$'') | first | default('''')
         }}'
-      ok_fmt: '{{ int_str|length == 3 and frac_str|length == 4 }}'
+      ok_fmt: '{{ (int_str | string | length) == 3 and (frac_str | string | length) == 4 }}'
       gas_value: '{{ ((int_str | int(0)) * 10000 + (frac_str | int(0))) / 10000 if
         ok_fmt else (states(''sensor.gas_meter_2'') | float(0)) }}'
       current_value: '{{ states(''sensor.gas_meter_2'') | float(0) }}'
