@@ -107,16 +107,21 @@ homeassistant:
     local: /config/www
     gas: /config/www/tmp/gas
 
-  # auth_providers:              # ← media_dirs와 같은 깊이(2칸 들여쓰기)
-  #   - type: homeassistant      # 로컬 ID/비번 로그인 유지
-  #   - type: oidc               # 네이버 전용 추가
-  #     name: "Login via authentik (Naver)"
-  #     issuer: "https://auth-caredian.gleeze.com/application/o/home-assistant-naver/"
-  #     client_id: "y0lJBARZy83Dj3JhT4dL8qt89N6wnryYViRsIy2o"
-  #     client_secret: "0K5M6Mh6x6qXoVImDpuDyuRUS3ForYKKjQak78qvFDLZPIOF2DqFcOABXy0FqDjUIpq5RTiMuJbC8Y2VRp4qQFgs5naFiJMzdFk8f6oMq6EfaTdjgp11lOBJkJhoUlMP"
-  #     token_endpoint_auth_method: "client_secret_post"
-  #     scopes: ["openid", "email", "profile"]
-    
+  auth_providers:
+    - type: homeassistant
+
+    # # (새로 추가) 네이버 버튼 — core OIDC
+    # - type: oidc
+    #   name: "Login via authentik (Naver)"
+    #   issuer: "https://auth-caredian.gleeze.com/application/o/home-assistant-naver/"
+    #   client_id: !secret ha_oidc_naver_client_id
+    #   client_secret: !secret ha_oidc_naver_client_secret
+    #   token_endpoint_auth_method: client_secret_post
+    #   scopes:
+    #     - openid
+    #     - email
+    #     - profile
+
 input_number:
   gas_meter_2:
     name: box
@@ -124,7 +129,7 @@ input_number:
     max: 99999
     # 소수부 4자리(예: 133.5638) 저장을 위해 스텝을 0.0001로 조정
     step: 0.0001
-    unit_of_measurement: m³
+    unit_of_measurement: m³ #여기 step: ~하고 탭으로 되어있었는데 두 줄로 변경함.
   co2_min_ppm:
     name: CO₂ 최소 허용(ppm)
     min: 0
