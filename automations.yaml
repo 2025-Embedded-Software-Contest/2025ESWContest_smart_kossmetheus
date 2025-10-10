@@ -741,40 +741,24 @@
       last_ts: '{{ as_timestamp(states.sensor.gas_meter_2.last_changed) }}'
       minutes_elapsed: '{{ ((as_timestamp(now()) - last_ts) / 60) | float(30) }}'
       max_delta: '{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}'
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ ok_fmt }}'
-      - condition: template
-        value_template: '{{ 0 <= delta <= max_delta }}'
-      - condition: template
-        value_template: '{{ gas_value >= current_value }}'
-      sequence:
-      - action: input_number.set_value
-        metadata: {}
-        data:
-          value: '{{ gas_value | float }}'
-        target:
-          entity_id: input_number.gas_meter_2
-      - action: homeassistant.update_entity
-        data: {}
-        target:
-          entity_id:
-          - sensor.gas_meter_2
-          - sensor.gas_meter_monthly
-      - action: persistent_notification.create
-        data:
-          title: ✅ 가스 검침(단일 프롬프트) 성공
-          message: '{{ now().strftime(''%H:%M:%S'') }} | 결과: {{ normalized }} ({{
-            gas_value }} m³)
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ gas_value | float }}'
+    target:
+      entity_id: input_number.gas_meter_2
+  - action: homeassistant.update_entity
+    metadata: {}
+    target:
+      entity_id:
+      - sensor.gas_meter_2
+      - sensor.gas_meter_monthly
+  - action: persistent_notification.create
+    data:
+      title: ✅ 가스 검침(단일 프롬프트) 기록됨
+      message: '{{ now().strftime(''%H:%M:%S'') }} | 응답: "{{ res_text }}"
 
-            증가량: +{{ delta }} m³ (허용 ≤ {{ max_delta }} m³)'
-    - conditions: []
-      sequence:
-      - action: persistent_notification.create
-        data:
-          title: ⚠️ 가스 검침(단일 프롬프트) 실패
-          message: '{{ now().strftime(''%H:%M:%S'') }} | 응답: "{{ res_text }}"
+        적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)
 
-            정규화 실패 또는 검증 미통과(Δ={{ delta }} m³, 허용 ≤ {{ max_delta }} m³)'
+        형식 판별: {{ ''성공'' if ok_fmt else ''실패'' }}'
   mode: single
