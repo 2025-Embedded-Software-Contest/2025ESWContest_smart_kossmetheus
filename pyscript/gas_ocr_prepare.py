@@ -38,7 +38,7 @@ def gas_ocr_prepare(
     split_margin: int = 0,
     # 세로(상/하) 자동 감지로 숫자 띠 높이를 추정
     auto_vertical: bool = True,
-    vpad: int = 2,
+    vpad: int = 4,
     hpad: int = 2,
     autocontrast: bool = True,
     denoise_median_size: int = 0,
