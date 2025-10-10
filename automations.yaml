@@ -417,13 +417,18 @@
       resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
       frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
-      int_output_alt: /config/www/tmp/gas/gas_latest-crop-resize1_hc.jpg
-      frac_output_alt: /config/www/tmp/gas/gas_latest-crop-resize2_hc.jpg
+      # 고대비 별도 출력은 사용하지 않음 (흑백/전처리 통합)
       crop_left: 420
       crop_top: 720
       crop_right: 1220
       crop_bottom: 880
       resize_width: 300
+      # 전처리 파라미터(흑백 통합)
+      to_grayscale: true
+      denoise_median_size: 3
+      auto_vertical: true
+      vpad: 2
+      hpad: 2
       split_int_left: 10
       split_int_right: 155
       split_top: 0
@@ -459,39 +464,7 @@
       task_name: 가스 검침 소수 4자리
       entity_id: ai_task.google_ai_task
     response_variable: res2
-  - variables:
-      res1_primary_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]")
-        | join("") }}'
-      res2_primary_raw: '{{ res2.data | default("") | string | regex_findall("[0-9]")
-        | join("") }}'
-      need_alt_int: '{{ res1_primary_raw | string | length == 0 }}'
-      need_alt_frac: '{{ res2_primary_raw | string | length < 4 }}'
-  - if:
-    - condition: template
-      value_template: '{{ need_alt_int }}'
-    then:
-    - action: ai_task.generate_data
-      data:
-        attachments:
-          media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize1_hc.jpg
-          media_content_type: image/jpeg
-        instructions: 3 digits only
-        task_name: 가스 검침 정수 3자리(고대비)
-        entity_id: ai_task.google_ai_task
-      response_variable: res1b
-  - if:
-    - condition: template
-      value_template: '{{ need_alt_frac }}'
-    then:
-    - action: ai_task.generate_data
-      data:
-        attachments:
-          media_content_id: media-source://media_source/local/tmp/gas/gas_latest-crop-resize2_hc.jpg
-          media_content_type: image/jpeg
-        instructions: 4 digits only
-        task_name: 가스 검침 소수 4자리(고대비)
-        entity_id: ai_task.google_ai_task
-      response_variable: res2b
+  # 고대비 보조 호출은 제거(흑백 전처리로 단일 파이프라인)
   - variables:
       c1_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("")
         }}'

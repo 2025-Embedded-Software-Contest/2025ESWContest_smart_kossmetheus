@@ -16,9 +16,6 @@ def gas_ocr_prepare(
     resize_output: str = "/config/www/tmp/gas/gas_latest-crop-resize.jpg",
     int_output: str = "/config/www/tmp/gas/gas_latest-crop-resize1.jpg",
     frac_output: str = "/config/www/tmp/gas/gas_latest-crop-resize2.jpg",
-    # 추가: 향상 처리(고대비/선명) 버전도 생성
-    int_output_alt: str = "/config/www/tmp/gas/gas_latest-crop-resize1_hc.jpg",
-    frac_output_alt: str = "/config/www/tmp/gas/gas_latest-crop-resize2_hc.jpg",
     # geometry defaults tuned for DS G1.6L sample (1600x1200 snapshot)
     rotation_angle_before: float = 0.0,
     # 새 기본값: success 예시에 맞춘 좌표(좌:420, 우:1220, 상:720, 하:880)
@@ -39,10 +36,14 @@ def gas_ocr_prepare(
     # 자동 분할 사용 (7자리 숫자 가정: 앞 3자리 정수, 뒤 4자리 소수)
     auto_split: bool = True,
     split_margin: int = 0,
+    # 세로(상/하) 자동 감지로 숫자 띠 높이를 추정
+    auto_vertical: bool = True,
+    vpad: int = 2,
+    hpad: int = 2,
     autocontrast: bool = True,
     denoise_median_size: int = 0,
-    to_grayscale: bool = False,
-    generate_alt: bool = True,
+    to_grayscale: bool = True,
+    generate_alt: bool = False,
 ):
     """yaml
 name: gas_ocr_prepare
@@ -186,6 +187,9 @@ fields:
         else:
             resized = crop
 
+        # 흑백 전환을 먼저 적용하고 대비/노이즈 순으로 처리
+        if to_grayscale:
+            resized = resized.convert("L")
         if autocontrast:
             resized = ImageOps.autocontrast(resized)
         if denoise_median_size and denoise_median_size >= 3:
@@ -193,16 +197,25 @@ fields:
                 resized = resized.filter(ImageFilter.MedianFilter(size=denoise_median_size))
             except Exception as _:
                 pass
-        if to_grayscale:
-            resized = resized.convert("L")
 
         _ensure_dir(resize_output)
         resized.save(resize_output)
 
-        # Validate split bottom within height
-        h = resized.height
-        bottom = split_bottom if (split_bottom and split_bottom > 0 and split_bottom <= h) else h
-        top = split_top if (split_top and split_top >= 0) else 0
+        # Validate split bottom within height / auto vertical band
+        H = resized.height
+        if auto_vertical:
+            try:
+                top, bottom = _auto_vertical_bounds(resized)
+                # 수직 여유 패딩
+                if vpad and vpad > 0:
+                    top = max(0, top - vpad)
+                    bottom = min(H, bottom + vpad)
+            except Exception as _:
+                top = split_top if (split_top and split_top >= 0) else 0
+                bottom = split_bottom if (split_bottom and split_bottom > 0 and split_bottom <= H) else H
+        else:
+            bottom = split_bottom if (split_bottom and split_bottom > 0 and split_bottom <= H) else H
+            top = split_top if (split_top and split_top >= 0) else 0
 
         # 자동 분할: 세로 투영 최소치를 이용해 7자리 각 칸 경계 추정
         if auto_split:
@@ -222,54 +235,31 @@ fields:
             except Exception as exc:  # noqa: BLE001
                 log.warning(f"auto_split 실패, 수동 분할로 진행: {exc}")
 
-        # Integer part crop
-        int_img = resized.crop((split_int_left, top, split_int_right, bottom))
+        # Integer part crop (좌/우 여유 패딩 적용)
+        W = resized.width
+        il = max(0, split_int_left - (hpad or 0))
+        ir = min(W, split_int_right + (hpad or 0))
+        int_img = resized.crop((il, top, ir, bottom))
         _ensure_dir(int_output)
         int_img.save(int_output)
 
-        # Fractional part crop
-        frac_img = resized.crop((split_frac_left, top, split_frac_right, bottom))
+        # Fractional part crop (좌/우 여유 패딩 적용)
+        fl = max(0, split_frac_left - (hpad or 0))
+        fr = min(W, split_frac_right + (hpad or 0))
+        frac_img = resized.crop((fl, top, fr, bottom))
         _ensure_dir(frac_output)
         frac_img.save(frac_output)
 
-        # 고대비/선명 버전 생성(선택)
-        if generate_alt:
-            if not (ImageEnhance and ImageFilter):
-                log.warning(
-                    "gas_ocr_prepare: Pillow ImageEnhance/ImageFilter 미존재로 기본 이미지를 복제해 *_hc.jpg 를 생성합니다"
-                )
-                _ensure_dir(int_output_alt)
-                int_img.save(int_output_alt)
-                _ensure_dir(frac_output_alt)
-                frac_img.save(frac_output_alt)
-            else:
-                enh = resized
-                # 밝기/대비/선명도 조정 후 약한 샤프닝
-                enh = ImageEnhance.Brightness(enh).enhance(1.15)
-                enh = ImageEnhance.Contrast(enh).enhance(1.8)
-                enh = ImageEnhance.Sharpness(enh).enhance(1.6)
-                enh = enh.filter(ImageFilter.UnsharpMask(radius=1, percent=120, threshold=3))
-
-                int_alt = enh.crop((split_int_left, top, split_int_right, bottom))
-                _ensure_dir(int_output_alt)
-                int_alt.save(int_output_alt)
-
-                frac_alt = enh.crop((split_frac_left, top, split_frac_right, bottom))
-                _ensure_dir(frac_output_alt)
-                frac_alt.save(frac_output_alt)
+        # 고대비 별도 파일 생성은 더 이상 사용하지 않음(generate_alt=False)
 
     except Exception as e:
         log.error(f"gas_ocr_prepare error: {e}")
-        _save_placeholder(
-            [
-                crop_output,
-                resize_output,
-                int_output,
-                frac_output,
-                int_output_alt,
-                frac_output_alt,
-            ]
-        )
+        _save_placeholder([
+            crop_output,
+            resize_output,
+            int_output,
+            frac_output,
+        ])
 
 
 def _ensure_dir(path: str):
@@ -344,3 +334,45 @@ def _auto_digit_splits(img: Image.Image, top: int, bottom: int, expected_digits:
             cuts[i] = min(w, cuts[i - 1] + 1)
 
     return cuts
+
+
+def _auto_vertical_bounds(img: Image.Image):
+    """가로 투영을 이용해 숫자 띠의 상/하 경계를 반환 (top, bottom)."""
+    gray = img.convert("L")
+    w, h = gray.width, gray.height
+    px = gray.load()
+
+    # 가로 투영(밝기 반전 합)
+    proj = []
+    for y in range(h):
+        s = 0
+        for x in range(w):
+            s += 255 - px[x, y]
+        proj.append(s / w)
+
+    # 평활화
+    window = max(3, int(h * 0.05))
+    sm = []
+    acc = 0
+    for i, v in enumerate(proj):
+        acc += v
+        if i >= window:
+            acc -= proj[i - window]
+        sm.append(acc / min(i + 1, window))
+
+    # 임계 기반 top/bottom 추정
+    mx = max(sm) if sm else 0
+    thr = mx * 0.3
+    top = 0
+    bottom = h
+    for i, v in enumerate(sm):
+        if v >= thr:
+            top = i
+            break
+    for i in range(h - 1, -1, -1):
+        if sm[i] >= thr:
+            bottom = i + 1
+            break
+    if bottom <= top:
+        top, bottom = 0, h
+    return top, bottom
