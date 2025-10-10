@@ -486,13 +486,7 @@
         task_name: 가스 검침 소수 4자리(고대비)
         entity_id: ai_task.google_ai_task
       response_variable: res2b
-  - action: input_text.set_value
-    metadata: {}
-    data:
-      value: >-
-        {{ now().strftime('%H:%M:%S') }} |  정수: {{ c1_digits if c1_len >= 3 else 'XXX' }} |  소수: {{ f1_pad if f1_len >= 4 or primary_len >= 7 else 'XXXX' }}
-    target:
-      entity_id: input_text.gas_message_2
+  
   - variables:
       c1_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("")
         }}'
@@ -538,6 +532,13 @@
       max_delta: '{{ (0.15 * (minutes_elapsed / 30)) | round(3) }}'
       ocr1_success: '{{ c1_len >= 3 or c2_len >= 3 }}'
       ocr2_success: '{{ primary_len >= 7 or f1_len >= 4 or f2_len >= 4 }}'
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: >-
+        {{ now().strftime('%H:%M:%S') }} |  정수: {{ c1_digits if c1_len >= 3 else 'XXX' }} |  소수: {{ f1_pad if f1_len >= 4 or primary_len >= 7 else 'XXXX' }}
+    target:
+      entity_id: input_text.gas_message_2
   - choose:
     - conditions:
         - condition: template
