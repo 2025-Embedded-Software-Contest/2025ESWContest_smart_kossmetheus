@@ -393,7 +393,7 @@
       - 255
       - 255
       - 255
-      brightness_pct: 60
+      brightness_pct: 40
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
@@ -417,13 +417,11 @@
       resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
       int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
       frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
-      # 고대비 별도 출력은 사용하지 않음 (흑백/전처리 통합)
       crop_left: 420
       crop_top: 720
       crop_right: 1220
       crop_bottom: 880
       resize_width: 300
-      # 전처리 파라미터(흑백 통합)
       to_grayscale: true
       denoise_median_size: 3
       auto_vertical: true
@@ -464,7 +462,6 @@
       task_name: 가스 검침 소수 4자리
       entity_id: ai_task.google_ai_task
     response_variable: res2
-  # 고대비 보조 호출은 제거(흑백 전처리로 단일 파이프라인)
   - variables:
       c1_raw: '{{ res1.data | default("") | string | regex_findall("[0-9]") | join("")
         }}'

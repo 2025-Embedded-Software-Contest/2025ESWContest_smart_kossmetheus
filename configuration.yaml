@@ -67,14 +67,30 @@ http:
 
 # 2. oicd 설정
 openid:
+  name: "Google"
+  issuer: "https://accounts.google.com"
   client_id: !secret oidc_client_id
   client_secret: !secret oidc_client_secret
-  configure_url: https://auth-caredian.gleeze.com/application/o/api-gw-google/.well-known/openid-configuration
-  username_field: "email"
+  authorize_url: "https://accounts.google.com/o/oauth2/v2/auth"
+  token_url: "https://oauth2.googleapis.com/token"
+  userinfo_url: "https://openidconnect.googleapis.com/v1/userinfo"
+  # username_field: "email"
   scope: "openid profile email"
   openid_text: "Login with Authentik (OIDC)"
   block_login: false
   # use_auth_header: false
+
+# # (새로 추가) 네이버 버튼 — core OIDC
+# - type: oidc
+#   name: "Login via authentik (Naver)"
+#   issuer: "https://auth-caredian.gleeze.com/application/o/home-assistant-naver/"
+#   client_id: !secret ha_oidc_naver_client_id
+#   client_secret: !secret ha_oidc_naver_client_secret
+#   token_endpoint_auth_method: client_secret_post
+#   scopes:
+#     - openid
+#     - email
+#     - profile
 
 logger:
   default: warning
@@ -109,18 +125,6 @@ homeassistant:
 
   auth_providers:
     - type: homeassistant
-
-    # # (새로 추가) 네이버 버튼 — core OIDC
-    # - type: oidc
-    #   name: "Login via authentik (Naver)"
-    #   issuer: "https://auth-caredian.gleeze.com/application/o/home-assistant-naver/"
-    #   client_id: !secret ha_oidc_naver_client_id
-    #   client_secret: !secret ha_oidc_naver_client_secret
-    #   token_endpoint_auth_method: client_secret_post
-    #   scopes:
-    #     - openid
-    #     - email
-    #     - profile
 
 input_number:
   gas_meter_2:
