@@ -14,14 +14,14 @@ class InfluxServiceV1:
         database: str,
         username: str | None = None,
         password: str | None = None,
-        timeout_ms: int = 5000,
+        timeout_sec: int = 5,
         verify_ssl: bool = False,
     ):
         self.url = url
         self.database = database
         self.username = username
         self.password = password
-        self.timeout = int(timeout_ms / 1000)  # seconds
+        self.timeout = timeout_sec
         self.verify_ssl = verify_ssl
         self._client: InfluxDBClient | None = None
         self._ensure_client()
@@ -30,7 +30,7 @@ class InfluxServiceV1:
         # for logging
         logger = logging.getLogger(__name__)
         logger.info(
-            "InfluxDB connect: url=%s, db=%s, verify_ssl=%s, timeout_ms=%s",
+            "InfluxDB connect: url=%s, db=%s, verify_ssl=%s, timeout_sec=%s",
             self.url, self.database, self.verify_ssl, self.timeout
         )
 
@@ -96,7 +96,7 @@ class InfluxServiceV1:
     def healthy(self) -> bool:
         try:
             cli = self._ensure_client()
-            cli.ping()
+            cli.ping() # ping이 성공하면 정상
             return True
         except Exception:
             return False

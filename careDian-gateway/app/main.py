@@ -5,8 +5,8 @@ import logging
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api import fall as fall_router
+from app.api.secure_influx import router as secure_influx_router
 from app.services import influx
-
 
 def create_app() -> FastAPI:
     setup_logging(level=settings.log_level, json_mode=settings.log_json)
@@ -23,7 +23,8 @@ def create_app() -> FastAPI:
         )
 
     app.include_router(fall_router.router)
-
+    app.include_router(secure_influx_router)
+    
     @app.get("/healthz")
     async def healthz():
         return {"status": "ok"}
@@ -35,9 +36,7 @@ def create_app() -> FastAPI:
     @app.get("/diag/influx")
     def diag_influx():
         out = {
-            "url": settings.influxdb_url,
-            "host": settings.influx_host,
-            "port": settings.influx_port,
+            "url": settings.influx_url,
             "verify_tls": settings.influx_verify_tls,
         }
         try:
@@ -53,8 +52,7 @@ def create_app() -> FastAPI:
         try:
             influx._ensure_client()
             logging.getLogger(__name__).info(
-                "Influx target -> %s://%s:%s",
-                settings.influx_proto, settings.influx_host, settings.influx_port
+                settings.influx_url
             )
         except Exception:
             # Influx가 죽어 있어도 앱은 뜨고 /readyz로 구분

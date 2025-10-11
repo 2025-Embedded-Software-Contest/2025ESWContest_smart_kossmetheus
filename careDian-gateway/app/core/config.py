@@ -27,10 +27,10 @@ class Settings(BaseSettings):
     allowed_origins: List[str] = Field(default_factory=list, alias="ALLOWED_ORIGINS")
 
     # InfluxDB 1.x
+    influx_url: str = Field(..., alias="INFLUX_URL")
     influx_proto: str = Field("http", alias="INFLUX_PROTO")
-    influx_host: str = Field(..., alias="INFLUX_HOST")
+    influx_host: str = Field("", alias="INFLUX_HOST")
     influx_port: int = Field(8086, alias="INFLUX_PORT")
-    influxdb_url: Optional[str] = Field(..., alias="INFLUXDB_URL")
     influx_db: str = Field(..., alias="INFLUX_DB")
     influx_username: str = Field(..., alias="INFLUX_USERNAME")
     influx_password: str = Field(..., alias="INFLUX_PASSWORD")
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     # HA
     ha_base_url: str = Field(..., alias="HA_BASE_URL")
     ha_token: str = Field(..., alias="HA_TOKEN")
-    request_timeout: int = Field(10, alias="REQUEST_TIMEOUT_S")
+    request_timeout: int = Field(10, alias="REQUEST_TIMEOUT_SEC")
 
     # Notify targets
     ha_notify_mobile: str = Field("", alias="HA_NOTIFY_MOBILE")
@@ -66,5 +66,13 @@ class Settings(BaseSettings):
             except Exception:
                 pass
         return [t.strip() for t in s.split(",") if t.strip()]
+    
+    @field_validator("log_json", "influx_verify_tls", mode="before")
+    @classmethod
+    def _parse_bool_loose(cls, v: Any):
+        if isinstance(v, bool):
+            return v
+        s = str(v).strip().lower()
+        return s in {"1", "true", "yes", "on"}
 
 settings = Settings()
