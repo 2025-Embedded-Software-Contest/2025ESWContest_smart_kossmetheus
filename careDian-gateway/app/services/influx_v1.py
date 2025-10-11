@@ -1,6 +1,7 @@
 from __future__ import annotations
 from urllib.parse import urlparse
 from typing import Any, Dict
+import logging
 
 from influxdb import InfluxDBClient  # 1.x client
 from app.core.config import settings
@@ -26,8 +27,16 @@ class InfluxServiceV1:
         self._ensure_client()
 
     def _ensure_client(self) -> InfluxDBClient:
+        # for logging
+        logger = logging.getLogger(__name__)
+        logger.info(
+            "InfluxDB connect: url=%s, db=%s, verify_ssl=%s, timeout_ms=%s",
+            self.url, self.database, self.verify_ssl, self.timeout
+        )
+
         if self._client:
             return self._client
+        
         parsed = urlparse(self.url)
         scheme = parsed.scheme or "http"
         host = parsed.hostname or "127.0.0.1"
@@ -77,13 +86,21 @@ class InfluxServiceV1:
             fields.update(extra_fields)
 
         point = [{
-            "measurement": measurement or settings.influxdb_measurement,
+            "measurement": measurement or settings.influx_measurement,
             "tags": tags,
             "fields": fields,
         }]
-        
+
         return cli.write_points(point)
     
+    def healthy(self) -> bool:
+        try:
+            cli = self._ensure_client()
+            cli.ping()
+            return True
+        except Exception:
+            return False
+        
     def close(self) -> None:
         if self._client is not None:
             try:

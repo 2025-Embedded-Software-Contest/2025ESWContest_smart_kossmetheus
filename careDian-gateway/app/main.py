@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api import fall as fall_router
-from app.services import influx_v1 as influx
+from app.services import influx
 
 
 def create_app() -> FastAPI:
@@ -29,17 +30,42 @@ def create_app() -> FastAPI:
 
     @app.get("/readyz")
     async def readyz():
-        # 최소한 HA_BASE_URL만 확인 (외부 통신은 생략)
-        return {"status": "ready"}
+        return {"status": "ready" if influx.healthy() else "not-ready"}
+
+    @app.get("/diag/influx")
+    def diag_influx():
+        out = {
+            "url": settings.influxdb_url,
+            "host": settings.influx_host,
+            "port": settings.influx_port,
+            "verify_tls": settings.influx_verify_tls,
+        }
+        try:
+            influx._ensure_client().ping()
+            out["ping"] = "ok"
+        except Exception as e:
+            out["ping"] = "fail"
+            out["error"] = repr(e)
+        return out
 
     @app.on_event("startup")
     async def on_startup():
-        influx.init()
+        try:
+            influx._ensure_client()
+            logging.getLogger(__name__).info(
+                "Influx target -> %s://%s:%s",
+                settings.influx_proto, settings.influx_host, settings.influx_port
+            )
+        except Exception:
+            # Influx가 죽어 있어도 앱은 뜨고 /readyz로 구분
+            logging.getLogger(__name__).warning("Influx client init failed", exc_info=True)
 
     @app.on_event("shutdown")
     async def on_shutdown():
         influx.close()
 
     return app
+
+setup_logging(settings.log_level)
 
 app = create_app()

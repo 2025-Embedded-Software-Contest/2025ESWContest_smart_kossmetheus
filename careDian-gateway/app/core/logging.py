@@ -41,8 +41,10 @@ def setup_logging(level="INFO", json_mode=None, log_file=None, quiet_uvicorn_acc
     root = logging.getLogger()
     for h in list(root.handlers):
         root.removeHandler(h)
+
     root.setLevel(getattr(logging, level.upper(), logging.INFO))
     root.addHandler(_build_stream_handler(json_mode))
+    
     if log_file:
         try:
             root.addHandler(_build_file_handler(log_file, json_mode))

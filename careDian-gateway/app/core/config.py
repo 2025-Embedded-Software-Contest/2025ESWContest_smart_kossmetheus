@@ -1,42 +1,48 @@
-from pydantic import BaseModel
-import os, json
+from __future__ import annotations
+from pydantic import Field # 데이터 모델의 Field 정의
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import List, Optional, Any
 
 
-def str2bool(v: str) -> bool:
-    return str(v).lower() in {"1","true","yes","on"}
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
 
-def parse_list(s: str):
-    try:
-        return json.loads(s)
-    except Exception:
-        return [x.strip() for x in s.split(",") if x.strip()]
-    
-class Settings(BaseModel):
-    app_name: str = os.getenv("APP_NAME", "CareDian Gateway")
-    env: str = os.getenv("ENV", "dev")
-    log_level: str = os.getenv("LOG_LEVEL", "INFO")
-    log_json: bool = str2bool(os.getenv("LOG_JSON","0"))
-    allowed_origins: list[str] = parse_list(os.getenv("ALLOWED_ORIGINS","[]"))
+    # app
+    app_name: str = Field("CareDian Gateway", alias="APP_NAME")
+    env: str = Field("dev", alias="ENV")
+    log_level: str = Field("INFO", alias="LOG_LEVEL")
+    log_json: bool = Field(False, alias="LOG_JSON")
+    allowed_origins: list[str] = Field("[]", alias="ALLOWED_ORIGINS")
 
     # InfluxDB 1.x
-    influx_proto: str = os.getenv("INFLUX_PROTO","http")
-    influx_host: str = os.getenv("INFLUX_HOST","localhost")
-    influx_port: int = int(os.getenv("INFLUX_PORT","8086"))
-    influx_db: str = os.getenv("INFLUX_DB","caredian")
-    influx_username: str = os.getenv("INFLUX_USERNAME","")
-    influx_password: str = os.getenv("INFLUX_PASSWORD","")
-    influx_timeout_sec: int = int(os.getenv("INFLUX_TIMEOUT_SEC","5"))
-    influx_verify_tls: bool = str2bool(os.getenv("INFLUX_VERIFY_TLS","0"))
-    influx_measurement: str = os.getenv("INFLUX_MEASUREMENT","fall_events")
+    influx_proto: str = Field("http", alias="INFLUX_PROTO")
+    influx_host: str = Field(..., alias="INFLUX_HOST")
+    influx_port: int = Field("8086", alias="INFLUX_PORT")
+    influxdb_url: Optional[str] = Field(None, alias="INFLUXDB_URL")
+    influx_db: str = Field(..., alias="INFLUX_DB")
+    influx_username: str = Field(..., alias="INFLUX_USERNAME")
+    influx_password: str = Field(..., alias="INFLUX_PASSWORD")
+    influx_timeout_sec: int = Field("5", alias="INFLUX_TIMEOUT_SEC")
+    influx_verify_tls: bool = Field("0", alias="INFLUX_VERIFY_TLS")
+    influx_measurement: str = Field("fall_events", alias="INFLUX_MEASUREMENT")
 
     # HA
-    ha_base_url: str = os.getenv("HA_BASE_URL","")
-    ha_token: str = os.getenv("HA_TOKEN","")
-    request_timeout_s: int = int(os.getenv("REQUEST_TIMEOUT_S","10"))
+    ha_base_url: str = Field(..., alias="HA_BASE_URL")
+    ha_token: str = Field(..., alias="HA_TOKEN")
+    request_timeout: int = Field(10, alias="REQUEST_TIMEOUT_S")
 
     # Notify targets
-    ha_notify_mobile: str = os.getenv("HA_NOTIFY_MOBILE","")
-    ha_notify_persist: str = os.getenv("HA_NOTIFY_PERSIST","persistent_notification.create")
-    location_default: str = os.getenv("LOCATION_DEFAULT","home")
+    ha_notify_mobile: str = Field("", alias="HA_NOTIFY_MOBILE")
+    ha_notify_persist: str = Field("persistent_notification.create", alias="HA_NOTIFY_PERSIST")
+    location_default: str = Field("home", alias="LOCATION_DEFAULT")
+    
+    @property
+    def influxdb_url(self) -> str:
+        return f"{self.influx_proto}://{self.influx_host}:{self.influx_port}"
 
 settings = Settings()

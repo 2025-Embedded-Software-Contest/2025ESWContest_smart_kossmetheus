@@ -4,9 +4,9 @@ from .influx_v1 import InfluxServiceV1
 
 influx = InfluxServiceV1(
     url=settings.influxdb_url,
-    database=settings.influxdb_db,
-    username=settings.influxdb_user,
-    password=settings.influxdb_password,
-    timeout_ms=settings.influxdb_timeout_ms,
-    verify_ssl=settings.influxdb_verify_ssl,
+    database=settings.influx_db,
+    username=settings.influx_username,
+    password=settings.influx_password,
+    timeout_ms=int(settings.influx_timeout_sec * 1000),
+    verify_ssl=settings.influx_verify_tls,
 )
