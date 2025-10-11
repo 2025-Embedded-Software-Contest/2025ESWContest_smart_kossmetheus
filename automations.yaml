@@ -598,8 +598,7 @@
   - trigger: state
     entity_id:
     - binary_sensor.ventilation_should_run
-    to: 'on'
-    from:
+    attribute: 켜짐
   conditions:
   - condition: device
     type: is_off
@@ -623,6 +622,7 @@
           minutes: 0
           seconds: 1
           milliseconds: 0
+    enabled: false
   mode: single
 - id: '1759068039218'
   alias: 이산화탄소 자동 환기 하향
@@ -631,8 +631,7 @@
   - trigger: state
     entity_id:
     - binary_sensor.ventilation_should_run
-    from:
-    to: 'off'
+    attribute: 꺼짐
   conditions:
   - condition: device
     type: is_on
@@ -672,7 +671,7 @@
       - 255
       - 255
       - 255
-      brightness_pct: 40
+      brightness_pct: 35
     target:
       entity_id: light.esp32_cam_esp32_cam_gas_light
     action: light.turn_on
@@ -722,7 +721,8 @@
         media_content_type: image/jpeg
   - variables:
       res_text: '{{ res.data | default('' '') | string }}'
-      gas_value: '{{ (res_text | regex_findall(''[0-9]+(?:\.[0-9]+)?'') | first | default(''0'')) | float(0) | round(4) }}'
+      gas_value: '{{ (res_text | regex_findall(''[0-9]+(?:\.[0-9]+)?'') | first |
+        default(''0'')) | float(0) | round(4) }}'
       current_value: '{{ states(''sensor.gas_meter_2'') | float(0) }}'
       delta: '{{ (gas_value - current_value) | round(4) }}'
   - action: input_number.set_value
