@@ -75,12 +75,6 @@ openid:
   block_login: false
   openid_text: "Login with Google (OIDC)"
 
-  # Logger
-logger:
-  default: warning
-  logs:
-    custom_components.openid: debug
-
 # 재연결 및 타임아웃 설정
 recorder:
   commit_interval: 5
@@ -134,7 +128,7 @@ homeassistant:
 
   auth_providers:
     - type: homeassistant
-  
+
   packages: !include_dir_named packages
 
 input_number:

@@ -6,7 +6,6 @@ username: !secret influxdb_username
 password: !secret influxdb_password
 max_retries: 3
 default_measurement: state
-# SSL 설정 적용할까?
 ssl: false
 verify_ssl: false
 precision: s
