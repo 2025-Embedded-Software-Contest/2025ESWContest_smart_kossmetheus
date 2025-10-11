@@ -6,6 +6,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api import fall as fall_router
 from app.api.secure_influx import router as secure_influx_router
+from app.api.influx_routes import router as influx_router
 from app.services import influx
 
 def create_app() -> FastAPI:
@@ -22,9 +23,10 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
 
-    app.include_router(fall_router.router)
     app.include_router(secure_influx_router)
-    
+    app.include_router(fall_router.router)
+    app.include_router(influx_router)
+
     @app.get("/healthz")
     async def healthz():
         return {"status": "ok"}
@@ -47,6 +49,12 @@ def create_app() -> FastAPI:
             out["error"] = repr(e)
         return out
 
+    @app.get("/debug/measurements")
+    def list_measurements(limit: int = 50):
+        # DB에 존재하는 측정값(Measurement)들 확인
+        q = f"SHOW MEASUREMENTS LIMIT {int(limit)}"
+        return influx.query_raw(q)
+    
     @app.on_event("startup")
     async def on_startup():
         try:

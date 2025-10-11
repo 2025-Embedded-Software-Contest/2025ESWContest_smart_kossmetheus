@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     influx_password: str = Field(..., alias="INFLUX_PASSWORD")
     influx_timeout_sec: int = Field(5, alias="INFLUX_TIMEOUT_SEC")
     influx_verify_tls: bool = Field(False, alias="INFLUX_VERIFY_TLS")
+    influx_ca_cert: Optional[str] = Field(None, alias="INFLUX_CA_CERT")
     influx_measurement: str = Field("fall_events", alias="INFLUX_MEASUREMENT")
 
     # HA
