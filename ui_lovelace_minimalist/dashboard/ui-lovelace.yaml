@@ -1,125 +1,390 @@
 ---
 button_card_templates: !include_dir_merge_named "../ulm_templates/"
-resources:
-  - url: /hacsfiles/button-card/button-card.js
-    type: module
-  - url: /hacsfiles/lovelace-card-mod/card-mod.js
-    type: module
-  - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
-    type: module
 
-title: "UI Lovelace Minimalist"
+title: "우리집 스마트홈"
 theme: "minimalist-desktop"
 background: "var(--background-image)"
-# views: !include_dir_merge_list "views/"
 views:
-  - title: "Example View"
-    path: 0
-    icon: "mdi:flower"
+  # ==================== 홈 (데스크톱/모바일 자동 전환) ====================
+  - title: "홈"
+    path: home
+    icon: "mdi:home-assistant"
     cards:
-      - type: "vertical-stack"
+      - type: custom:state-switch
+        entity_template: |
+          return window.matchMedia('(max-width: 800px)').matches ? 'mobile' : 'desktop';
+        states:
+          desktop:
+            - type: vertical-stack
+              cards:
+                - type: custom:mushroom-chips-card
+                  chips:
+                    - type: back
+                    - type: entity
+                      entity: sensor.multipurpose_sensor_1_temperature
+                      icon: mdi:thermometer
+                    - type: entity
+                      entity: sensor.zigbee_dimmer_power
+                      icon: mdi:flash
+                - type: picture-elements
+                  image: /local/floor/living-room-light-right-on.png
+                  elements:
+                    - type: custom:button-card
+                      entity: light.smart_bulb
+                      name: 우현이방
+                      icon: mdi:lightbulb
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/woohyeon-room
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 68%
+                        top: 52%
+                        width: 14%
+                    - type: custom:button-card
+                      entity: light.smart_bulb_3
+                      name: 안방
+                      icon: mdi:bed-double
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/master-bedroom
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 82%
+                        top: 62%
+                        width: 14%
+                    - type: custom:button-card
+                      entity: switch.kitchen_hood
+                      name: 주방 후드
+                      icon: mdi:fan
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/kitchen
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 55%
+                        top: 40%
+                        width: 14%
+                    - type: custom:button-card
+                      entity: switch.wi_fi_smart_plug_1
+                      name: 세탁기
+                      icon: mdi:washing-machine
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/laundry
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 30%
+                        top: 65%
+                        width: 14%
+                    - type: custom:button-card
+                      entity: switch.sihas_switch_4
+                      name: 아현이방
+                      icon: mdi:account-child-outline
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/achim-room
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 40%
+                        top: 55%
+                        width: 14%
+                    - type: custom:button-card
+                      entity: switch.deureseurum_deung
+                      name: 드레스룸
+                      icon: mdi:wardrobe
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/dressroom
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 75%
+                        top: 45%
+                        width: 14%
+                - type: grid
+                  columns: 2
+                  square: false
+                  cards:
+                    - type: custom:button-card
+                      template: card_light
+                      entity: light.smart_bulb
+                      name: 우현 책상 조명
+                      variables:
+                        ulm_card_light_enable_slider: true
+                        ulm_card_light_enable_color: true
+                        ulm_card_light_enable_popup: true
+                    - type: custom:button-card
+                      template: card_light
+                      entity: light.smart_bulb_3
+                      name: 안방 조명
+                      variables:
+                        ulm_card_light_enable_slider: true
+                        ulm_card_light_enable_color: true
+                        ulm_card_light_enable_popup: true
+                    - type: custom:button-card
+                      template: card_climate
+                      entity: climate.seutaendeuhyeong_eeokeon
+                      name: 에어컨
+                    - type: custom:button-card
+                      template: card_media_player
+                      entity: media_player.uhyeonibang
+                      variables:
+                        ulm_card_media_player_name: 우현이방 스피커
+                - type: custom:button-card
+                  template: card_title
+                  name: 에너지·환경
+                  label: 전력/온도/배터리
+                - type: horizontal-stack
+                  cards:
+                    - type: custom:mini-graph-card
+                      name: 주방 후드 전력(W)
+                      entities:
+                        - sensor.zigbee_dimmer_power
+                      hours_to_show: 6
+                      line_width: 3
+                    - type: custom:mini-graph-card
+                      name: 거실 창문 온도(°C)
+                      entities:
+                        - sensor.multipurpose_sensor_1_temperature
+                      hours_to_show: 6
+                      line_width: 3
+                - type: entities
+                  show_header_toggle: false
+                  entities:
+                    - type: custom:multiple-entity-row
+                      entity: sensor.multipurpose_sensor_1_temperature
+                      name: 거실 창문
+                      secondary_info: last-changed
+                      entities:
+                        - entity: sensor.multipurpose_sensor_1_battery
+                          name: 배터리
+                        - entity: binary_sensor.multipurpose_sensor_1_door
+                          name: 문
+                - type: custom:button-card
+                  template: card_battery
+                  variables:
+                    ulm_card_battery_battery_state_entity_id: sensor.multipurpose_sensor_2_battery
+          mobile:
+            - type: vertical-stack
+              cards:
+                - type: custom:mushroom-chips-card
+                  chips:
+                    - type: back
+                    - type: menu
+                    - type: entity
+                      entity: sensor.multipurpose_sensor_1_temperature
+                      icon: mdi:thermometer
+                - type: picture-elements
+                  image: /local/floor/living-room-light-right-on.png
+                  elements:
+                    - type: custom:button-card
+                      entity: light.smart_bulb
+                      name: 우현이방
+                      icon: mdi:lightbulb
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/woohyeon-room
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 65%
+                        top: 55%
+                        width: 22%
+                    - type: custom:button-card
+                      entity: light.smart_bulb_3
+                      name: 안방
+                      icon: mdi:bed-double
+                      tap_action:
+                        action: navigate
+                        navigation_path: /lovelace/master-bedroom
+                      styles:
+                        card:
+                          - padding: 6px
+                      style:
+                        left: 82%
+                        top: 65%
+                        width: 22%
+                - type: custom:button-card
+                  template: card_title
+                  name: 조명
+                - type: vertical-stack
+                  cards:
+                    - type: custom:button-card
+                      template: card_light
+                      entity: light.smart_bulb
+                      name: 우현 책상 조명
+                      variables:
+                        ulm_card_light_enable_slider: true
+                        ulm_card_light_enable_color: true
+                    - type: custom:button-card
+                      template: card_light
+                      entity: light.smart_bulb_3
+                      name: 안방 조명
+                - type: custom:button-card
+                  template: card_title
+                  name: 에어컨/미디어
+                - type: vertical-stack
+                  cards:
+                    - type: custom:button-card
+                      template: card_climate
+                      entity: climate.seutaendeuhyeong_eeokeon
+                    - type: custom:mini-media-player
+                      entity: media_player.gimuhyeonyi_macbook_pro
+                      name: 맥북 재생
+
+  # ==================== 우현이방 상세 ====================
+  - title: "우현이방"
+    path: woohyeon-room
+    icon: "mdi:account-child"
+    cards:
+      - type: custom:button-card
+        template: card_title
+        name: 우현이방
+      - type: horizontal-stack
         cards:
-          - type: "custom:button-card"
-            template: "card_title"
-            name: "Congrats with your installation 🎉"
-            label: "Explore some of the wonderful 'Minimalistic-UI' cards we offer here"
-          - type: "custom:auto-entities"
-            card:
-              type: "grid"
-              columns: 1
-              square: false
-            card_param: "cards"
-            sort:
-              count: 1
-            filter:
-              include:
-                - domain: "weather"
-                  options:
-                    type: "custom:button-card"
-                    template: "card_welcome_scenes"
-                    variables:
-                      ulm_weather: "this.entity_id"
-          - type: "custom:button-card"
-            template: "card_title"
-            name: "[[[ hass.resources[hass['language']]['ui.panel.lovelace.editor.card.light.name'] ]]]"
-            label: "This is the Minimalist-light-card"
-          - type: "custom:auto-entities"
-            card:
-              type: "grid"
-              columns: 2
-              square: false
-            card_param: "cards"
-            sort:
-              count: 4
-            filter:
-              include:
-                - domain: "light"
-                  options:
-                    type: "custom:button-card"
-                    template: "card_light"
-                    variables:
-                      ulm_card_light_enable_slider: true
-                      ulm_card_light_enable_color: true
-                      ulm_card_light_enable_popup: true
-          - type: "custom:button-card"
-            template: "card_title"
-            name: "Binary Sensors"
-            label: "This is the Minimalist-binary_sensor-card"
-          - type: "custom:auto-entities"
-            card:
-              type: "grid"
-              columns: 2
-              square: false
-            card_param: "cards"
-            sort:
-              count: 4
-            filter:
-              include:
-                - domain: "binary_sensor"
-                  options:
-                    type: "custom:button-card"
-                    template: "card_binary_sensor_alert"
-                    variables:
-                      ulm_card_binary_sensor_alert: true
-          - type: "custom:button-card"
-            template: "card_title"
-            name: "[[[ hass.resources[hass['language']]['ui.panel.lovelace.editor.card.sensor.name'] ]]]"
-            label: "This is the Minimalist-sensor-card"
-          - type: "custom:auto-entities"
-            card:
-              type: "grid"
-              columns: 2
-              square: false
-            card_param: "cards"
-            sort:
-              count: 4
-            filter:
-              include:
-                - domain: "sensor"
-                  options:
-                    type: "custom:button-card"
-                    template: "card_generic"
-          - type: "custom:button-card"
-            template: "card_title"
-            name: "[[[ hass.resources[hass['language']]['ui.dialogs.entity_registry.editor.device_classes.binary_sensor.battery'] ]]]"
-            label: "This is the Minimalist-battery-card"
-          - type: "custom:auto-entities"
-            card:
-              type: "grid"
-              columns: 2
-              square: false
-            card_param: "cards"
-            sort:
-              count: 4
-            filter:
-              include:
-                - attributes:
-                    unit_of_measurement: "%"
-                    device_class: "battery"
-                  options:
-                    type: "custom:button-card"
-                    template: "card_battery"
-                    variables:
-                      ulm_card_battery_battery_state_entity_id: "this.entity_id"
-                      ulm_card_battery_battery_level_danger: 30
-                      ulm_card_battery_battery_level_warning: 80
+          - type: custom:button-card
+            template: card_light
+            entity: light.smart_bulb
+            name: 책상 조명
+            variables:
+              ulm_card_light_enable_slider: true
+              ulm_card_light_enable_color: true
+          - type: custom:button-card
+            template: card_media_player
+            entity: media_player.uhyeonibang
+            variables:
+              ulm_card_media_player_name: 우현이방 스피커
+      - type: entities
+        entities:
+          - entity: sensor.uhyeonibang_device
+            name: 기기 IP
+
+  # ==================== 안방 상세 ====================
+  - title: "안방"
+    path: master-bedroom
+    icon: "mdi:bed-double"
+    cards:
+      - type: custom:button-card
+        template: card_title
+        name: 안방
+      - type: custom:button-card
+        template: card_light
+        entity: light.smart_bulb_3
+        name: 안방 조명
+        variables:
+          ulm_card_light_enable_slider: true
+          ulm_card_light_enable_color: true
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-entity-card
+            entity: switch.anbang_hwajangsil_deung
+            name: 안방 화장실 등 1
+            icon: mdi:toilet
+          - type: custom:mushroom-entity-card
+            entity: switch.anbang_syaweosil_deung
+            name: 안방 샤워실 등
+            icon: mdi:shower
+          - type: custom:mushroom-entity-card
+            entity: switch.anbang_hwajangsil_hwangi
+            name: 안방 환기
+            icon: mdi:fan
+
+  # ==================== 주방 상세 ====================
+  - title: "주방"
+    path: kitchen
+    icon: "mdi:fridge"
+    cards:
+      - type: custom:button-card
+        template: card_title
+        name: 주방
+      - type: custom:mushroom-entity-card
+        entity: switch.kitchen_hood
+        name: 주방 후드
+        icon: mdi:fan
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: 후드 전력(W)
+            entities:
+              - sensor.zigbee_dimmer_power
+            hours_to_show: 6
+            line_width: 3
+          - type: custom:apexcharts-card
+            experimental: true
+            graph_span: 6h
+            series:
+              - entity: sensor.zigbee_dimmer_power
+                type: column
+                name: 전력
+      - type: entities
+        entities:
+          - entity: sensor.ucg_fiber_port_4_poe_power
+            name: PoE 전력
+          - entity: sensor.jubang_siggiseceoggi_current_status
+            name: 식기세척기 상태
+
+  # ==================== 세탁실 상세 ====================
+  - title: "세탁실"
+    path: laundry
+    icon: "mdi:washing-machine"
+    cards:
+      - type: custom:button-card
+        template: card_title
+        name: 세탁실
+      - type: custom:mushroom-entity-card
+        entity: switch.wi_fi_smart_plug_1
+        name: 세탁기 전원
+        icon: mdi:power-socket
+      - type: horizontal-stack
+        cards:
+          - type: custom:mini-graph-card
+            name: 전력(W)
+            entities:
+              - sensor.wi_fi_smart_plug_1_power
+            hours_to_show: 6
+            line_width: 3
+          - type: custom:mini-graph-card
+            name: 에너지(kWh)
+            entities:
+              - sensor.wi_fi_smart_plug_1_energy_2
+            hours_to_show: 24
+            line_width: 3
+
+  # ==================== 아현이방 상세 ====================
+  - title: "아현이방"
+    path: achim-room
+    icon: "mdi:account-child-outline"
+    cards:
+      - type: custom:button-card
+        template: card_title
+        name: 아현이방
+      - type: custom:mushroom-entity-card
+        entity: switch.sihas_switch_4
+        name: 조명
+        icon: mdi:lightbulb
+
+  # ==================== 드레스룸 상세 ====================
+  - title: "드레스룸"
+    path: dressroom
+    icon: "mdi:wardrobe"
+    cards:
+      - type: custom:button-card
+        template: card_title
+        name: 드레스룸
+      - type: custom:mushroom-entity-card
+        entity: switch.deureseurum_deung
+        name: 드레스룸 등
+        icon: mdi:lightbulb
