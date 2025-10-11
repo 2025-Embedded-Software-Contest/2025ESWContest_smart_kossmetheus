@@ -1,12 +1,19 @@
 from __future__ import annotations
-from pydantic import Field # 데이터 모델의 Field 정의
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import List, Optional, Any
 
+from pydantic import Field, field_validator # 데이터 모델의 Field 정의
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional, List, Any
+from pathlib import Path
+from dotenv import find_dotenv
+import json
+
+
+# .env 경로를 안정적으로 찾기 (CWD 우선 → 리로더/서브프로세스에서도 루트 폴백)
+ENV_FILE = find_dotenv(usecwd=True) or str((Path(__file__).resolve().parents[2] / ".env"))
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE,
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -17,18 +24,18 @@ class Settings(BaseSettings):
     env: str = Field("dev", alias="ENV")
     log_level: str = Field("INFO", alias="LOG_LEVEL")
     log_json: bool = Field(False, alias="LOG_JSON")
-    allowed_origins: list[str] = Field("[]", alias="ALLOWED_ORIGINS")
+    allowed_origins: List[str] = Field(default_factory=list, alias="ALLOWED_ORIGINS")
 
     # InfluxDB 1.x
     influx_proto: str = Field("http", alias="INFLUX_PROTO")
     influx_host: str = Field(..., alias="INFLUX_HOST")
-    influx_port: int = Field("8086", alias="INFLUX_PORT")
-    influxdb_url: Optional[str] = Field(None, alias="INFLUXDB_URL")
+    influx_port: int = Field(8086, alias="INFLUX_PORT")
+    influxdb_url: Optional[str] = Field(..., alias="INFLUXDB_URL")
     influx_db: str = Field(..., alias="INFLUX_DB")
     influx_username: str = Field(..., alias="INFLUX_USERNAME")
     influx_password: str = Field(..., alias="INFLUX_PASSWORD")
-    influx_timeout_sec: int = Field("5", alias="INFLUX_TIMEOUT_SEC")
-    influx_verify_tls: bool = Field("0", alias="INFLUX_VERIFY_TLS")
+    influx_timeout_sec: int = Field(5, alias="INFLUX_TIMEOUT_SEC")
+    influx_verify_tls: bool = Field(False, alias="INFLUX_VERIFY_TLS")
     influx_measurement: str = Field("fall_events", alias="INFLUX_MEASUREMENT")
 
     # HA
@@ -40,9 +47,24 @@ class Settings(BaseSettings):
     ha_notify_mobile: str = Field("", alias="HA_NOTIFY_MOBILE")
     ha_notify_persist: str = Field("persistent_notification.create", alias="HA_NOTIFY_PERSIST")
     location_default: str = Field("home", alias="LOCATION_DEFAULT")
-    
-    @property
-    def influxdb_url(self) -> str:
-        return f"{self.influx_proto}://{self.influx_host}:{self.influx_port}"
+
+    # validators
+    @field_validator("allowed_origins", mode="before")
+    @classmethod
+    def _parse_allowed_origins(cls, v: Any):
+        if v is None:
+            return []
+        if isinstance(v, list):
+            return v
+        s = str(v).strip()
+        if not s:
+            return []
+        if s.startswith("["):
+            try:
+                arr = json.loads(s)
+                return arr if isinstance(arr, list) else []
+            except Exception:
+                pass
+        return [t.strip() for t in s.split(",") if t.strip()]
 
 settings = Settings()
