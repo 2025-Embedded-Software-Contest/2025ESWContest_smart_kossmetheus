@@ -4,51 +4,57 @@ from app.core.config import settings
 
 
 async def _call_notify(service: str, payload: Dict[str, Any]) -> int:
-    url = f"{settings.ha_base_url.rstrip('/')}/api/services/{service.replace('.','/')}"
+    """HA REST API로 notify 서비스 호출"""
+    url = f"{settings.ha_base_url.rstrip('/')}/api/services/{service.replace('.', '/')}"
     headers = {
         "Authorization": f"Bearer {settings.ha_token}",
         "Content-Type": "application/json",
     }
+
     async with httpx.AsyncClient(timeout=settings.request_timeout) as client:
         r = await client.post(url, headers=headers, json=payload)
+        print(f"[HA_NOTIFY] POST {url} → {r.status_code}")
+        if r.status_code >= 400:
+            print("⚠️ Home Assistant notify failed:", r.text)
         return r.status_code
 
+
 async def send_fall_alert(
+    *,
+    device_id: str,
     title: str,
     message: str,
-    *,
-    location: Optional[str] = None,
-    image_url: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
+    location: str = "home",
+    pred_prob: Optional[float] = None,
+    moving_range: Optional[int] = None,
+    dwell_state: Optional[int] = None,
+    fall_state: Optional[int] = None,
+    ts: Optional[int] = None,
 ) -> Dict[str, Any]:
-    """FCM(모바일앱) + persistent_notification 둘 다 전송."""
     loc = location or settings.location_default
 
-    # 1) 모바일(Firebase via HA 모바일앱 notify)
     mobile_payload = {
-        "title": title,
-        "message": message,
+        "message": message,   
+        "title": title,       
         "data": {
             "tag": "fall_alert",
-            "channel": "alarm_stream",
-            "clickAction": "/lovelace/home",
-            "actions": [
-                {"action": "URI", "title": "열기", "uri": f"/lovelace/home"},
-            ],
-            "image": image_url,
             "location": loc,
+            "device_id": device_id,
+            "pred_prob": pred_prob,
+            "moving_range": moving_range,
+            "dwell_state": dwell_state,
+            "fall_state": fall_state,
+            "ts": ts,
         },
     }
-    if extra:
-        mobile_payload["data"].update(extra)
-    status_mobile = await _call_notify(settings.ha_notify_mobile, mobile_payload)
 
-    # 2) 고정 알림
+    status_mobile = await _call_notify(settings.ha_notify_mobile, mobile_payload)
     persist_payload = {
-        "message": message,
         "title": title,
-        "notification_id": "fall_alert",
+        "message": message,
+        #"notification_id": "fall_alert",
     }
+
     status_persist = await _call_notify(settings.ha_notify_persist, persist_payload)
 
     return {"mobile": status_mobile, "persist": status_persist}
