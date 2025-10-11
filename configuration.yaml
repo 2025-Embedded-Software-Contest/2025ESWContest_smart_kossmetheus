@@ -118,6 +118,13 @@ lovelace:
       type: module
     - url: /hacsfiles/timer-bar-card/timer-bar-card.js
       type: module
+  dashboards:
+    air-quality-dashboard:
+      mode: yaml
+      title: 공기질 대시보드 2025
+      icon: mdi:air-filter
+      show_in_sidebar: true
+      filename: dashboard_2025.yaml
 
 # Gas meter (ESP32-CAM + OCR)   #
 homeassistant:
@@ -127,6 +134,8 @@ homeassistant:
 
   auth_providers:
     - type: homeassistant
+  
+  packages: !include_dir_named packages
 
 input_number:
   gas_meter_2:
