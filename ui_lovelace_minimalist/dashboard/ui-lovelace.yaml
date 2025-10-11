@@ -10,8 +10,11 @@ views:
     path: home
     icon: "mdi:home-assistant"
     cards:
+      - type: markdown
+        content: "대시보드 로딩 확인용"
       - type: custom:state-switch
-        entity_template: |
+        entity: template
+        template: |
           return window.matchMedia('(max-width: 800px)').matches ? 'mobile' : 'desktop';
         states:
           desktop:
