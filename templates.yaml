@@ -162,6 +162,19 @@
         {{ is_state('binary_sensor.iphone_presence', 'on') }}
       icon: mdi:home-account
 
+    # 업데이트 필요 여부 (update.* 하나라도 on이면 true)
+    - name: "any_device_update_available"
+      unique_id: "any_device_update_available"
+      state: >
+        {% set updates = expand('group.device_updates') %}
+        {{ updates | selectattr('state','eq','on') | list | length > 0 }}
+      icon: >
+        {% if is_state('binary_sensor.any_device_update_available','on') %}
+          mdi:update
+        {% else %}
+          mdi:check
+        {% endif %}
+
     # CO₂ 센서(모든 carbon_dioxide) 중 하나라도 허용 범위를 벗어나면 true
     - name: "any_co2_out_of_range"
       unique_id: "any_co2_out_of_range"
