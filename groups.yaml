@@ -7,7 +7,6 @@ all_lights:
   entities:
     # 기존 light 도메인 하드웨어 조명
     - light.smart_bulb
-    - light.camera_hub_g5pro_9489_lightbulb
     - light.smart_bulb_2
     - light.smart_bulb_3
 
@@ -34,11 +33,6 @@ all_switches:
     - switch.geosil_jeondeung_center_left      # 거실 전등 (중앙 좌)
     - switch.geosil_jeondeung_top_left         # 거실 전등 (상단 좌)
     - switch.geosil_jeondeung_top_right        # 거실 전등 (상단 우)
-    - switch.hagyeongbang_jeondeung            # 학영방 전등
-    - switch.hyeogjinbang_jeondeung            # 형진방 전등
-    - switch.jubang_jeondeung_top              # 주방 전등 (상단)
-    - switch.jubang_jeondeung_center           # 주방 전등 (중앙)
-    - switch.jubang_jeondeung_bottom           # 주방 전등 (하단)
     - switch.sihas_switch_2                    # 싱크대등
     - switch.sihas_switch_3                    # 식탁등
     - switch.sihas_switch_1                    # 가스레인지등
