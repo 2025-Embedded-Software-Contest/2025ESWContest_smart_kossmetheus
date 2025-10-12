@@ -93,6 +93,12 @@
         {{ expand(state_attr('group.all_media_players','entity_id') | default([]))
              | selectattr('state','eq','playing') | list | length }}
 
+- sensor:
+    - name: "persistent_notifications"
+      unique_id: "persistent_notifications"
+      state: >
+        {{ states.persistent_notification | list | length }}
+
     # 진단: 'unavailable/unknown' 엔티티 개수
     - name: "unavailable_entities_count"
       unique_id: "unavailable_entities_count"
