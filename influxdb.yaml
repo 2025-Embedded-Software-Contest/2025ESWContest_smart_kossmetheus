@@ -62,6 +62,7 @@ include:
     - weather.forecast_jib
     - sensor.time
     - sensor.date
+    - fall_events
 
   # =======================
   # 기능별 그룹화
