@@ -47,6 +47,14 @@ command_line:
       command: 'free | grep Mem | awk ''{printf "%.1f", $3/$2 * 100.0}'''
       unit_of_measurement: "%"
       value_template: "{{ value | float(default=0) | round(1) }}"
+  - sensor:
+      name: HA Log Size
+      unique_id: ha_log_size_mb
+      scan_interval: 60
+      command: "wc -c < /config/home-assistant.log || echo 0"
+      unit_of_measurement: "MB"
+      value_template: "{{ (value | int(0) / 1024 / 1024) | round(2) }}"
+      icon: mdi:file-chart
 # Enable Pyscript custom integration for image pipeline
 pyscript:
   # 외부 패키지(Pillow 등) 임포트를 허용해 pyscript 스크립트가 정상 로드되도록 함
