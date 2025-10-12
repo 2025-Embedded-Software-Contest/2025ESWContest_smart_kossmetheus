@@ -497,10 +497,10 @@
       instructions: 이 이미지는 기계식 가스 계량기의 7자리 숫자 표시부입니다. 3자리 정수부와 4자리 소수부를 읽고, 숫자만으로
         DDD.dddd 형식으로 반환하세요. 공백·단위·설명·줄바꿈 없이 결과만 출력하세요.
       attachments:
-        media_content_id: media-source://media_source/gas/gas_latest-crop.jpg
+        media_content_id: media-source://media_source/gas/gas_latest.jpg
         media_content_type: image/jpeg
         metadata:
-          title: gas_latest-crop.jpg
+          title: gas_latest.jpg
           thumbnail:
           media_class: image
           children_media_class:
