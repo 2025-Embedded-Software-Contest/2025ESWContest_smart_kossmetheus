@@ -28,11 +28,7 @@ all_lights:
 all_switches:
   name: "모든 스위치"
   entities:
-    - switch.geosil_jeondeung_bottom_left      # 거실 전등 (하단 좌)
-    - switch.geosil_jeondeung_bottom_right     # 거실 전등 (하단 우)
-    - switch.geosil_jeondeung_center_left      # 거실 전등 (중앙 좌)
-    - switch.geosil_jeondeung_top_left         # 거실 전등 (상단 좌)
-    - switch.geosil_jeondeung_top_right        # 거실 전등 (상단 우)
+    # 존재하지 않는 geosil_jeondeung_* 스위치 제거
     - switch.sihas_switch_2                    # 싱크대등
     - switch.sihas_switch_3                    # 식탁등
     - switch.sihas_switch_1                    # 가스레인지등
