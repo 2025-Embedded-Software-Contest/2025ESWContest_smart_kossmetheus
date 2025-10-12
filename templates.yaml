@@ -25,6 +25,61 @@
         {{ ((watch + macbook + ipad + iphone) / 4) | round(0) }}
       icon: mdi:battery
 
+# ===========================
+# Overview badges (환경/조명/보안/미디어)
+# ===========================
+- sensor:
+    - name: "overview_climate"
+      unique_id: "overview_climate"
+      state: >
+        {%- set group_members = state_attr('group.temperature_sensors', 'entity_id') | default([]) -%}
+        {%- set valid_temps = group_members
+          | map('states')
+          | map('float', default=None)
+          | select('!=', None)
+          | list -%}
+        {% if valid_temps | length == 1 %}
+          {{ valid_temps[0] }}°
+        {% elif valid_temps | length > 1 %}
+          {{ valid_temps | min }}~{{ valid_temps | max }}°
+        {% else %}
+          No valid sensors
+        {% endif %}
+
+- sensor:
+    - name: "count_lights_on"
+      unique_id: "count_lights_on"
+      state: >
+        {{ (state_attr('group.all_lights', 'entity_id') | default([]))
+             | select('is_state','on') | list | length }}
+
+- sensor:
+    - name: "overview_security"
+      unique_id: "overview_security"
+      state: >
+        {% set alarm = states('alarm_control_panel.camera_hub_g5pro_9489_security_system') %}
+        {% set doors = (state_attr('group.security_doors','entity_id')|default([])) | select('is_state','on') | list | length %}
+        {% set motion = (state_attr('group.security_motion','entity_id')|default([])) | select('is_state','on') | list | length %}
+        {% set occ = (state_attr('group.security_occupancy','entity_id')|default([])) | select('is_state','on') | list | length %}
+        {% if alarm in ['triggered','arming','pending'] %}
+          경보 동작 중
+        {% elif doors > 0 %}
+          문/창 {{ doors }}개 열림
+        {% elif motion > 0 %}
+          움직임 감지
+        {% elif alarm in ['disarmed','off','unknown','unavailable'] %}
+          경보 해제됨
+        {% else %}
+          이상 없음
+        {% endif %}
+
+- sensor:
+    - name: "count_media_playing"
+      unique_id: "count_media_playing"
+      state: >
+        {{ expand(state_attr('group.all_media_players','entity_id') | default([]))
+             | selectattr('state','eq','playing') | list | length }}
+
     # 진단: 'unavailable/unknown' 엔티티 개수
     - name: "unavailable_entities_count"
       unique_id: "unavailable_entities_count"

@@ -5,11 +5,25 @@
 all_lights:
   name: "모든 조명"
   entities:
-    - light.living_floor_light
-    - light.hagyeong_floor
-    - light.coupy_floor_light
-    - light.coupy_indirect_light
-    - light.coupy_reading_light
+    # 기존 light 도메인 하드웨어 조명
+    - light.smart_bulb
+    - light.camera_hub_g5pro_9489_lightbulb
+    - light.smart_bulb_2
+    - light.smart_bulb_3
+
+    # switch→light 매핑 결과 (lights.yaml 정의 필수)
+    - light.geosil_jomyeong_1beon
+    - light.geosil_jomyeong_2beon
+    - light.geosil_jomyeong_3beon
+    - light.sihas_switch_1
+    - light.sihas_switch_2
+    - light.sihas_switch_3
+    - light.sihas_switch_4
+    - light.sihas_switch_5
+    - light.deureseurum_deung
+    - light.hwajangdae_deung
+    - light.anbang_hwajangsil_deung
+    - light.anbang_syaweosil_deung
 
 # 스위치 그룹  
 all_switches:
@@ -46,6 +60,59 @@ lighting_control:
   name: "조명 제어"
   entities:
     - light.camera_hub_g5pro_9489_lightbulb   # 카메라 허브 조명
+
+# 환경 기기 (팬/에어컨/가습기/커버)
+all_env_devices:
+  name: "환경 기기"
+  entities:
+    - climate.seutaendeuhyeong_eeokeon
+
+# 보안 그룹들
+security_doors:
+  name: "보안-문/창"
+  entities:
+    - binary_sensor.jubang_siggiseceoggi_door
+    - binary_sensor.naengjanggo_fridge_door
+    - binary_sensor.naengjanggo_freezer_door
+    - binary_sensor.naengjanggo_coolselect_door
+    - binary_sensor.multipurpose_sensor_1_door
+    - binary_sensor.multipurpose_sensor_2_door
+
+security_motion:
+  name: "보안-모션"
+  entities:
+    - binary_sensor.camera_hub_g5pro_9489_motion_sensor
+
+security_occupancy:
+  name: "보안-재실"
+  entities:
+    - binary_sensor.presence_sensor_fp2_1ea6_presence_sensor_1
+    - binary_sensor.aqara_fp2_1ea6_presence
+
+security_core:
+  name: "보안-핵심"
+  entities:
+    - alarm_control_panel.camera_hub_g5pro_9489_security_system
+    - lock.aqara_smart_lock_l100
+
+all_security:
+  name: "모든 보안"
+  entities:
+    - group.security_doors
+    - group.security_motion
+    - group.security_occupancy
+    - group.security_core
+
+# 스피커 및 TV (실사용 위주)
+all_media_players:
+  name: "스피커 및 TV"
+  entities:
+    - media_player.spotify_gimuhyeon
+    - media_player.vlc_telnet
+    - media_player.gimuhyeonyi_macbook_pro
+    - media_player.uhyeonibang
+    - media_player.paul_nest
+    - media_player.music_player_daemon
 
 # 디바이스 그룹
 all_devices:
