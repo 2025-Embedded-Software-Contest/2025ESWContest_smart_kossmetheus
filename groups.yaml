@@ -44,6 +44,7 @@ ventilation:
   name: "환기 시설"
   entities:
     - switch.anbang_hwajangsil_hwangi          # 안방 화장실 환기
+    - switch.ventilator_power                  # 거실 환기 전원
 
 # 조명 제어 그룹 (기존 커튼 그룹 대체)
 lighting_control:
@@ -137,6 +138,8 @@ all_devices:
     - switch.naengjanggo_power_cool            # 냉장고 급속 냉장
     - switch.naengjanggo_power_freeze          # 냉장고 급속 냉동
     - switch.anbang_hwajangsil_hwangi          # 안방 화장실 환기
+    - switch.ventilator_power                  # 거실 환기 전원
+    - switch.robot_vacuum_switch               # 로봇청소기 전원
     - media_player.spotify_gimuhyeon           # Spotify 김우현
 
 # 온도 센서 그룹
