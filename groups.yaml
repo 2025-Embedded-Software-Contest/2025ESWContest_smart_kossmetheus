@@ -60,6 +60,30 @@ all_env_devices:
   name: "환경 기기"
   entities:
     - climate.seutaendeuhyeong_eeokeon
+    # 내부/주변 환경 센서 (온/습도/공기질) - 냉장고 온도 제외, 조도 제외
+    - sensor.seutaendeuhyeong_eeokeon_temperature
+    - sensor.seutaendeuhyeong_eeokeon_humidity
+    - sensor.eeomoniteo_peulreoseu_temperature
+    - sensor.eeomoniteo_peulreoseu_humidity
+    - sensor.eeomoniteo_peulreoseu_carbon_dioxide
+    - sensor.eeomoniteo_peulreoseu_pm1
+    - sensor.eeomoniteo_peulreoseu_pm2_5
+    - sensor.eeomoniteo_peulreoseu_pm10
+    - sensor.eeomoniteo_peulreoseu_air_quality
+    - sensor.eeomoniteo_peulreoseu_odor_sensor
+    - sensor.gonggijil_ceugjeonggi_1528_temperature
+    - sensor.gonggijil_ceugjeonggi_1528_humidity
+    - sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide
+    - sensor.gonggijil_ceugjeonggi_1528_pm2_5
+    - sensor.gonggijil_ceugjeonggi_1528_pm10
+    - sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts
+    - sensor.wn_jib_temperature
+    - sensor.wn_jib_relative_humidity
+    - sensor.wn_jib_pm2_5
+    - sensor.wn_jib_pm10
+    - sensor.airquality_1528
+    - sensor.airquality_1528_alt
+    - sensor.airquality_airmonitor
 
 # 보안 그룹들
 security_doors:
@@ -123,11 +147,6 @@ all_devices:
 temperature_sensors:
   name: "온도 센서"
   entities:
-    - sensor.jubang_gimcinaengjanggo_left_temperature      # 김치냉장고 좌측
-    - sensor.jubang_gimcinaengjanggo_middle_temperature    # 김치냉장고 중앙
-    - sensor.jubang_gimcinaengjanggo_right_temperature     # 김치냉장고 우측
-    - sensor.jubang_gimcinaengjanggo_bottom_temperature    # 김치냉장고 하단
-    - sensor.kimchi_fridge_avg_temperature                 # 김치냉장고 평균 온도
     - sensor.seutaendeuhyeong_eeokeon_temperature         # 스탠드형 에어컨 온도
     - sensor.gonggijil_ceugjeonggi_1528_temperature       # 공기질 측정기 온도
     - sensor.multipurpose_sensor_1_temperature            # 거실 오른쪽 창문 온도
