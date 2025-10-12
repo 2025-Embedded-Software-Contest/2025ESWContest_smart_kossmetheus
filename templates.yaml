@@ -21,7 +21,7 @@
         {% set watch = states('sensor.gimuhyeonyi_apple_watch_battery') | float(0) %}
         {% set macbook = states('sensor.gimuhyeonyi_macbook_pro_battery') | float(0) %}
         {% set ipad = states('sensor.uhyeonyi_ipad_pro_battery') | float(0) %}
-        {% set iphone = states('sensor.uhyeonyi_iphone_xs_battery') | float(0) %}
+        {% set iphone = states('sensor.iphone_battery_level') | float(0) %}
         {{ ((watch + macbook + ipad + iphone) / 4) | round(0) }}
       icon: mdi:battery
 
@@ -150,7 +150,7 @@
           states('sensor.gimuhyeonyi_apple_watch_battery') | float(100),
           states('sensor.gimuhyeonyi_macbook_pro_battery') | float(100),
           states('sensor.uhyeonyi_ipad_pro_battery') | float(100),
-          states('sensor.uhyeonyi_iphone_xs_battery') | float(100)
+          states('sensor.iphone_battery_level') | float(100)
         ] %}
         {{ devices | select('lt', 20) | list | length > 0 }}
       icon: mdi:battery-alert

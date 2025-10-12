@@ -51,7 +51,7 @@
       title: "\U0001F50B 배터리 부족 주의"
       message: "배터리가 부족한 디바이스가 있습니다: {% set devices = [\n  ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),\n
         \ ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),\n  ('iPad
-        Pro', states('sensor.uhyeonyi_ipad_pro_battery')),\n  ('iPhone XS', states('sensor.uhyeonyi_iphone_xs_battery'))\n]
+        Pro', states('sensor.uhyeonyi_ipad_pro_battery')),\n  ('iPhone 17 Pro', states('sensor.iphone_battery_level'))\n]
         %} {% for device, battery in devices %} {% if battery|int < 20 %} - {{ device
         }}: {{ battery }}% {% endif %} {% endfor %}\n"
       notification_id: low_battery_alert
@@ -63,7 +63,7 @@
     - sensor.gimuhyeonyi_apple_watch_battery
     - sensor.gimuhyeonyi_macbook_pro_battery
     - sensor.uhyeonyi_ipad_pro_battery
-    - sensor.uhyeonyi_iphone_xs_battery
+    - sensor.iphone_battery_level
     below: 10
   actions:
   - action: persistent_notification.create

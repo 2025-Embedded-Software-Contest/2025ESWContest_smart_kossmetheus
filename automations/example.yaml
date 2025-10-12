@@ -69,7 +69,7 @@
             ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),
             ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),
             ('iPad Pro', states('sensor.uhyeonyi_ipad_pro_battery')),
-            ('iPhone XS', states('sensor.uhyeonyi_iphone_xs_battery'))
+            ('iPhone 17 Pro', states('sensor.iphone_battery_level'))
           ] %}
           {% for device, battery in devices %}
           {% if battery|int < 20 %}

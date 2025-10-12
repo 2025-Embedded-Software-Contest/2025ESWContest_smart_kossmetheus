@@ -187,7 +187,7 @@ battery_monitoring:
     - sensor.gimuhyeonyi_apple_watch_battery
     - sensor.gimuhyeonyi_macbook_pro_battery
     - sensor.uhyeonyi_ipad_pro_battery
-    - sensor.uhyeonyi_iphone_xs_battery
+    - sensor.iphone_battery_level
     - sensor.average_device_battery
     - binary_sensor.low_battery_devices
 
