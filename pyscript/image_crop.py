@@ -80,7 +80,7 @@ def detect_digit_area(image_path):
         x, y, w, h, _ = digit_contours[0]
 
         # 여유 공간을 두어 크롭 영역 설정
-        padding = 10
+        padding = 20
         x = max(0, x - padding)
         y = max(0, y - padding)
         w = min(image.shape[1] - x, w + padding * 2)
