@@ -54,6 +54,19 @@
              | select('is_state','on') | list | length }}
 
 - sensor:
+    - name: "overview_lights"
+      unique_id: "overview_lights"
+      state: >
+        {% set lights_entities = state_attr('group.all_lights','entity_id') %}
+        {% set lights = expand(lights_entities if lights_entities else states.light | map(attribute='entity_id') | list) %}
+        {% set on_count = lights | selectattr('state','eq','on') | list | length %}
+        {% if on_count == 0 %}
+          모두 꺼짐
+        {% else %}
+          조명 {{ on_count }}개 켜짐
+        {% endif %}
+
+- sensor:
     - name: "overview_security"
       unique_id: "overview_security"
       state: >
