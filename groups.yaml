@@ -149,12 +149,20 @@ temperature_sensors:
     - sensor.seutaendeuhyeong_eeokeon_temperature         # 스탠드형 에어컨 온도
     - sensor.gonggijil_ceugjeonggi_1528_temperature       # 공기질 측정기 온도
     - sensor.multipurpose_sensor_1_temperature            # 거실 오른쪽 창문 온도
+    - sensor.eeomoniteo_peulreoseu_temperature            # 에어모니터 플러스 온도
+    - sensor.aqara_temperature_and_humidity_sensor_t1_temperature
+    - sensor.aqara_temperature_and_humidity_sensor_t1_1_temperature
+    - sensor.multipurpose_sensor_2_temperature            # 안방 베란다 창문 온도
 
 # 습도 센서 그룹  
 humidity_sensors:
   name: "습도 센서"
   entities:
     - sensor.gonggijil_ceugjeonggi_1528_humidity          # 공기질 측정기 습도
+    - sensor.eeomoniteo_peulreoseu_humidity               # 에어모니터 플러스 습도
+    - sensor.aqara_temperature_and_humidity_sensor_t1_humidity
+    - sensor.aqara_temperature_and_humidity_sensor_t1_1_humidity
+    - sensor.seutaendeuhyeong_eeokeon_humidity            # 스탠드형 에어컨 습도
 
 # 모션 센서 그룹
 motion_sensors:

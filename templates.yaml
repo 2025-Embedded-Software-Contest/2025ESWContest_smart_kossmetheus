@@ -26,6 +26,47 @@
       icon: mdi:battery
 
 # ===========================
+# 평균 실내 온/습도 템플릿 센서
+# ===========================
+- sensor:
+    - name: "average_indoor_temperature"
+      unique_id: "average_indoor_temperature"
+      unit_of_measurement: "°C"
+      state: >
+        {%- set members = state_attr('group.temperature_sensors','entity_id') | default([]) -%}
+        {%- set values = members
+          | map('states')
+          | reject('in', ['unknown','unavailable','None','none',''])
+          | map('float', default=None)
+          | select('!=', None)
+          | list -%}
+        {% if values | length > 0 %}
+          {{ (values | sum / values | length) | round(1) }}
+        {% else %}
+          unknown
+        {% endif %}
+      icon: mdi:thermometer
+
+- sensor:
+    - name: "average_indoor_humidity"
+      unique_id: "average_indoor_humidity"
+      unit_of_measurement: "%"
+      state: >
+        {%- set members = state_attr('group.humidity_sensors','entity_id') | default([]) -%}
+        {%- set values = members
+          | map('states')
+          | reject('in', ['unknown','unavailable','None','none',''])
+          | map('float', default=None)
+          | select('!=', None)
+          | list -%}
+        {% if values | length > 0 %}
+          {{ (values | sum / values | length) | round(0) }}
+        {% else %}
+          unknown
+        {% endif %}
+      icon: mdi:water-percent
+
+# ===========================
 # Overview badges (환경/조명/보안/미디어)
 # ===========================
 - sensor:
