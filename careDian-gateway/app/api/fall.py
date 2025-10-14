@@ -89,8 +89,8 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         
 
     if notify_result:
-        if notify_result["mobile"] >= 400 and notify_result["persist"] >= 400:
-            raise HTTPException(status_code=502, detail="HA notify failed")
+        if any(code >= 400 for code in notify_result.values() if isinstance(code, int)):
+            raise HTTPException(status_code=502, detail=f"HA notify failed: {notify_result}")
 
     return {"ok": True, "fall_state": ev.fall_state}
   
