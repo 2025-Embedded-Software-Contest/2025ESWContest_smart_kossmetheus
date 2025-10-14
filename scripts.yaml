@@ -64,15 +64,18 @@ esp32_cam_flash_off:
       entity_id: light.esp32_cam_esp32_cam_gas_light
 announce_tts_message:
   alias: Announce TTS Message
-  description: Announce a typed message to the bedroom Google Home speaker
+  description: Says whatever text is in input helper
   mode: single
   sequence:
   - data:
-      entity_id: media_player.gimuhyeonyi_macbook_pro
+      media_player_entity_id: media_player.uhyeonibang_2
+      cache: true
       message: '{{ states(''input_text.message_to_bedroom'') }}'
-    action: tts.cloud_say
+    action: tts.speak
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
+  - delay:
+      seconds: 15
   - target:
-      entity_id: input_text.message_to_bedroom
-    data:
-      value: ''
-    action: input_text.set_value
+      entity_id: media_player.uhyeonibang_2
+    action: media_player.clear_playlist
