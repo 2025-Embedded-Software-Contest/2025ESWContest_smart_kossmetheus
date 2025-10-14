@@ -1,68 +1,78 @@
 turn_off_all_lights:
-  alias: "일괄 소등"
+  alias: 일괄 소등
   sequence:
-    - action: homeassistant.turn_off
-      target:
-        entity_id:
-          - light.living_floor_light
-          - switch.geosil_jeondeung_top_left
-          - switch.geosil_jeondeung_top_right
-          - switch.geosil_jeondeung_center_left
-          - switch.geosil_jeondeung_bottom_left
-          - switch.geosil_jeondeung_bottom_right
-          - light.coupy_floor_light
-          - light.coupy_indirect_light
-          - light.coupy_reading_light
-          - switch.hyeogjinbang_jeondeung
-          - light.hagyeong_floor
-          - switch.hagyeongbang_jeondeung
-          - switch.jubang_jeondeung_top
-          - switch.jubang_jeondeung_center
-          - switch.jubang_jeondeung_bottom
-          - light.zigbee_dimmer
-          - light.smart_bulb
-          - light.deseukeutab_jeonweon
+  - action: homeassistant.turn_off
+    target:
+      entity_id:
+      - light.living_floor_light
+      - switch.geosil_jeondeung_top_left
+      - switch.geosil_jeondeung_top_right
+      - switch.geosil_jeondeung_center_left
+      - switch.geosil_jeondeung_bottom_left
+      - switch.geosil_jeondeung_bottom_right
+      - light.coupy_floor_light
+      - light.coupy_indirect_light
+      - light.coupy_reading_light
+      - switch.hyeogjinbang_jeondeung
+      - light.hagyeong_floor
+      - switch.hagyeongbang_jeondeung
+      - switch.jubang_jeondeung_top
+      - switch.jubang_jeondeung_center
+      - switch.jubang_jeondeung_bottom
+      - light.zigbee_dimmer
+      - light.smart_bulb
+      - light.deseukeutab_jeonweon
   mode: single
-
 test_gas_camera_snapshot:
-  alias: "가스 카메라 스냅샷 테스트"
+  alias: 가스 카메라 스냅샷 테스트
   description: ESP32-CAM 플래시를 켜고 단일 스냅샷을 /config/www/tmp/gas/test_snapshot.jpg 로 저장합니다.
   mode: single
   sequence:
-    - action: light.turn_on
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-      data:
-        brightness_pct: 100
-    - delay: "00:00:02"
-    - action: camera.snapshot
-      target:
-        entity_id: camera.esp32_cam_esp32_cam_gas_cam
-      data:
-        filename: "/config/www/tmp/gas/test_snapshot.jpg"
-    - action: light.turn_off
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-    - action: system_log.write
-      data:
-        level: info
-        message: "[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg"
-
-# 수동 LED 제어 스크립트 (esp32-cam 내장 플래시)
+  - action: light.turn_on
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    data:
+      brightness_pct: 100
+  - delay: 00:00:02
+  - action: camera.snapshot
+    target:
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
+    data:
+      filename: /config/www/tmp/gas/test_snapshot.jpg
+  - action: light.turn_off
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+  - action: system_log.write
+    data:
+      level: info
+      message: '[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg'
 esp32_cam_flash_on:
-  alias: "ESP32-CAM 플래시 켜기"
+  alias: ESP32-CAM 플래시 켜기
   mode: single
   sequence:
-    - action: light.turn_on
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-      data:
-        brightness_pct: 100
-
+  - action: light.turn_on
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    data:
+      brightness_pct: 100
 esp32_cam_flash_off:
-  alias: "ESP32-CAM 플래시 끄기"
+  alias: ESP32-CAM 플래시 끄기
   mode: single
   sequence:
-    - action: light.turn_off
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
+  - action: light.turn_off
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+announce_tts_message:
+  alias: Announce TTS Message
+  description: Announce a typed message to the bedroom Google Home speaker
+  mode: single
+  sequence:
+  - data:
+      entity_id: media_player.gimuhyeonyi_macbook_pro
+      message: '{{ states(''input_text.message_to_bedroom'') }}'
+    action: tts.cloud_say
+  - target:
+      entity_id: input_text.message_to_bedroom
+    data:
+      value: ''
+    action: input_text.set_value

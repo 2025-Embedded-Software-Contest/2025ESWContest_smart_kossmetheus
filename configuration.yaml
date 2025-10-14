@@ -192,10 +192,16 @@ input_text:
     name: gas message 2
     max: 255
 
+  message_to_bedroom:
+    name: What You Got to Say?
+    initial: ""
+    max: 255
+
 utility_meter:
   gas_meter_monthly:
     source: sensor.gas_meter_2
     cycle: monthly
+    
 # HA -> FastAPI Webhook
 # rest_command: !include webhook.yaml
 
