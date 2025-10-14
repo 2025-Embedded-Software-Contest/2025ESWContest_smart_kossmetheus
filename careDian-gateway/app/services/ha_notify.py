@@ -33,9 +33,9 @@ async def send_fall_alert(
 ) -> Dict[str, Any]:
     loc = location or settings.location_default
 
-    mobile_payload = {
-        "message": message,   
-        "title": title,       
+    base_payload = {
+        "message": message,
+        "title": title,
         "data": {
             "tag": "fall_alert",
             "location": loc,
@@ -48,13 +48,43 @@ async def send_fall_alert(
         },
     }
 
-    status_mobile = await _call_notify(settings.ha_notify_mobile, mobile_payload)
-    persist_payload = {
-        "title": title,
-        "message": message,
-        #"notification_id": "fall_alert",
+    base_url = settings.ha_base_url.rstrip("/")
+    headers = {
+        "Authorization": f"Bearer {settings.ha_token}",
+        "Content-Type": "application/json",
     }
 
-    status_persist = await _call_notify(settings.ha_notify_persist, persist_payload)
+    results: Dict[str, Any] = {}
 
-    return {"mobile": status_mobile, "persist": status_persist}
+    try:
+        async with httpx.AsyncClient(timeout=settings.request_timeout) as client:
+            r = await client.get(f"{base_url}/api/services", headers=headers)
+            r.raise_for_status()
+            data = r.json()
+            notify_services = [s for s in data if s["domain"] == "notify"]
+            if notify_services:
+                all_notify = [
+                    f"notify.{name}"
+                    for name in notify_services[0]["services"].keys()
+                    if name.startswith("mobile_app_")
+                ]
+            else:
+                all_notify = []
+    except Exception as e:
+        print(f"⚠️ Failed to fetch notify services: {e}")
+        all_notify = []
+
+    if not all_notify:
+        print(f"⚠️ No mobile_app_* found, fallback to {settings.ha_notify_mobile}")
+        status_mobile = await _call_notify(settings.ha_notify_mobile, base_payload)
+        results[settings.ha_notify_mobile] = status_mobile
+    else:
+        for service in all_notify:
+            status_code = await _call_notify(service, base_payload)
+            results[service] = status_code
+
+    persist_payload = {"title": title, "message": message}
+    status_persist = await _call_notify(settings.ha_notify_persist, persist_payload)
+    results["persistent_notification"] = status_persist
+
+    return results

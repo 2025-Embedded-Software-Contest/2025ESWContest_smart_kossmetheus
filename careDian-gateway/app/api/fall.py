@@ -28,7 +28,7 @@ async def get_notify_device() -> Optional[str]:
 
             for name in notify_services[0]["services"].keys():
                 if name.startswith("mobile_app_"):
-                    return f"notify.{name}"  # 예: notify.mobile_app_gimyeji_iphone
+                    return f"notify.{name}"  
     except Exception as e:
         print(f"⚠️ Error fetching HA devices: {e}")
         return None
@@ -42,7 +42,7 @@ class FallEvent(BaseModel):
     fall_state: int = Field(..., description="낙상 상태 (0: 정상, 1: 낙상 감지)")
     dwell_state: int = Field(..., description="정지 상태 (0: 없음, 1: 장시간 정지)")
     ts: int = Field(..., description="타임스탬프 (초 단위)")
-    location: str = Field("livingroom", description="센서 위치 (기본: 거실)")
+    location: str = Field("거실", description="센서 위치 (기본: 거실)")
     predicted_prob: Optional[float] = Field(
         None,
         ge=0.0,
@@ -67,6 +67,8 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
     except Exception as e:
         pass
 
+    notify_result = None
+
     # 2) 알림 발송(FCM + persistent)
     if int(ev.fall_state) == 1 and should_alert(ev.device_id, cooldown_sec=300):
         ha_device = await get_notify_device()
@@ -78,14 +80,13 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         notify_result = await send_fall_alert(
             device_id=ev.device_id,
             title="🚨 낙상 감지",
-            message=f"[{ev.location or 'home'}] {ev.device_id}에서 낙상이 감지되었습니다.)",
+            message=f"{ev.location or 'home'}에서 낙상이 감지되었습니다.",
             location=ev.location,
             moving_range=ev.moving_range,
             dwell_state=ev.dwell_state,
             ts=ev.ts,
         )
         
-    notify_result = None
 
     if notify_result:
         if notify_result["mobile"] >= 400 and notify_result["persist"] >= 400:

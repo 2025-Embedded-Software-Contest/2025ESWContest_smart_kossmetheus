@@ -8,7 +8,7 @@ from app.api import fall as fall_router
 from app.api.secure_influx import router as secure_influx_router
 from app.api.influx_routes import router as influx_router
 from app.services import influx
-from app.api import device  
+from app.api import ha  
 
 def create_app() -> FastAPI:
     setup_logging(level=settings.log_level, json_mode=settings.log_json)
@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
     app.include_router(secure_influx_router)
     app.include_router(fall_router.router)
     app.include_router(influx_router)
-    app.include_router(device.router)
+    app.include_router(ha.router)
 
     @app.get("/healthz")
     async def healthz():
