@@ -1,12 +1,38 @@
+import httpx
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from app.core.rate_limit import should_alert
 from app.services.ha_notify import send_fall_alert
 from app.services import influx_v1 as influx
-
+from app.core.config import settings  
 
 router = APIRouter(prefix="/events", tags=["fall"])
+
+async def get_notify_device() -> Optional[str]:
+    """Home Assistant에서 notify.mobile_app_* 서비스 중 첫 번째를 반환"""
+    url = f"{settings.ha_base_url.rstrip('/')}/api/services"
+    headers = {"Authorization": f"Bearer {settings.ha_token}"}
+
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            r = await client.get(url, headers=headers)
+            if r.status_code != 200:
+                print(f"⚠️ Failed to fetch notify devices: {r.status_code}")
+                return None
+
+            data = r.json()
+            notify_services = [s for s in data if s["domain"] == "notify"]
+            if not notify_services:
+                return None
+
+            for name in notify_services[0]["services"].keys():
+                if name.startswith("mobile_app_"):
+                    return f"notify.{name}"  # 예: notify.mobile_app_gimyeji_iphone
+    except Exception as e:
+        print(f"⚠️ Error fetching HA devices: {e}")
+        return None
+    
 
 class FallEvent(BaseModel):
     device_id: str = Field(..., description="ESP32 또는 센서 디바이스 ID")
@@ -43,6 +69,12 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
 
     # 2) 알림 발송(FCM + persistent)
     if int(ev.fall_state) == 1 and should_alert(ev.device_id, cooldown_sec=300):
+        ha_device = await get_notify_device()
+        if not ha_device:
+            raise HTTPException(status_code=500, detail="No HA mobile notify device found")
+
+        print(f"🚨 Sending fall alert to {ha_device}")
+
         notify_result = await send_fall_alert(
             device_id=ev.device_id,
             title="🚨 낙상 감지",
@@ -52,6 +84,7 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
             dwell_state=ev.dwell_state,
             ts=ev.ts,
         )
+        
     notify_result = None
 
     if notify_result:
@@ -59,3 +92,4 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
             raise HTTPException(status_code=502, detail="HA notify failed")
 
     return {"ok": True, "fall_state": ev.fall_state}
+  
