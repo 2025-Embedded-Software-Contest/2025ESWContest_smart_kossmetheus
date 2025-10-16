@@ -81,10 +81,12 @@ class InfluxServiceV1:
         """
         InfluxQL 실행 결과(series) -> 평탄화된 dict 리스트로 반환
         """
+
         client = self._ensure_client()
         result = client.query(q)
         out: List[Dict[str, Any]] = []
         raw = getattr(result, "raw", {}) or {}
+
         for series in raw.get("series", []) or []:
             cols = series.get("columns", []) or []
             tags = series.get("tags", {}) or {}
@@ -93,6 +95,7 @@ class InfluxServiceV1:
                 if tags:
                     item.update(tags)
                 out.append(item)
+                
         return out
     
     def select_range(
@@ -126,32 +129,44 @@ class InfluxServiceV1:
         points 예시:
         [{"measurement":"fall_events","tags":{"device_id":"esp32"},"fields":{"value":1,"conf":0.91},"time":"2025-10-10T12:34:56Z"}]
         """
+
         if not points:
             return 0
+        
         ok = self._ensure_client().write_points(
-            points, database=self._database, time_precision=time_precision, protocol="json"
+            points, 
+            # database=self.database, 
+            time_precision=time_precision, 
+            protocol="json"
         )
+
         return len(points) if ok else 0
     
     def write_line(self, lines: Union[str, List[str]]) -> int:
         """
         line protocol: "m,tag=v field=1i 1696930000000000000"
         """
+
         data: List[str]
         if isinstance(lines, str):
             data = [l for l in lines.splitlines() if l.strip()]
         else:
             data = [l for l in lines if l and l.strip()]
+
         if not data:
             return 0
+        
         ok = self._ensure_client().write_points(
-            data, database=self._database, protocol="line"
+            data, 
+            database=self.database, 
+            protocol="line"
         )
+
         return len(data) if ok else 0
     
     def write_fall_event(
         self,
-        camera_id: str,
+        device_id: str,
         prob: float,
         location: str | None = None,
         extra_tags: Dict[str, str] | None = None,
@@ -159,7 +174,7 @@ class InfluxServiceV1:
         measurement: str | None = None,
     ) -> bool:
         cli = self._ensure_client()
-        tags = {"camera_id": camera_id}
+        tags = {"device_id": device_id}
         if location:
             tags["location"] = location
         if extra_tags:
