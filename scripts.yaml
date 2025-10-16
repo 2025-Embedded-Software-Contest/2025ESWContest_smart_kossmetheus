@@ -67,15 +67,19 @@ announce_tts_message:
   description: Says whatever text is in input helper
   mode: single
   sequence:
-  - data:
-      media_player_entity_id: media_player.uhyeonibang_2
-      cache: true
-      message: '{{ states(''input_text.message_to_bedroom'') }}'
-    action: tts.speak
+  - variables:
+      target_player: "{{ states('input_select.tts_target_speaker')\n   if states('input_select.tts_target_speaker')
+        not in ['unknown','unavailable','']\n   else 'media_player.uhyeonibang_2'
+        }}"
+  - action: tts.speak
     target:
       entity_id: tts.tts_pipeline_voxcpm
+    data:
+      media_player_entity_id: '{{ target_player }}'
+      cache: true
+      message: '{{ states(''input_text.message_to_bedroom'') }}'
   - delay:
       seconds: 15
-  - target:
-      entity_id: media_player.uhyeonibang_2
-    action: media_player.clear_playlist
+  - action: media_player.clear_playlist
+    data:
+      entity_id: '{{ target_player }}'

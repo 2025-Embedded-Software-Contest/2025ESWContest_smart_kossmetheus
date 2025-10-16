@@ -212,3 +212,12 @@ rest_command:
     content_type: "application/json"
     payload: >
       { "url": "{{ url }}", "filename": "{{ filename }}" }
+
+input_select:
+  tts_target_speaker:
+    name: TTS Target Speaker
+    options:
+      - media_player.uhyeonibang
+      - media_player.uhyeonibang_2
+      - media_player.uhyeonibang_3
+    initial: media_player.uhyeonibang_2
