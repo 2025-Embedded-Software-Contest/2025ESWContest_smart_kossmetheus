@@ -100,25 +100,45 @@ async def check_post_fall_motion(ev: FallEvent):
     except Exception as e:
         print(f"[ERROR] post-fall motion check 실패: {e}")
 
+async def record_fall_event(ev: FallEvent) -> bool:
+    """
+    InfluxDB에 낙상 포인트 1건 기록.
+    실패해도 예외는 올리지 않고 False 반환.
+    """
+    try:
+        ts_ns = int(ev.ts) * 1_000_000_000 if getattr(ev, "ts", None) else None
+        if getattr(ev, "timestamp_ns", None) is not None:
+            ts_ns = int(ev.timestamp_ns)
+
+        # predicted_prob/ prob 호환
+        prob = float(getattr(ev, "prob", getattr(ev, "predicted_prob", 0.0)))
+
+        ok = influx.write_point(
+            measurement=settings.influx_measurement,           # ✅ env 사용
+            tags={
+                "device_id": ev.device_id,                     # ✅ camera_id → device_id
+                "location": ev.location or settings.location_default,
+            },
+            fields={
+                "prob": prob,
+                "fall_state": int(ev.fall_state),
+                "moving_range": int(getattr(ev, "moving_range", 0) or 0),
+                "dwell_state": int(getattr(ev, "dwell_state", 0) or 0),
+                "presence": int(getattr(ev, "presence", 0) or 0),
+                "movement": int(getattr(ev, "movement", 0) or 0),
+            },
+            ts_ns=ts_ns,                                       # 없으면 서버시간 사용
+            rp=getattr(settings, "influx_rp", None),           # 예: autogen
+        )
+        return bool(ok)
+    except Exception:
+        # log.exception("Influx write failed for fall_event")
+        return False
+    
 @router.post("/fall")
 async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
     print("[RECEIVED] Fall event data:", ev.dict())  
-    try:
-        influx.write_fall_event(
-            "fall_event",
-            tags={"device_id": ev.device_id, "location": ev.location or "home"},
-            fields={
-                "presence": ev.presence,
-                "movement": ev.movement,
-                "moving_range": ev.moving_range,
-                "fall_state": ev.fall_state,
-                "dwell_state": ev.dwell_state,
-                "predicted_prob": ev.predicted_prob or 0.0,
-            },
-            ts_ns=int(ev.ts * 1e9),
-        )
-    except Exception as e:
-        print("[INFLUX] Write error:", e)
+    success = await record_fall_event(ev)
 
     notify_result = None
 
@@ -143,7 +163,6 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         print("HA RESPONSE] =>", notify_result)
         #낙상 후 일정 시간 지나면 태스크 실행
         asyncio.create_task(check_post_fall_motion(ev))
-
     else:
         print(f"[INFO] No fall detected (fall_state={ev.fall_state})") 
 
@@ -151,4 +170,5 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         if any(code >= 400 for code in notify_result.values() if isinstance(code, int)):
             print("[HA ERROR] Notify failed:", notify_result)
             raise HTTPException(status_code=502, detail=f"HA notify failed: {notify_result}")
-    return {"ok": True, "fall_state": ev.fall_state}
+        
+    return {"ok": True, "fall_state": ev.fall_state, "recorded": success, "notify_result": notify_result}
