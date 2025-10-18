@@ -1,6 +1,6 @@
 from __future__ import annotations
 from urllib.parse import urlparse
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Mapping
 
 from influxdb import InfluxDBClient  # 1.x client
 from app.core.config import settings
@@ -9,6 +9,9 @@ from app.core.config import settings
 Number = Union[int, float]
 FieldValue = Union[Number, str, bool]
 JsonPoint = Dict[str, Any]
+
+def _is_int(x): 
+    return isinstance(x, bool) is False and isinstance(x, int)
 
 class InfluxServiceV1:
     def __init__(
@@ -126,49 +129,48 @@ class InfluxServiceV1:
         return self.query_raw(q)
     
     # write
-    def write_json(self, points: List[JsonPoint], time_precision: str = "ms", rp: str | None = None) -> int:
+    def write_point(
+        self,
+        measurement: str,
+        tags: Mapping[str, str] | None,
+        fields: Mapping[str, FieldValue],
+        ts_ns: int | None = None,
+        rp: str | None = None,
+    ) -> bool:
         """
-        points 예시:
-        [{"measurement":"fall_events","tags":{"device_id":"esp32"},"fields":{"value":1,"conf":0.91},"time":"2025-10-10T12:34:56Z"}]
+        단일 포인트 쓰기. ts_ns 제공 시 나노초 정밀도, 없으면 서버시간.
         """
 
-        if not points:
-            return 0
-        
-        ok = self._ensure_client().write_points(
-            points, 
-            # database=self.database, 
-            time_precision=time_precision, 
+        self._ensure_client()
+        point = [{
+            "measurement": measurement,
+            "tags": {k: str(v) for k, v in (tags or {}).items()},
+            "fields": {},
+        }]
+
+        # 타입 보정: int는 int, float는 float, bool/str 그대로
+        for k, v in fields.items():
+            if _is_int(v):
+                point[0]["fields"][k] = int(v)
+            elif isinstance(v, float):
+                point[0]["fields"][k] = float(v)
+            else:
+                point[0]["fields"][k] = v
+
+        time_precision = None
+        if ts_ns is not None:
+            point[0]["time"] = int(ts_ns)            # epoch ns
+            time_precision = "n"
+
+        ok = self._client.write_points(
+            point,
+            retention_policy=(rp or getattr(self, "default_rp", None)),
+            time_precision=time_precision,
             protocol="json",
-            retention_policy=(rp or self.rp)
         )
 
-        return len(points) if ok else 0
+        return bool(ok)
     
-    def write_line(self, lines: Union[str, List[str]], rp: str | None = None) -> int:
-        """
-        line protocol: "m,tag=v field=1i 1696930000000000000"
-        """
-
-        data: List[str]
-        if isinstance(lines, str):
-            data = [l for l in lines.splitlines() if l.strip()]
-        else:
-            data = [l for l in lines if l and l.strip()]
-
-        if not data:
-            return 0
-        
-        ok = self._ensure_client().write_points(
-            data, 
-            database=self.database, 
-            protocol="line",
-            retention_policy=(rp or self.rp)
-        )
-
-        return len(data) if ok else 0
-    
-    # 변경: write_fall_event에 ts_ns 추가, ns 있으면 line protocol로 기록
 def write_fall_event(
     self,
     device_id: str,
