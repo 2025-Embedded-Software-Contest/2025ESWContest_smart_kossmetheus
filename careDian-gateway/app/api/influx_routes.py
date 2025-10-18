@@ -27,34 +27,7 @@ class WriteBody(BaseModel):
 def ping():
     return {"ok": influx.healthy()}
 
-# ---- READ: 파라미터화 ----
-@router.get("/read")
-def read_points(
-    measurement: str = Query(default=settings.influx_measurement),
-    start_ago: str = Query(default="1h", pattern=r"^\d+[smhdw]$"),
-    fields: Optional[str] = Query(default=None, description="CSV, 예: value,confidence"),
-    tags: Optional[str] = Query(default=None, description='JSON, 예: {"device_id":"esp32"}'),
-    limit: int = Query(default=100, ge=1, le=5000),
-    desc: bool = Query(default=True),
-):
-    fields_list = [f.strip() for f in fields.split(",")] if fields else None
-    tags_dict = None
-    if tags:
-        try:
-            import json
-            tags_dict = json.loads(tags)
-        except Exception:
-            raise HTTPException(status_code=400, detail="tags must be JSON")
-    rows = influx.select_range(
-        measurement=measurement,
-        start_ago=start_ago,
-        fields=fields_list,
-        tags=tags_dict,
-        limit=limit,
-        desc=desc,
-    )
-    return rows
-
+# ---- READ: 낙상 목록 ----
 @router.get("/falls", dependencies=[Depends(require_ha_user)])
 def list_falls(
     hours: int = Query(24, ge=1, le=720),
@@ -66,6 +39,7 @@ def list_falls(
     """
     최근 N시간의 낙상 raw 레코드 조회.
     """
+
     if not influx.healthy():
         raise HTTPException(status_code=503, detail="InfluxDB unreachable")
 
@@ -84,9 +58,9 @@ def list_falls(
             limit=limit,
             desc=desc,
         )
+
         return rows
     except Exception as e:
-        # _map_exc(e)  # 적절한 HTTP 오류로 변환
         raise HTTPException(status_code=500, detail=repr(e))
 
 # ---- READ: InfluxQL raw (관리용) ----
@@ -97,23 +71,21 @@ class RawQuery(BaseModel):
 def query_raw(body: RawQuery):
     return influx.query_raw(body.q)
 
-# ---- WRITE: JSON 포맷 ----
-@router.post("/write/json")
-def write_json(body: WriteBody):
-    pts: List[Dict] = []
+# ---- WRITE: JSON points ----
+@router.post("/write/point", summary="Point")
+def write_point(body: WriteBody):
     default_m = body.default_measurement or settings.influx_measurement
-    for p in body.points:
-        pts.append({
-            "measurement": p.measurement or default_m,
-            "tags": p.tags or {},
-            "fields": p.fields,
-            **({"time": p.time} if p.time is not None else {}),
-        })
-    n = influx.write_json(pts)
-    return {"written": n}
+    written = 0
 
-# ---- WRITE: Line Protocol (text/plain) ----
-@router.post("/write/line", summary="Line protocol")
-def write_line(lines: str = Body(..., media_type="text/plain")):
-    n = influx.write_line(lines)
-    return {"written": n}
+    for p in body.points:
+        ok = influx.write_point(
+            measurement=(p.measurement or default_m),
+            tags=(p.tags or {}),
+            fields=p.fields,
+            ts_ns=(p.time if isinstance(p.time, int) else None),
+            rp=getattr(settings, "influx_rp", None),
+        )
+        if ok:
+            written += 1
+
+    return {"written": written}
