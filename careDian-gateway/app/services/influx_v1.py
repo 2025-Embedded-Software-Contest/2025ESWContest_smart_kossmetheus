@@ -15,6 +15,7 @@ class InfluxServiceV1:
         self,
         url: str,
         database: str,
+        rp: str | None = None,
         username: str | None = None,
         password: str | None = None,
         timeout_sec: int = 5,
@@ -22,6 +23,7 @@ class InfluxServiceV1:
     ):
         self.url = url
         self.database = database
+        self.rp = rp
         self.username = username
         self.password = password
         self.timeout = timeout_sec
@@ -124,7 +126,7 @@ class InfluxServiceV1:
         return self.query_raw(q)
     
     # write
-    def write_json(self, points: List[JsonPoint], time_precision: str = "ms") -> int:
+    def write_json(self, points: List[JsonPoint], time_precision: str = "ms", rp: str | None = None) -> int:
         """
         points 예시:
         [{"measurement":"fall_events","tags":{"device_id":"esp32"},"fields":{"value":1,"conf":0.91},"time":"2025-10-10T12:34:56Z"}]
@@ -137,12 +139,13 @@ class InfluxServiceV1:
             points, 
             # database=self.database, 
             time_precision=time_precision, 
-            protocol="json"
+            protocol="json",
+            retention_policy=(rp or self.rp)
         )
 
         return len(points) if ok else 0
     
-    def write_line(self, lines: Union[str, List[str]]) -> int:
+    def write_line(self, lines: Union[str, List[str]], rp: str | None = None) -> int:
         """
         line protocol: "m,tag=v field=1i 1696930000000000000"
         """
@@ -159,35 +162,63 @@ class InfluxServiceV1:
         ok = self._ensure_client().write_points(
             data, 
             database=self.database, 
-            protocol="line"
+            protocol="line",
+            retention_policy=(rp or self.rp)
         )
 
         return len(data) if ok else 0
     
-    def write_fall_event(
-        self,
-        device_id: str,
-        prob: float,
-        location: str | None = None,
-        extra_tags: Dict[str, str] | None = None,
-        extra_fields: Dict[str, Any] | None = None,
-        measurement: str | None = None,
-    ) -> bool:
-        cli = self._ensure_client()
-        tags = {"device_id": device_id}
-        if location:
-            tags["location"] = location
-        if extra_tags:
-            tags.update({k: str(v) for k, v in extra_tags.items()})
+    # 변경: write_fall_event에 ts_ns 추가, ns 있으면 line protocol로 기록
+def write_fall_event(
+    self,
+    device_id: str,
+    prob: float,
+    location: str | None = None,
+    extra_tags: Dict[str, str] | None = None,
+    extra_fields: Dict[str, Any] | None = None,
+    measurement: str | None = None,
+    ts_ns: int | None = None,
+    rp: str | None = None
+) -> bool:
+    cli = self._ensure_client()
+    m = measurement or settings.influx_measurement
 
-        fields: Dict[str, Any] = {"prob": float(prob)}
-        if extra_fields:
-            fields.update(extra_fields)
+    # 태그/필드 구성
+    tags = {"device_id": device_id}
+    if location:
+        tags["location"] = location
+    if extra_tags:
+        tags.update({k: str(v) for k, v in extra_tags.items()})
+    fields: Dict[str, Any] = {"prob": float(prob)}
+    if extra_fields:
+        fields.update(extra_fields)
 
+    if ts_ns is not None:
+        # line protocol (ns 정밀도)
+        def esc_tag(v: str) -> str:
+            return v.replace("\\", "\\\\").replace(",", "\\,").replace(" ", "\\ ")
+        tag_str = ",".join([f"{k}={esc_tag(str(v))}" for k, v in tags.items()]) if tags else ""
+        field_parts = []
+        for k, v in fields.items():
+            if isinstance(v, bool):
+                field_parts.append(f'{k}={"true" if v else "false"}')
+            elif isinstance(v, (int, float)):
+                # 정수는 1i, 실수는 그대로
+                if isinstance(v, int):
+                    field_parts.append(f"{k}={v}i")
+                else:
+                    field_parts.append(f"{k}={v}")
+            else:
+                s = str(v).replace("\\", "\\\\").replace('"', '\\"')
+                field_parts.append(f'{k}="{s}"')
+        field_str = ",".join(field_parts)
+        line = f"{m}{(',' + tag_str) if tag_str else ''} {field_str} {int(ts_ns)}"
+        return cli.write_points([line], protocol="line", retention_policy=(rp or self.rp))
+    else:
+        # json protocol (서버시간)
         point = [{
-            "measurement": measurement or settings.influx_measurement,
+            "measurement": m,
             "tags": tags,
             "fields": fields,
         }]
-
         return cli.write_points(point)

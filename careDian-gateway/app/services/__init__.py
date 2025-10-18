@@ -11,4 +11,5 @@ influx = InfluxServiceV1(
     password=settings.influx_password,
     timeout_sec=settings.influx_timeout_sec,
     verify_ssl=verify_arg,
+    rp=settings.influx_rp,
 )

@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     influx_host: str = Field("", alias="INFLUX_HOST")
     influx_port: int = Field(8086, alias="INFLUX_PORT")
     influx_db: str = Field(..., alias="INFLUX_DB")
+    influx_rp: str | None = Field(None, alias="INFLUX_RP")
     influx_username: str = Field(..., alias="INFLUX_USERNAME")
     influx_password: str = Field(..., alias="INFLUX_PASSWORD")
     influx_timeout_sec: int = Field(5, alias="INFLUX_TIMEOUT_SEC")

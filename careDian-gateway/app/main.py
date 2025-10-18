@@ -5,7 +5,7 @@ import logging
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api import fall as fall_router
-from app.api.secure_influx import router as secure_influx_router
+# from app.api.secure_influx import router as secure_influx_router
 from app.api.influx_routes import router as influx_router
 from app.services import influx
 from app.api import ha  
@@ -30,7 +30,7 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
 
-    app.include_router(secure_influx_router)
+    # app.include_router(secure_influx_router)
     app.include_router(fall_router.router)
     app.include_router(influx_router)
     app.include_router(ha.router)
