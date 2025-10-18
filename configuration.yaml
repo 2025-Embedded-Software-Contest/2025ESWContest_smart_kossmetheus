@@ -1,6 +1,10 @@
 # 디폴트 환경 설정
 default_config:
 
+#influxdb 백업 서버 추가 2025-10-16
+shell_command:
+  influxdb_backup: bash /config/scripts/influxdb_backup.sh
+
 # 프론트엔드 테마 설정
 frontend:
   extra_module_url:
@@ -55,6 +59,33 @@ command_line:
       unit_of_measurement: "MB"
       value_template: "{{ (value | int(0) / 1024 / 1024) | round(2) }}"
       icon: mdi:file-chart
+
+  #influxdb 백업 모니터링 센서 추가
+  - sensor:
+      name: "InfluxDB Latest Backup"
+      unique_id: influxdb_latest_backup
+      command: "ls -td /share/influxdb_backups/backup_* 2>/dev/null | head -1 | xargs basename"
+      scan_interval: 3600
+
+  - sensor:
+      name: "InfluxDB Backup Count"
+      unique_id: influxdb_backup_count
+      command: "ls -1 /share/influxdb_backups/ | grep -c backup_"
+      scan_interval: 3600
+      unit_of_measurement: "개"
+
+  - sensor:
+      name: "InfluxDB Backup Size"
+      unique_id: influxdb_backup_size
+      command: "du -sh /share/influxdb_backups/ 2>/dev/null | awk '{print $1}' || echo '0M'"
+      scan_interval: 3600
+
+  - sensor:
+      name: "InfluxDB Backup Status"
+      unique_id: influxdb_backup_status
+      command: "cat /share/influxdb_backups/last_backup_status.txt 2>/dev/null || echo 'unknown'"
+      scan_interval: 60
+
 # Enable Pyscript custom integration for image pipeline
 pyscript:
   # 외부 패키지(Pillow 등) 임포트를 허용해 pyscript 스크립트가 정상 로드되도록 함

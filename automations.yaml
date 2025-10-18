@@ -536,3 +536,44 @@
 
         적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)'
   mode: single
+- id: '1760617151502'
+  alias: InfluxDB Backup
+  triggers:
+  - at: 03:00:00
+    trigger: time
+  conditions:
+  - condition: template
+    value_template: "{{ now().weekday() == 6 and \n   (now().isocalendar()[1] % 2
+      == 0) }}"
+  actions:
+  - action: shell_command.influxdb_backup
+  - delay: 00:02:00
+  - target:
+      entity_id: sensor.influxdb_backup_status
+    action: homeassistant.update_entity
+  - delay: 00:00:10
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.influxdb_backup_status
+        state: failed
+      sequence:
+      - data:
+          title: "\U0001F6A8 InfluxDB 백업 실패!"
+          message: 백업이 실패했습니다. 즉시 확인이 필요합니다!
+        action: notify.persistent_notification
+    - conditions:
+      - condition: state
+        entity_id: sensor.influxdb_backup_status
+        state: success
+      sequence:
+      - data:
+          title: ✅ InfluxDB 백업 완료
+          message: 백업이 정상적으로 완료되었습니다.
+        action: notify.persistent_notification
+    default:
+    - data:
+        title: ⚠️ InfluxDB 백업 상태 확인 필요
+        message: '백업 상태: {{ states(''sensor.influxdb_backup_status'') }}'
+      action: notify.persistent_notification
+  mode: single
