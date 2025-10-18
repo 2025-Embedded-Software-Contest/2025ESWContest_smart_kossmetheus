@@ -74,12 +74,23 @@ async def send_fall_alert(
         print(f"⚠️ Failed to fetch notify services: {e}")
         all_notify = []
 
-    if not all_notify:
-        print(f"⚠️ No mobile_app_* found, fallback to {settings.ha_notify_mobile}")
+    # 제외할 기기 목록 (테스트제외용)
+    exclude_devices = {
+        "mobile_app_paul_pad_pro_12_7",
+        "mobile_app_paul_fold7",
+    }
+
+    filtered_notify = [
+        service for service in all_notify
+        if not any(excluded in service for excluded in exclude_devices)
+    ]
+
+    if not filtered_notify:
+        print(f"⚠️ No valid mobile_app_* found, fallback to {settings.ha_notify_mobile}")
         status_mobile = await _call_notify(settings.ha_notify_mobile, base_payload)
         results[settings.ha_notify_mobile] = status_mobile
     else:
-        for service in all_notify:
+        for service in filtered_notify:
             status_code = await _call_notify(service, base_payload)
             results[service] = status_code
 
