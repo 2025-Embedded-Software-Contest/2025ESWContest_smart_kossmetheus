@@ -27,6 +27,8 @@ runtime = FallRuntime(  # ADDED
     meta_path    = getattr(settings, "fall_meta_path", None),
     threshold    = getattr(settings, "fall_threshold", None),
     smooth_k     = getattr(settings, "fall_smooth_k", 3),
+    backend      = getattr(settings, "fall_backend", "keras"),  
+
 )
 _ai_over_cnt: Dict[str, int] = defaultdict(int)  
 AI_SUSTAIN_K = getattr(settings, "fall_ai_sustain_k", 1)  
@@ -128,9 +130,9 @@ async def record_fall_event(ev: FallEvent) -> bool:
         prob = float(getattr(ev, "prob", getattr(ev, "predicted_prob", 0.0)))
 
         ok = influx.write_point(
-            measurement=settings.influx_measurement,           # ✅ env 사용
+            measurement=settings.influx_measurement,           
             tags={
-                "device_id": ev.device_id,                     # ✅ camera_id → device_id
+                "device_id": ev.device_id,                     
                 "location": ev.location or settings.location_default,
             },
             fields={

@@ -1,8 +1,8 @@
-# app/services/fall_runtime.py
 from collections import defaultdict, deque
 import json, asyncio
 import numpy as np
 import joblib
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 
 class FallRuntime:
@@ -13,12 +13,26 @@ class FallRuntime:
     - scaler로 스케일 후 LSTM 예측 확률 반환
     - 최근 k개 확률 스무딩 후 threshold로 최종 판정
     """
+
     def __init__(self, model_path:str, scaler_path:str, meta_path:str|None=None,
-                 threshold:float|None=None, smooth_k:int=3):
-        # 학습 시 custom loss로 저장했더라도 inference만이면 compile=False 로 OK
-        self.model = load_model(model_path, compile=False)
+                 threshold:float|None=None, smooth_k:int=3, backend:str="keras"):
+        self.backend = backend.lower()
+
+        # --- 모델 로드 ---
+        if self.backend == "keras":
+            self.model = load_model(model_path, compile=False)
+        elif self.backend == "tflite":
+            self.interpreter = tf.lite.Interpreter(model_path=model_path)
+            self.interpreter.allocate_tensors()
+            self.input_details = self.interpreter.get_input_details()
+            self.output_details = self.interpreter.get_output_details()
+        else:
+            raise ValueError(f"Unsupported backend: {backend}")
+
+        # --- 스케일러 로드 ---
         self.scaler = joblib.load(scaler_path)
 
+        # --- 메타정보 로드 ---
         self.meta = {
             "features": ["presence","movement","moving_range","dwell_state","movement_diff","range_diff"],
             "seq_len": 20,
@@ -33,28 +47,34 @@ class FallRuntime:
         self.threshold = float(threshold if threshold is not None else self.meta.get("threshold", 0.5))
         self.smooth_k  = int(smooth_k)
 
-        self._buffers   = defaultdict(lambda: deque(maxlen=self.seq_len))  # per device samples
-        self._prob_hist = defaultdict(lambda: deque(maxlen=self.smooth_k)) # per device probs
+        self._buffers   = defaultdict(lambda: deque(maxlen=self.seq_len))
+        self._prob_hist = defaultdict(lambda: deque(maxlen=self.smooth_k))
         self._lock = asyncio.Lock()
 
+    # --- 시퀀스 구성 ---
     def _build_sequence(self, buf:list[dict]) -> np.ndarray:
-        # buf -> (T, 4) raw
         arr = np.array([[b["presence"], b["movement"], b["moving_range"], b["dwell_state"]] for b in buf],
-                       dtype=np.float32)  # shape (T,4)
-        # diffs
+                       dtype=np.float32)
         movement_diff = np.diff(arr[:,1], prepend=arr[0,1])
         range_diff    = np.diff(arr[:,2], prepend=arr[0,2])
-        feats = np.column_stack([arr, movement_diff, range_diff])  # (T,6) in feature order
-        # scale
+        feats = np.column_stack([arr, movement_diff, range_diff])
         feats = self.scaler.transform(feats)
         return feats
 
+    # --- 추론 (백엔드별 분기) ---
+    def _predict_prob(self, x_seq: np.ndarray) -> float:
+        if self.backend == "keras":
+            return float(self.model.predict(x_seq[np.newaxis, ...], verbose=0).ravel()[0])
+        elif self.backend == "tflite":
+            input_data = np.expand_dims(x_seq.astype(np.float32), axis=0)
+            self.interpreter.set_tensor(self.input_details[0]["index"], input_data)
+            self.interpreter.invoke()
+            output_data = self.interpreter.get_tensor(self.output_details[0]["index"])
+            return float(output_data.ravel()[0])
+
+    # --- 메인 업데이트 & 추론 ---
     async def update_and_predict(self, device_id:str, presence:int, movement:int,
                                  moving_range:int, dwell_state:int) -> tuple[float|None, int|None]:
-        """
-        버퍼 업데이트 후 확률/라벨 반환.
-        버퍼가 아직 seq_len 미만이면 (None, None) 반환.
-        """
         async with self._lock:
             self._buffers[device_id].append({
                 "presence": presence,
@@ -67,12 +87,8 @@ class FallRuntime:
                 return None, None
             x_seq = self._build_sequence(buf)
 
-        # 예측은 이벤트 루프 블로킹 피하려고 스레드풀로
         loop = asyncio.get_running_loop()
-        prob = await loop.run_in_executor(
-            None,
-            lambda: float(self.model.predict(x_seq[np.newaxis, ...], verbose=0).ravel()[0])
-        )
+        prob = await loop.run_in_executor(None, lambda: self._predict_prob(x_seq))
 
         async with self._lock:
             self._prob_hist[device_id].append(prob)
