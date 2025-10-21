@@ -6,3 +6,6 @@ fall_realtime_log.csv
 server.log
 /data
 *.csv
+*.keras
+*.pkl
+*.json
