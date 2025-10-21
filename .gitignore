@@ -9,3 +9,4 @@ server.log
 *.keras
 *.pkl
 *.json
+*.tflite
