@@ -7,7 +7,9 @@ from app.core.rate_limit import should_alert
 from app.services.ha_notify import send_fall_alert
 from app.services import influx_v1 as influx
 from app.core.config import settings  
+from collections import defaultdict
 from app.services.influx_v1 import InfluxServiceV1
+from app.services.fall_runtime import FallRuntime  
 
 influx = InfluxServiceV1(
     url=settings.influx_url,
@@ -16,8 +18,20 @@ influx = InfluxServiceV1(
     password=settings.influx_password
 )
 
-
 router = APIRouter(prefix="/events", tags=["fall"])
+
+#추가 모델 런타임 초기화 & 보정 파라미터
+runtime = FallRuntime(  # ADDED
+    model_path   = getattr(settings, "fall_model_path", "/models/fall_lstm_model_final_v2.keras"),
+    scaler_path  = getattr(settings, "fall_scaler_path", "/models/scaler_final_v2.pkl"),
+    meta_path    = getattr(settings, "fall_meta_path", None),
+    threshold    = getattr(settings, "fall_threshold", None),
+    smooth_k     = getattr(settings, "fall_smooth_k", 3),
+)
+_ai_over_cnt: Dict[str, int] = defaultdict(int)  
+AI_SUSTAIN_K = getattr(settings, "fall_ai_sustain_k", 1)  
+COOLDOWN_SEC = getattr(settings, "fall_cooldown_sec", 300)  
+INFERENCE_ENABLED = getattr(settings, "fall_inference_enabled", True)  
 
 async def get_notify_device() -> Optional[str]:
     """Home Assistant에서 notify.mobile_app_* 서비스 중 첫 번째를 반환"""
@@ -138,6 +152,23 @@ async def record_fall_event(ev: FallEvent) -> bool:
 @router.post("/fall")
 async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
     print("[RECEIVED] Fall event data:", ev.dict())  
+
+    # 추가: (센서 판단과 무관하게) 모델 추론은 먼저 수행해 확률 기록
+    prob = None
+    try:
+        if INFERENCE_ENABLED:
+            prob, pred = await runtime.update_and_predict(
+                device_id=ev.device_id,
+                presence=ev.presence,
+                movement=ev.movement,
+                moving_range=ev.moving_range,
+                dwell_state=ev.dwell_state,
+            )
+            if prob is not None:
+                ev.predicted_prob = prob
+    except Exception as e:
+        print(f"[WARN] model inference failed: {e}")
+
     success = await record_fall_event(ev)
 
     notify_result = None
@@ -166,9 +197,41 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
     else:
         print(f"[INFO] No fall detected (fall_state={ev.fall_state})") 
 
+        # === ADDED: 센서 미검지(0) → AI 보정 알림 로직
+        try:
+            if INFERENCE_ENABLED and prob is not None:
+                if prob > runtime.threshold:
+                    _ai_over_cnt[ev.device_id] += 1
+                else:
+                    _ai_over_cnt[ev.device_id] = 0
+
+                if _ai_over_cnt[ev.device_id] >= AI_SUSTAIN_K and should_alert(ev.device_id, cooldown_sec=COOLDOWN_SEC):
+                    ha_device = await get_notify_device()
+                    if not ha_device:
+                        print("No HA mobile notify device found (AI backstop)")
+                        raise HTTPException(status_code=500, detail="No HA mobile notify device found")
+
+                    print(f"🤖 [AI ALERT] Sending backstop fall alert to {ha_device}")
+                    msg_extra = f" (모델확률 {prob:.2f})"
+                    notify_result = await send_fall_alert(
+                        device_id=ev.device_id,
+                        title="⚠️낙상 의심",
+                        message=f"{ev.location or 'home'}에서 낙상 의심이 감지되었습니다.{msg_extra}",
+                        location=ev.location,
+                        moving_range=ev.moving_range,
+                        dwell_state=ev.dwell_state,
+                        ts=ev.ts,
+                    )
+                    print("[HA RESPONSE] =>", notify_result)
+
+                    # 후속 움직임 체크도 동일하게 수행
+                    asyncio.create_task(check_post_fall_motion(ev))
+        except Exception as e:
+            print(f"[WARN] AI backstop failed: {e}")
+
     if notify_result:
         if any(code >= 400 for code in notify_result.values() if isinstance(code, int)):
             print("[HA ERROR] Notify failed:", notify_result)
             raise HTTPException(status_code=502, detail=f"HA notify failed: {notify_result}")
         
-    return {"ok": True, "fall_state": ev.fall_state, "recorded": success, "notify_result": notify_result}
+    return {"ok": True, "fall_state": ev.fall_state, "recorded": success, "predicted_prob": ev.predicted_prob,"notify_result": notify_result}

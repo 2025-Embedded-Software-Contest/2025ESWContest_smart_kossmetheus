@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pydantic import Field, field_validator # 데이터 모델의 Field 정의
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Literal
 from pathlib import Path
 from dotenv import find_dotenv
 import json
@@ -10,6 +10,7 @@ import json
 
 # .env 경로를 안정적으로 찾기 (CWD 우선 → 리로더/서브프로세스에서도 루트 폴백)
 ENV_FILE = find_dotenv(usecwd=True) or str((Path(__file__).resolve().parents[2] / ".env"))
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -50,6 +51,20 @@ class Settings(BaseSettings):
     ha_notify_persist: str = Field("persistent_notification.create", alias="HA_NOTIFY_PERSIST")
     location_default: str = Field("home", alias="LOCATION_DEFAULT")
 
+    #fall lstm infernce
+    fall_inference_enabled: bool = Field(True, alias="FALL_INFERENCE_ENABLED")
+    fall_backend: Literal["keras", "tflite"] = Field("keras", alias="FALL_BACKEND")
+    fall_model_path: str = Field(str(BASE_DIR / "models" / "fall_lstm_model_final_v2.keras"), alias="FALL_MODEL_PATH")
+    fall_scaler_path: str = Field(str(BASE_DIR / "models" / "scaler_final_v2.pkl"), alias="FALL_SCALER_PATH")
+    fall_meta_path: Optional[str] = Field(str(BASE_DIR / "models" / "fall_lstm_final_v2_meta.json"), alias="FALL_META_PATH")
+    fall_threshold: float = Field(0.5, ge=0.0, le=1.0, alias="FALL_THRESHOLD")
+    fall_smooth_k: int = Field(3, ge=1, alias="FALL_SMOOTH_K")  
+    fall_decision_mode: Literal["sensor_or_model", "sensor_and_model", "model_only", "sensor_only"] = Field(
+        "sensor_or_model", alias="FALL_DECISION_MODE"
+    )
+    fall_cooldown_sec: int = Field(300, ge=0, alias="FALL_COOLDOWN_SEC")
+    fall_seq_len_override: Optional[int] = Field(None, alias="FALL_SEQ_LEN")
+
     # validators
     @field_validator("allowed_origins", mode="before")
     @classmethod
@@ -68,13 +83,27 @@ class Settings(BaseSettings):
             except Exception:
                 pass
         return [t.strip() for t in s.split(",") if t.strip()]
-    
-    @field_validator("log_json", "influx_verify_tls", mode="before")
+
+    @field_validator("log_json", "influx_verify_tls", "fall_inference_enabled", mode="before")
     @classmethod
     def _parse_bool_loose(cls, v: Any):
         if isinstance(v, bool):
             return v
         s = str(v).strip().lower()
         return s in {"1", "true", "yes", "on"}
+
+    @field_validator("fall_model_path", "fall_scaler_path", "fall_meta_path", mode="before")
+    @classmethod
+    def _norm_path(cls, v: Any):
+        if v is None:
+            return None
+        s = str(v).strip()
+        if not s:
+            return s
+        try:
+            return str(Path(s).expanduser().resolve())
+        except Exception:
+            return s
+
 
 settings = Settings()
