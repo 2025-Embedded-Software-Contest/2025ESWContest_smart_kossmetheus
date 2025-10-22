@@ -347,3 +347,15 @@
       attributes:
         modules: "{{ trigger.event.data.modules }}"
         last_updated: "{{ trigger.event.data.last_updated }}"
+
+# ===========================
+# kwh_to_won 통합을 위한 전기 사용량 템플릿
+# ===========================
+- sensor:
+    - name: "electricity_energy_prev_monthly"
+      unique_id: "electricity_energy_prev_monthly"
+      state: "{{ state_attr('sensor.electricity_energy_monthly','last_period') | round(1) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      attributes:
+        state_class: total
