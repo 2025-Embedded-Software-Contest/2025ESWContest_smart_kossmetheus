@@ -246,7 +246,7 @@ utility_meter:
   # kwh_to_won 통합을 위한 전기 사용량 월간 누적 센서
   # 검침일에 맞춘 월간 누적 사용량 (매달 30일 0시 0분에 리셋)
   electricity_energy_monthly:
-    source: sensor.electricity_energy
+    source: sensor.sihas_energy_monitor_energy
     cycle: monthly
     offset:
       days: 10
