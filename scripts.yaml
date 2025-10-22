@@ -83,3 +83,45 @@ announce_tts_message:
   - action: media_player.clear_playlist
     data:
       entity_id: '{{ target_player }}'
+voice_timer_complete_notice:
+  alias: Voice Timer Complete Notice
+  description: 타이머 종료 후 음성 안내만 출력합니다.
+  mode: parallel
+  fields:
+    minutes:
+      name: 분
+      selector:
+        number:
+          min: 0
+          max: 60
+          step: 1
+      required: true
+    seconds:
+      name: 초
+      selector:
+        number:
+          min: 0
+          max: 59
+          step: 1
+      required: true
+    voice_assistant:
+      name: 음성 어시스턴트
+      selector:
+        entity:
+          domain: assist_satellite
+  sequence:
+  - delay:
+      minutes: '{{ minutes | float(0) }}'
+      seconds: '{{ seconds | float(0) }}'
+  - variables:
+      assistants: "{{ states\n   | selectattr('entity_id', 'search', 'assist_satellite.voice_assistant')\n
+        \  | map(attribute='entity_id')\n   | list }}\n"
+  - repeat:
+      for_each: '{{ assistants }}'
+      sequence:
+      - target:
+          entity_id: '{{ repeat.item }}'
+        data:
+          message: '{{ minutes }}분 {{ seconds }}초 타이머가 종료되었습니다.'
+          preannounce: true
+        action: assist_satellite.announce
