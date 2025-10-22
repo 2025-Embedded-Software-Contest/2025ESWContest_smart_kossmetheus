@@ -577,24 +577,50 @@
         message: '백업 상태: {{ states(''sensor.influxdb_backup_status'') }}'
       action: notify.persistent_notification
   mode: single
-
-# ===========================
-# kwh_to_won 통합을 위한 전기 요금 자동화
-# ===========================
-- id: 'electricity_energy_prev2_monthly_update'
+- id: electricity_energy_prev2_monthly_update
   alias: 전기 전전월 사용량 업데이트
-  description: '전월 전기 사용량 변경 시 전전월 값을 업데이트'
+  description: 전월 전기 사용량 변경 시 전전월 값을 업데이트
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.electricity_energy_prev_monthly
+  - platform: state
+    entity_id:
+    - sensor.electricity_energy_prev_monthly
   condition:
-    - condition: template
-      value_template: '{{ trigger.to_state.state|float(0) > 0 and trigger.from_state.state|float(0) > 0 }}'
+  - condition: template
+    value_template: '{{ trigger.to_state.state|float(0) > 0 and trigger.from_state.state|float(0)
+      > 0 }}'
   action:
-    - service: input_number.set_value
-      data:
-        value: '{{ trigger.from_state.state }}'
-      target:
-        entity_id: input_number.electricity_energy_prev2_monthly
+  - service: input_number.set_value
+    data:
+      value: '{{ trigger.from_state.state }}'
+    target:
+      entity_id: input_number.electricity_energy_prev2_monthly
+  mode: single
+- id: '1761134823433'
+  alias: 시작 시 통합구성요소 새로고침
+  description: Home Assistant가 시작될 때 일부 통합구성요소가 올바르게 초기화되지 않는 문제를 해결하기 위해 관련 구성 항목을
+    다시 로드합니다.
+  triggers:
+  - trigger: homeassistant
+    event: start
+  conditions: []
+  actions:
+  - action: homeassistant.reload_config_entry
+    target:
+      entity_id:
+      - sensor.mart_l_goyangjeom
+      - sensor.mart_e_3047
+      - sensor.mart_e_1096
+      - sensor.mart_e_2012
+      - weather.wn_jib
+      - sensor.wn_jib_weather_briefing
+      - sensor.wn_jib_next_day_short_comment
+      - sensor.wn_jib_day_short_comment
+      - sensor.wn_jib_day_condition
+      - sensor.wn_jib_night_condition
+      - sensor.wn_jib_current_condition
+      - weather.forecast_jib
+      - image.windy_webcams_1701618298
+      - image.windy_webcams_1689176350
+      - sensor.sihas_energy_monitor_power
+    data: {}
   mode: single
