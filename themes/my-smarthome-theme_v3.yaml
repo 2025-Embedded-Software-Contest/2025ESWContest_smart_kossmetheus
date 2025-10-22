@@ -1,7 +1,7 @@
 My SmartHome Theme v3: 
 
   # Font
-  primary-font-family: "'Space Grotesk', sans-serif"
+  primary-font-family: "'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
   ha-font-family-body: "var(--primary-font-family)"
   ha-font-family-heading: "var(--primary-font-family)"
   ha-font-family-code: "var(--primary-font-family)"
@@ -212,6 +212,8 @@ My SmartHome Theme v3:
   card-mod-card-yaml: |
 
     .: |
+
+      @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
       body {
         height:80% !important;
