@@ -22,6 +22,7 @@ from .const import (
     LIVETIMING_INDEX_URL,
     PLATFORMS,
     SEASON_RESULTS_URL,
+    SPRINT_RESULTS_URL,
     LATEST_TRACK_STATUS,
 )
 from .signalr import LiveBus
@@ -43,6 +44,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     season_results_coordinator = F1SeasonResultsCoordinator(
         hass, SEASON_RESULTS_URL, "F1 Season Results Coordinator"
+    )
+    sprint_results_coordinator = F1SprintResultsCoordinator(
+        hass, SPRINT_RESULTS_URL, "F1 Sprint Results Coordinator"
     )
     year = datetime.utcnow().year
     session_coordinator = LiveSessionCoordinator(hass, year)
@@ -85,6 +89,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await constructor_coordinator.async_config_entry_first_refresh()
     await last_race_coordinator.async_config_entry_first_refresh()
     await season_results_coordinator.async_config_entry_first_refresh()
+    await sprint_results_coordinator.async_config_entry_first_refresh()
     await session_coordinator.async_config_entry_first_refresh()
     if track_status_coordinator:
         await track_status_coordinator.async_config_entry_first_refresh()
@@ -119,6 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "constructor_coordinator": constructor_coordinator,
         "last_race_coordinator": last_race_coordinator,
         "season_results_coordinator": season_results_coordinator,
+        "sprint_results_coordinator": sprint_results_coordinator,
         "session_coordinator": session_coordinator,
         "track_status_coordinator": track_status_coordinator,
         "session_status_coordinator": session_status_coordinator,
@@ -1121,6 +1127,33 @@ class F1SeasonResultsCoordinator(DataUpdateCoordinator):
             raise UpdateFailed(f"Error fetching season results: {err}") from err
 
 
+class F1SprintResultsCoordinator(DataUpdateCoordinator):
+    """Fetch sprint results for the current season (single, non-paginated endpoint)."""
+
+    def __init__(self, hass: HomeAssistant, url: str, name: str):
+        super().__init__(
+            hass,
+            _LOGGER,
+            name=name,
+            update_interval=timedelta(hours=1),
+        )
+        self._session = async_get_clientsession(hass)
+        self._url = url
+
+    async def async_close(self, *_):
+        return
+
+    async def _async_update_data(self):
+        try:
+            async with async_timeout.timeout(10):
+                async with self._session.get(self._url) as response:
+                    if response.status != 200:
+                        raise UpdateFailed(f"Error fetching data: {response.status}")
+                    text = await response.text()
+                    return json.loads(text.lstrip("\ufeff"))
+        except Exception as err:
+            raise UpdateFailed(f"Error fetching sprint results: {err}") from err
+
 class LiveSessionCoordinator(DataUpdateCoordinator):
     """Fetch current or next session from the LiveTiming index."""
 
@@ -1177,11 +1210,14 @@ class TrackStatusCoordinator(DataUpdateCoordinator):
         self._last_message = None
         self.data_list: list[dict] = []
         self._deliver_handle: Optional[asyncio.Handle] = None
+        self._deliver_handles: list[asyncio.Handle] = []
         self._bus = bus
         self._unsub: Optional[Callable[[], None]] = None
         self._t0 = None
         self._startup_cutoff = None
         self._delay = max(0, int(delay_seconds or 0))
+        # Lightweight dedupe of untimestamped repeats
+        self._last_untimestamped_fingerprint: str | None = None
 
     async def async_close(self, *_):
         if self._unsub:
@@ -1196,6 +1232,16 @@ class TrackStatusCoordinator(DataUpdateCoordinator):
             except Exception:
                 pass
             self._deliver_handle = None
+        # Cancel any queued delayed deliveries
+        try:
+            for h in list(self._deliver_handles):
+                try:
+                    h.cancel()
+                except Exception:
+                    pass
+            self._deliver_handles.clear()
+        except Exception:
+            pass
 
     async def _async_update_data(self):
         return self._last_message
@@ -1220,16 +1266,36 @@ class TrackStatusCoordinator(DataUpdateCoordinator):
                     return
         except Exception:
             pass
-        if self._delay > 0:
+        # Dedupe untimestamped exact repeats to avoid flooding when delayed
+        try:
+            has_ts = any(k in msg for k in ("Utc", "utc", "processedAt", "timestamp"))
+        except Exception:
+            has_ts = False
+        if not has_ts:
             try:
-                if self._deliver_handle:
-                    self._deliver_handle.cancel()
+                fp = json.dumps({
+                    "Status": msg.get("Status"),
+                    "Message": msg.get("Message") or msg.get("TrackStatus")
+                }, sort_keys=True, default=str)
+                if self._last_untimestamped_fingerprint == fp:
+                    return
+                self._last_untimestamped_fingerprint = fp
             except Exception:
                 pass
-            self._deliver_handle = self.hass.loop.call_later(
-                self._delay, lambda m=msg: self._deliver(m)
-            )
+
+        if self._delay > 0:
+            # Queue each delivery independently so intermediate states (e.g. YELLOW) survive
+            try:
+                handle = self.hass.loop.call_later(self._delay, lambda m=msg: self._deliver(m))
+                self._deliver_handles.append(handle)
+            except Exception:
+                # Fallback to immediate delivery
+                try:
+                    self._deliver(msg)
+                except Exception:
+                    pass
         else:
+            # Immediate delivery; keep legacy single-handle for symmetry
             try:
                 if self._deliver_handle:
                     self._deliver_handle.cancel()

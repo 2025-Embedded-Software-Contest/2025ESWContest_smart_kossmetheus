@@ -82,6 +82,8 @@ async def async_setup_entry(
         # TEMP_DISABLED: driver_favorites
         "last_race_results",
         "season_results",
+        "driver_points_progression",
+        "constructor_points_progression",
         "race_week",
         "track_status",
         "session_status",
@@ -112,6 +114,8 @@ async def async_setup_entry(
         "race_lap_count": (F1RaceLapCountSensor, data.get("lap_count_coordinator")),
         "last_race_results": (F1LastRaceSensor, data["last_race_coordinator"]),
         "season_results": (F1SeasonResultsSensor, data["season_results_coordinator"]),
+        "driver_points_progression": (F1DriverPointsProgressionSensor, data["season_results_coordinator"]),
+        "constructor_points_progression": (F1ConstructorPointsProgressionSensor, data["season_results_coordinator"]),
         "track_status": (F1TrackStatusSensor, data.get("track_status_coordinator")),
         "session_status": (F1SessionStatusSensor, data.get("session_status_coordinator")),
         "current_session": (F1CurrentSessionSensor, data.get("session_info_coordinator")),
@@ -764,6 +768,563 @@ class F1SeasonResultsSensor(F1BaseEntity, SensorEntity):
         return {"races": cleaned}
 
 
+class F1DriverPointsProgressionSensor(F1BaseEntity, RestoreEntity, SensorEntity):
+    """Sensor that exposes per-round and cumulative points per driver, including sprint points.
+
+    - State: number of rounds included.
+    - Attributes: season, rounds[], drivers{}, series{} for charting.
+    """
+
+    def __init__(self, coordinator, sensor_name, unique_id, entry_id, device_name):
+        super().__init__(coordinator, sensor_name, unique_id, entry_id, device_name)
+        self._attr_icon = "mdi:chart-line"
+        self._attr_native_value = None
+        self._attr_extra_state_attributes = {}
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        self._recompute()
+        if self._attr_native_value is None:
+            last = await self.async_get_last_state()
+            if last and last.state not in (None, "unknown", "unavailable"):
+                try:
+                    self._attr_native_value = int(last.state)
+                except Exception:
+                    self._attr_native_value = None
+                attrs = dict(getattr(last, "attributes", {}) or {})
+                self._attr_extra_state_attributes = attrs
+        removal = self.coordinator.async_add_listener(self._handle_coordinator_update)
+        self.async_on_remove(removal)
+        self.async_write_ha_state()
+
+    def _handle_coordinator_update(self) -> None:
+        self._recompute()
+        self.async_write_ha_state()
+
+    def _get_sprint_results(self) -> list:
+        try:
+            reg = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+            sprint_coord = reg.get("sprint_results_coordinator")
+            if sprint_coord and isinstance(sprint_coord.data, dict):
+                return (
+                    sprint_coord.data.get("MRData", {})
+                    .get("RaceTable", {})
+                    .get("Races", [])
+                )
+        except Exception:
+            return []
+        return []
+
+    def _get_full_schedule(self) -> list:
+        """Return full season schedule (all planned rounds) from race_coordinator if available."""
+        try:
+            reg = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+            race_coord = reg.get("race_coordinator")
+            if race_coord and isinstance(race_coord.data, dict):
+                return (
+                    race_coord.data.get("MRData", {})
+                    .get("RaceTable", {})
+                    .get("Races", [])
+                )
+        except Exception:
+            return []
+        return []
+
+    def _get_driver_standings(self) -> tuple[dict, int | None]:
+        """Return (points_by_code, standings_round) from driver standings coordinator."""
+        try:
+            reg = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+            coord = reg.get("driver_coordinator")
+            points_map: dict[str, float] = {}
+            round_num: int | None = None
+            if coord and isinstance(coord.data, dict):
+                lists = (
+                    coord.data.get("MRData", {})
+                    .get("StandingsTable", {})
+                    .get("StandingsLists", [])
+                )
+                if lists:
+                    try:
+                        round_num = int(str(lists[0].get("round") or 0)) if str(lists[0].get("round") or "").isdigit() else None
+                    except Exception:
+                        round_num = None
+                    for item in lists[0].get("DriverStandings", []) or []:
+                        drv = item.get("Driver", {}) or {}
+                        code = drv.get("code") or drv.get("driverId")
+                        if not code:
+                            continue
+                        try:
+                            points_map[code] = float(str(item.get("points") or 0))
+                        except Exception:
+                            points_map[code] = 0.0
+            return points_map, round_num
+        except Exception:
+            return {}, None
+
+    @staticmethod
+    def _to_float(value):
+        try:
+            if value is None:
+                return 0.0
+            s = str(value).strip()
+            return float(s) if s else 0.0
+        except Exception:
+            return 0.0
+
+    @staticmethod
+    def _combine_date_time(date_str, time_str):
+        if not date_str:
+            return None
+        if not time_str:
+            time_str = "00:00:00Z"
+        dt_str = f"{date_str}T{time_str}".replace("Z", "+00:00")
+        try:
+            import datetime as _dt
+            dt = _dt.datetime.fromisoformat(dt_str)
+            return dt.isoformat()
+        except Exception:
+            return None
+
+    def _recompute(self) -> None:
+        data = self.coordinator.data or {}
+        races = (
+            data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+        )
+        season = None
+        rounds_meta = []
+        # Build base per-round points from race Results
+        per_round_points: dict[str, list[float]] = {}
+        wins_per_round: dict[str, list[int]] = {}
+        name_map: dict[str, dict] = {}
+        round_numbers: list[int] = []
+        for race in races:
+            season = season or race.get("season")
+            rnd = int(str(race.get("round") or 0)) if str(race.get("round") or "").isdigit() else None
+            if rnd is None:
+                continue
+            round_numbers.append(rnd)
+            rounds_meta.append({
+                "round": rnd,
+                "race_name": race.get("raceName"),
+                "date": self._combine_date_time(race.get("date"), race.get("time")),
+            })
+            # Prepare default 0 entries first
+            # We'll fill driver points dynamically as we encounter drivers
+            results = race.get("Results", []) or []
+            # Determine winner code for wins array
+            winner_code = None
+            for res in results:
+                drv = res.get("Driver", {}) or {}
+                code = drv.get("code") or drv.get("driverId")
+                if not code:
+                    continue
+                if res.get("position") == "1" or res.get("positionText") == "1":
+                    winner_code = code
+                name_map.setdefault(code, {
+                    "code": drv.get("code") or None,
+                    "driverId": drv.get("driverId"),
+                    "name": f"{drv.get('givenName','')} {drv.get('familyName','')}".strip() or drv.get("familyName"),
+                })
+                # Ensure lists are sized to rnd index (append later)
+            # Assign race points
+            for res in results:
+                drv = res.get("Driver", {}) or {}
+                code = drv.get("code") or drv.get("driverId")
+                if not code:
+                    continue
+                pts = self._to_float(res.get("points"))
+                per_round_points.setdefault(code, [])
+                wins_per_round.setdefault(code, [])
+                per_round_points[code].append(pts)
+                wins_per_round[code].append(1 if code == winner_code else 0)
+            # Normalize length for drivers missing this round
+            max_len = len(round_numbers)
+            for code in list(per_round_points.keys()):
+                while len(per_round_points[code]) < max_len:
+                    per_round_points[code].append(0.0)
+                while len(wins_per_round[code]) < max_len:
+                    wins_per_round[code].append(0)
+
+        # Merge sprint points (by round)
+        sprints = self._get_sprint_results()
+        round_index = {r: idx for idx, r in enumerate(round_numbers)}
+        for sp in sprints or []:
+            rnd = int(str(sp.get("round") or 0)) if str(sp.get("round") or "").isdigit() else None
+            if rnd is None:
+                continue
+            if rnd not in round_index:
+                # Lägg till sprint-rond som ännu ej har kört huvudlopp
+                round_index[rnd] = len(round_numbers)
+                round_numbers.append(rnd)
+                rounds_meta.append({
+                    "round": rnd,
+                    "race_name": sp.get("raceName"),
+                    "date": self._combine_date_time(sp.get("date"), sp.get("time")),
+                })
+                for code in list(per_round_points.keys()):
+                    per_round_points[code].append(0.0)
+                for code in list(wins_per_round.keys()):
+                    wins_per_round[code].append(None)
+            idx = round_index[rnd]
+            results = sp.get("SprintResults") or sp.get("Results") or []
+            for res in results:
+                drv = res.get("Driver", {}) or {}
+                code = drv.get("code") or drv.get("driverId")
+                if not code:
+                    continue
+                pts = self._to_float(res.get("points"))
+                per_round_points.setdefault(code, [0.0] * len(round_numbers))
+                wins_per_round.setdefault(code, [None] * len(round_numbers))
+                # Add sprint points to the same round
+                try:
+                    per_round_points[code][idx] += pts
+                except Exception:
+                    pass
+
+        # Align totals with latest standings if they refer to a newer round
+        try:
+            standings_map, standings_round = self._get_driver_standings()
+            if standings_map:
+                max_round = max(round_numbers) if round_numbers else None
+                # If standings reference a newer round, create it
+                new_index_created = False
+                if standings_round and (max_round is None or standings_round > max_round):
+                    round_numbers.append(standings_round)
+                    rounds_meta.append({
+                        "round": standings_round,
+                        "race_name": None,
+                        "date": None,
+                    })
+                    # pad existing arrays
+                    for code in list(per_round_points.keys()):
+                        per_round_points[code].append(0.0)
+                    for code in list(wins_per_round.keys()):
+                        wins_per_round[code].append(None)
+                    new_index_created = True
+                # Compute and apply deltas
+                for code, total_pts in standings_map.items():
+                    pts_list = per_round_points.get(code)
+                    if not pts_list:
+                        continue
+                    computed_total = 0.0
+                    for v in pts_list:
+                        try:
+                            computed_total += float(v or 0.0)
+                        except Exception:
+                            pass
+                    delta = round(float(total_pts - computed_total), 3)
+                    if delta > 0.0:
+                        # Apply delta to last available round (new one if created)
+                        if new_index_created:
+                            per_round_points[code][-1] = (per_round_points[code][-1] or 0.0) + delta
+                        else:
+                            per_round_points[code][-1] = (per_round_points[code][-1] or 0.0) + delta
+        except Exception:
+            pass
+
+        # Återställ: visa endast körda ronder (som vi redan byggt från resultat)
+
+        # Bygg cumulative och totals samt series
+        drivers_attr = {}
+        series = {"labels": [f"R{r}" for r in round_numbers], "series": []}
+        for code, pts_list in per_round_points.items():
+            cum = []
+            total = 0.0
+            for p in pts_list:
+                if p is None:
+                    cum.append(None)
+                else:
+                    total += float(p or 0.0)
+                    cum.append(total)
+            wins = wins_per_round.get(code, [0] * len(pts_list))
+            # Sanitize None -> 0 for totals
+            safe_wins = [int(w) if isinstance(w, int) else (1 if w is True else 0) for w in wins]
+            info = name_map.get(code, {})
+            drivers_attr[code] = {
+                "identity": {
+                    "code": info.get("code") or (code if len(code) <= 3 else None),
+                    "driverId": info.get("driverId"),
+                    "name": info.get("name"),
+                },
+                "points_per_round": pts_list,
+                "cumulative_points": cum,
+                "wins_per_round": wins,
+                "totals": {"points": total, "wins": sum(safe_wins)},
+            }
+            series["series"].append({
+                "key": info.get("code") or code,
+                "name": info.get("name") or code,
+                "data": cum,
+            })
+
+        self._attr_native_value = len(round_numbers) if round_numbers else None
+        self._attr_extra_state_attributes = {
+            "season": season,
+            "rounds": rounds_meta,
+            "drivers": drivers_attr,
+            "series": series,
+        }
+
+
+class F1ConstructorPointsProgressionSensor(F1BaseEntity, RestoreEntity, SensorEntity):
+    """Constructor points per team by round, including sprint; cumulative series for charts."""
+
+    def __init__(self, coordinator, sensor_name, unique_id, entry_id, device_name):
+        super().__init__(coordinator, sensor_name, unique_id, entry_id, device_name)
+        self._attr_icon = "mdi:chart-line"
+        self._attr_native_value = None
+        self._attr_extra_state_attributes = {}
+
+    async def async_added_to_hass(self):
+        await super().async_added_to_hass()
+        self._recompute()
+        if self._attr_native_value is None:
+            last = await self.async_get_last_state()
+            if last and last.state not in (None, "unknown", "unavailable"):
+                try:
+                    self._attr_native_value = int(last.state)
+                except Exception:
+                    self._attr_native_value = None
+                self._attr_extra_state_attributes = dict(getattr(last, "attributes", {}) or {})
+        removal = self.coordinator.async_add_listener(self._handle_coordinator_update)
+        self.async_on_remove(removal)
+        self.async_write_ha_state()
+
+    def _handle_coordinator_update(self) -> None:
+        self._recompute()
+        self.async_write_ha_state()
+
+    def _get_sprint_results(self) -> list:
+        try:
+            reg = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+            sprint_coord = reg.get("sprint_results_coordinator")
+            if sprint_coord and isinstance(sprint_coord.data, dict):
+                return (
+                    sprint_coord.data.get("MRData", {})
+                    .get("RaceTable", {})
+                    .get("Races", [])
+                )
+        except Exception:
+            return []
+        return []
+
+    @staticmethod
+    def _to_float(value):
+        try:
+            if value is None:
+                return 0.0
+            s = str(value).strip()
+            return float(s) if s else 0.0
+        except Exception:
+            return 0.0
+
+    @staticmethod
+    def _combine_date_time(date_str, time_str):
+        if not date_str:
+            return None
+        if not time_str:
+            time_str = "00:00:00Z"
+        dt_str = f"{date_str}T{time_str}".replace("Z", "+00:00")
+        try:
+            import datetime as _dt
+            dt = _dt.datetime.fromisoformat(dt_str)
+            return dt.isoformat()
+        except Exception:
+            return None
+
+    def _recompute(self) -> None:
+        data = self.coordinator.data or {}
+        races = (
+            data.get("MRData", {}).get("RaceTable", {}).get("Races", [])
+        )
+        season = None
+        rounds_meta = []
+        round_numbers: list[int] = []
+
+        # Per round team points and wins
+        per_round_points: dict[str, list[float]] = {}
+        wins_per_round: dict[str, list[int]] = {}
+        team_info: dict[str, dict] = {}  # constructorId -> {name}
+
+        for race in races:
+            season = season or race.get("season")
+            rnd = int(str(race.get("round") or 0)) if str(race.get("round") or "").isdigit() else None
+            if rnd is None:
+                continue
+            round_numbers.append(rnd)
+            rounds_meta.append({
+                "round": rnd,
+                "race_name": race.get("raceName"),
+                "date": self._combine_date_time(race.get("date"), race.get("time")),
+            })
+
+            # Aggregate points by constructor this round
+            results = race.get("Results", []) or []
+            # Identify winning constructor (winner driver position 1)
+            winning_constructor = None
+            for res in results:
+                if str(res.get("position") or res.get("positionText")) == "1":
+                    c = (res.get("Constructor") or {}).get("constructorId")
+                    winning_constructor = c
+                    break
+            # Sum per constructor
+            per_round_sum: dict[str, float] = {}
+            for res in results:
+                cons = res.get("Constructor", {}) or {}
+                cid = cons.get("constructorId") or cons.get("name")
+                if not cid:
+                    continue
+                team_info.setdefault(cid, {"constructorId": cons.get("constructorId"), "name": cons.get("name")})
+                per_round_sum[cid] = per_round_sum.get(cid, 0.0) + self._to_float(res.get("points"))
+
+            # Append to arrays
+            for cid, pts in per_round_sum.items():
+                per_round_points.setdefault(cid, [])
+                wins_per_round.setdefault(cid, [])
+                per_round_points[cid].append(pts)
+                wins_per_round[cid].append(1 if cid == winning_constructor else 0)
+            # Normalize length for teams not present in this round
+            max_len = len(round_numbers)
+            for cid in list(per_round_points.keys()):
+                while len(per_round_points[cid]) < max_len:
+                    per_round_points[cid].append(0.0)
+                while len(wins_per_round[cid]) < max_len:
+                    wins_per_round[cid].append(0)
+
+        # Merge sprint points
+        sprints = self._get_sprint_results()
+        round_index = {r: idx for idx, r in enumerate(round_numbers)}
+        for sp in sprints or []:
+            rnd = int(str(sp.get("round") or 0)) if str(sp.get("round") or "").isdigit() else None
+            if rnd is None:
+                continue
+            if rnd not in round_index:
+                # Lägg till sprint-rond även om huvudlopp saknas
+                round_index[rnd] = len(round_numbers)
+                round_numbers.append(rnd)
+                rounds_meta.append({
+                    "round": rnd,
+                    "race_name": sp.get("raceName"),
+                    "date": self._combine_date_time(sp.get("date"), sp.get("time")),
+                })
+                for cid in list(per_round_points.keys()):
+                    per_round_points[cid].append(0.0)
+                for cid in list(wins_per_round.keys()):
+                    wins_per_round[cid].append(None)
+            idx = round_index[rnd]
+            results = sp.get("SprintResults") or sp.get("Results") or []
+            for res in results:
+                cons = res.get("Constructor", {}) or {}
+                cid = cons.get("constructorId") or cons.get("name")
+                if not cid:
+                    continue
+                team_info.setdefault(cid, {"constructorId": cons.get("constructorId"), "name": cons.get("name")})
+                per_round_points.setdefault(cid, [0.0] * len(round_numbers))
+                wins_per_round.setdefault(cid, [None] * len(round_numbers))
+                try:
+                    per_round_points[cid][idx] += self._to_float(res.get("points"))
+                except Exception:
+                    pass
+
+        # Synka totals med senaste Constructor Standings
+        try:
+            standings_map, standings_round = self._get_constructor_standings()
+            if standings_map:
+                max_round = max(round_numbers) if round_numbers else None
+                new_index_created = False
+                if standings_round and (max_round is None or standings_round > max_round):
+                    round_numbers.append(standings_round)
+                    rounds_meta.append({
+                        "round": standings_round,
+                        "race_name": None,
+                        "date": None,
+                    })
+                    for cid in list(per_round_points.keys()):
+                        per_round_points[cid].append(0.0)
+                    for cid in list(wins_per_round.keys()):
+                        wins_per_round[cid].append(None)
+                    new_index_created = True
+                for cid, total_pts in standings_map.items():
+                    pts_list = per_round_points.get(cid)
+                    if not pts_list:
+                        continue
+                    computed_total = 0.0
+                    for v in pts_list:
+                        try:
+                            computed_total += float(v or 0.0)
+                        except Exception:
+                            pass
+                    delta = round(float(total_pts - computed_total), 3)
+                    if delta > 0.0:
+                        per_round_points[cid][-1] = (per_round_points[cid][-1] or 0.0) + delta
+        except Exception:
+            pass
+
+        # Build cumulative and series
+        teams_attr = {}
+        series = {"labels": [f"R{r}" for r in round_numbers], "series": []}
+        for cid, pts_list in per_round_points.items():
+            cum = []
+            total = 0.0
+            for p in pts_list:
+                total += float(p or 0.0)
+                cum.append(total)
+            wins = wins_per_round.get(cid, [0] * len(pts_list))
+            safe_wins = [int(w) if isinstance(w, int) else (1 if w is True else 0) for w in wins]
+            info = team_info.get(cid, {"name": cid})
+            teams_attr[cid] = {
+                "identity": {"constructorId": info.get("constructorId"), "name": info.get("name")},
+                "points_per_round": pts_list,
+                "cumulative_points": cum,
+                "wins_per_round": wins,
+                "totals": {"points": total, "wins": sum(safe_wins)},
+            }
+            series["series"].append({
+                "key": info.get("constructorId") or cid,
+                "name": info.get("name") or cid,
+                "data": cum,
+            })
+
+        self._attr_native_value = len(round_numbers) if round_numbers else None
+        self._attr_extra_state_attributes = {
+            "season": season,
+            "rounds": rounds_meta,
+            "constructors": teams_attr,
+            "series": series,
+        }
+
+    def _get_constructor_standings(self) -> tuple[dict, int | None]:
+        """Return (points_by_constructorId, standings_round) from constructor standings coordinator."""
+        try:
+            reg = self.hass.data.get(DOMAIN, {}).get(self._entry_id, {})
+            coord = reg.get("constructor_coordinator")
+            points_map: dict[str, float] = {}
+            round_num: int | None = None
+            if coord and isinstance(coord.data, dict):
+                lists = (
+                    coord.data.get("MRData", {})
+                    .get("StandingsTable", {})
+                    .get("StandingsLists", [])
+                )
+                if lists:
+                    try:
+                        round_num = int(str(lists[0].get("round") or 0)) if str(lists[0].get("round") or "").isdigit() else None
+                    except Exception:
+                        round_num = None
+                    for item in lists[0].get("ConstructorStandings", []) or []:
+                        cons = item.get("Constructor", {}) or {}
+                        cid = cons.get("constructorId") or cons.get("name")
+                        if not cid:
+                            continue
+                        try:
+                            points_map[cid] = float(str(item.get("points") or 0))
+                        except Exception:
+                            points_map[cid] = 0.0
+            return points_map, round_num
+        except Exception:
+            return {}, None
+
+
 class F1TrackWeatherSensor(F1BaseEntity, RestoreEntity, SensorEntity):
     """Sensor for live track weather via WeatherData feed.
 
@@ -1350,7 +1911,7 @@ class F1CurrentSessionSensor(F1BaseEntity, RestoreEntity, SensorEntity):
     def _apply_payload(self, raw: dict) -> None:
         label, meta = self._resolve_label(raw or {})
         status = self._live_status()
-        # Treat session as ended either by status or when EndDate has passed
+        # Treat session as ended by explicit status; only use EndDate as a soft fallback with grace
         ended = str(status or "").strip() in ("Finished", "Finalised", "Ends")
         try:
             end_iso = raw.get("EndDate")
@@ -1358,8 +1919,12 @@ class F1CurrentSessionSensor(F1BaseEntity, RestoreEntity, SensorEntity):
                 end_dt = datetime.datetime.fromisoformat(str(end_iso).replace("Z", "+00:00"))
                 if end_dt.tzinfo is None:
                     end_dt = end_dt.replace(tzinfo=datetime.timezone.utc)
-                if datetime.datetime.now(datetime.timezone.utc) >= end_dt:
-                    ended = True
+                now_utc = datetime.datetime.now(datetime.timezone.utc)
+                # Consider EndDate only if we are well past it and no active/green status is present
+                if now_utc >= (end_dt + datetime.timedelta(minutes=5)):
+                    st = str(status or "").strip()
+                    if st not in ("Started", "Green", "GreenFlag"):
+                        ended = True
         except Exception:
             pass
         active = (str(status or "").strip() == "Started")
@@ -1395,6 +1960,16 @@ class F1CurrentSessionSensor(F1BaseEntity, RestoreEntity, SensorEntity):
         except Exception:
             pass
         self._attr_extra_state_attributes = attrs
+        try:
+            getLogger(__name__).debug(
+                "CurrentSession apply: label=%s status=%s ended=%s active=%s",
+                label,
+                status,
+                ended,
+                active,
+            )
+        except Exception:
+            pass
 
     def _handle_coordinator_update(self) -> None:
         raw = self._extract_current()
@@ -1807,7 +2382,7 @@ class F1DriverLiveSensor(F1BaseEntity, RestoreEntity, SensorEntity):
             now = _time.time()
             if self._last_write_ts is None or (now - self._last_write_ts) >= 1.0:
                 self._last_write_ts = now
-                self.async_write_ha_state()
+                self._safe_write_ha_state()
             else:
                 if not self._pending_write:
                     self._pending_write = True
@@ -1816,12 +2391,12 @@ class F1DriverLiveSensor(F1BaseEntity, RestoreEntity, SensorEntity):
                     def _do_write(_):
                         try:
                             self._last_write_ts = _time.time()
-                            self.async_write_ha_state()
+                            self._safe_write_ha_state()
                         finally:
                             self._pending_write = False
                     _later(self.hass, delay, _do_write)
         except Exception:
-            self.async_write_ha_state()
+            self._safe_write_ha_state()
 
     def _update_from_coordinator(self) -> None:
         data = self.coordinator.data or {}
@@ -1934,7 +2509,7 @@ class F1DriverListSensor(F1BaseEntity, RestoreEntity, SensorEntity):
             now = _time.time()
             if lw is None or (now - lw) >= 60.0:
                 setattr(self, "_last_write_ts", now)
-                self.async_write_ha_state()
+                self._safe_write_ha_state()
             else:
                 # Schedule a delayed write at the 60s boundary if not already pending
                 pending = getattr(self, "_pending_write", False)
@@ -1945,12 +2520,12 @@ class F1DriverListSensor(F1BaseEntity, RestoreEntity, SensorEntity):
                     def _do_write(_):
                         try:
                             setattr(self, "_last_write_ts", _time.time())
-                            self.async_write_ha_state()
+                            self._safe_write_ha_state()
                         finally:
                             setattr(self, "_pending_write", False)
                     _later(self.hass, delay, _do_write)
         except Exception:
-            self.async_write_ha_state()
+            self._safe_write_ha_state()
 
     def _update_from_coordinator(self) -> None:
         data = self.coordinator.data or {}

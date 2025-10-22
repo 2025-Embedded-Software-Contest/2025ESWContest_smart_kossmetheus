@@ -66,20 +66,17 @@ command_line:
       unique_id: influxdb_latest_backup
       command: "ls -td /share/influxdb_backups/backup_* 2>/dev/null | head -1 | xargs basename"
       scan_interval: 3600
-
   - sensor:
       name: "InfluxDB Backup Count"
       unique_id: influxdb_backup_count
       command: "ls -1 /share/influxdb_backups/ | grep -c backup_"
       scan_interval: 3600
       unit_of_measurement: "개"
-
   - sensor:
       name: "InfluxDB Backup Size"
       unique_id: influxdb_backup_size
       command: "du -sh /share/influxdb_backups/ 2>/dev/null | awk '{print $1}' || echo '0M'"
       scan_interval: 3600
-
   - sensor:
       name: "InfluxDB Backup Status"
       unique_id: influxdb_backup_status
@@ -91,8 +88,7 @@ pyscript:
   # 외부 패키지(Pillow 등) 임포트를 허용해 pyscript 스크립트가 정상 로드되도록 함
   allow_all_imports: true
 
-# SSO 환경 설정
-# 1. Reverse Proxy 설정
+# Reverse Proxy 설정
 http:
   use_x_forwarded_for: true
   trusted_proxies:
@@ -100,17 +96,13 @@ http:
     - 192.168.0.0/24 # NPM이 속한 내부 네트워크 대역
     - 127.0.0.1 # 로컬 루프백
 
-  # ssl 설정
-  # server_port: 443
-  # ssl_certificate: /ssl/fullchain.pem
-  # ssl_key: /ssl/privkey.pem
-
 # Google OAuth
 openid:
   client_id: !secret oidc_client_id
   client_secret: !secret oidc_client_secret
   configure_url: "https://accounts.google.com/.well-known/openid-configuration"
-  username_field: "email" # 또는 preferred_username
+  # username_field: "preferred_username"
+  username_field: "email"
   scope: "openid profile email"
   block_login: false
   openid_text: "Login with Google (OIDC)"
@@ -160,8 +152,8 @@ lovelace:
       show_in_sidebar: true
       filename: dashboard_2025.yaml
 
-# Gas meter (ESP32-CAM + OCR)   #
 homeassistant:
+  # Gas meter (ESP32-CAM + OCR)
   media_dirs:
     local: /config/www
     gas: /config/www/tmp/gas
