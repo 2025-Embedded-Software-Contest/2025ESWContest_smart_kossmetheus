@@ -145,7 +145,29 @@ lovelace:
       type: module
     - url: /hacsfiles/timer-bar-card/timer-bar-card.js
       type: module
+    - url: /hacsfiles/lovelace-navbar-card/navbar-card.js
+      type: module
+    - url: /hacsfiles/decluttering-card/decluttering-card.js
+      type: module
+    - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+      type: module
+    - url: /hacsfiles/lovelace-expander-card/expander-card.js
+      type: module
+    - url: /hacsfiles/css-swipe-card/css-swipe-card.js
+      type: module
+    - url: /hacsfiles/lovelace-notify-card/notify-card.js
+      type: module
+    - url: /hacsfiles/my-cards/my-slider-v2.js
+      type: module
+    - url: /hacsfiles/lovelace-layout-card/layout-card.js
+      type: module
   dashboards:
+    integrated-dashboard:
+      mode: yaml
+      title: 통합 대시보드
+      icon: mdi:view-dashboard-variant
+      show_in_sidebar: true
+      filename: integrated_dashboard.yaml
     air-quality-dashboard:
       mode: yaml
       title: 공기질 대시보드 2025
