@@ -61,10 +61,6 @@ decluttering_templates:
               state: 'on'
             - condition: screen
               media_query: '(min-width: 0px) and (max-width: 767px)'
-            - condition: user
-              users:
-                -   # ⚠️ 수정 필요: 사용자 UUID
-                -   # ⚠️ 수정 필요: 사용자 UUID
           card:
             type: custom:button-card
             template: custom_card_alarm_bottom
@@ -102,10 +98,15 @@ navbar-templates:
           ]]]
         badge:
           show: |
-              # ⚠️ 수정 필요: 전체 조명 그룹 entity
+            [[[
+              return states['group.all_lights']?.state === 'on';
+            ]]]
           color: var(--yellow-color)
           count: |
-            [[[ return states['  # ⚠️ 수정 필요: 켜진 조명 수 센서'].state ]]]
+            [[[
+              const value = Number(states['sensor.count_lights_on']?.state ?? 0);
+              return value > 0 ? `${value}` : '';
+            ]]]
         tap_action:
           action: open-popup
         popup:
@@ -135,12 +136,18 @@ navbar-templates:
         label: Music
         badge:
           show: |
-              # ⚠️ 수정 필요: 음악 미디어 플레이어 (사용 가능: media_player.spotify_gimuhyeon, media_player.uhyeonibang)
+            [[[
+              const entities = ['media_player.spotify_gimuhyeon','media_player.uhyeonibang'];
+              return entities.some((e) => ['playing','buffering'].includes(states[e]?.state));
+            ]]]
           color: var(--green-color)
         hidden: |
           [[[
-            if (states['media_player.music'].state == "playing") return false;
-            else if (states['remote.harmony_hub'].state == "on") return true;
+            const entities = ['media_player.spotify_gimuhyeon','media_player.uhyeonibang'];
+            const isPlaying = entities.some((e) => states[e]?.state === 'playing');
+            if (isPlaying) return false;
+            const remoteOn = states['remote.ir_jeeogi']?.state === 'on';
+            if (remoteOn) return true;
             else return false;
           ]]]
         hold_action:
@@ -157,12 +164,17 @@ navbar-templates:
         label: TV
         badge:
           show: |
-              # ⚠️ 수정 필요: TV 미디어 플레이어 (사용 가능: media_player.samsung_tv2)
+            [[[
+              return ['playing','on'].includes(states['media_player.samsung_tv2']?.state);
+            ]]]
           color: var(--green-color)
         hidden: |
           [[[
-            if (states['media_player.music'].state == "playing") return true;
-            else if (states['remote.harmony_hub'].state == "on") return false;
+            const musicPlaying = ['media_player.spotify_gimuhyeon','media_player.uhyeonibang']
+              .some((e) => states[e]?.state === 'playing');
+            if (musicPlaying) return true;
+            const remoteOn = states['remote.ir_jeeogi']?.state === 'on';
+            if (remoteOn) return false;
             else return true;
           ]]]
         selected: |
@@ -189,47 +201,66 @@ navbar-templates:
         label: Security
         badge:
           show: |
-            [[[ return states['  # ⚠️ 수정 필요: 창문 센서 그룹'].state === 'on' ]]]
+            [[[
+              const sensors = [
+                'binary_sensor.multipurpose_sensor_door',
+                'binary_sensor.multipurpose_sensor_1_door',
+                'binary_sensor.multipurpose_sensor_2_door'
+              ];
+              return sensors.some((e) => states[e]?.state === 'on');
+            ]]]
           color: var(--red-color)
           count: |
-            [[[ return states['  # ⚠️ 수정 필요: 열린 창문 수 센서'].state ]]]
+            [[[
+              const sensors = [
+                'binary_sensor.multipurpose_sensor_door',
+                'binary_sensor.multipurpose_sensor_1_door',
+                'binary_sensor.multipurpose_sensor_2_door'
+              ];
+              const openCount = sensors.reduce((total, entityId) => {
+                return total + (states[entityId]?.state === 'on' ? 1 : 0);
+              }, 0);
+              return openCount > 0 ? `${openCount}` : '';
+            ]]]
       - image: |
-          [[[ 
-            return hass.states[  # ⚠️ 수정 필요: person entity 교체].attributes.entity_picture
+          [[[
+            const person = hass.states['person.mrpc2003'];
+            return person?.attributes?.entity_picture || '/local/images/avatars/default.png';
           ]]]
         url: /integrated-dashboard/home#julian
-        label: Julian
+        label: 김우현
         selected: |
           [[[
             return location.hash == '#julian';
           ]]]
         hidden: |
-          [[[ return   # ⚠️ 수정 필요: Home Assistant 사용자 이름 ]]]
+          [[[ return user.name !== "김우현" ]]]
         badge:
           show: |
             [[[ return states['input_boolean.debug_rounded'].state === 'on' ]]]
           color: var(--red-color)
       - image: |
-          [[[ 
-            return hass.states[  # ⚠️ 수정 필요: person entity 교체].attributes.entity_picture
+          [[[
+            const person = hass.states['person.gimyeji'];
+            return person?.attributes?.entity_picture || '/local/images/avatars/default.png';
           ]]]
         url: /integrated-dashboard/home#anna
-        label: Anna
+        label: 김예지
         selected: |
           [[[
             return location.hash == '#anna';
           ]]]
         hidden: |
-          [[[ return   # ⚠️ 수정 필요: Home Assistant 사용자 이름 ]]]
+          [[[ return user.name !== "김예지" ]]]
       - icon: mdi:dots-horizontal
         label: More
         badge:
           show: |
             [[[
-              if (states['  # ⚠️ 수정 필요: 모니터링 센서'].state == "on") return true;
-              else if (states['binary_sensor.home_assistant_update'].state == "on") return true;
-              else if (states['  # ⚠️ 수정 필요: 배터리 건강 센서'].state == "on") return true;
-              else return false;
+              const unavailable = Number(states['sensor.unavailable_entities_count']?.state ?? 0) > 0;
+              const hassUpdate = states['binary_sensor.home_assistant_versions_update_available']?.state === 'on';
+              const lowBattery = states['binary_sensor.low_battery_devices']?.state === 'on';
+              return unavailable || hassUpdate || lowBattery;
             ]]]
           color: var(--red-color)
         tap_action:
@@ -239,13 +270,13 @@ navbar-templates:
             url: /integrated-dashboard/server
             label: Server
             hidden: |
-              [[[ return   # ⚠️ 수정 필요: Home Assistant 사용자 이름 ]]]
+              [[[ return user.name !== "김우현" ]]]
             badge:
               show: |
                 [[[
-                  if (states['  # ⚠️ 수정 필요: 모니터링 센서'].state == "on") return true;
-                  else if (states['  # ⚠️ 수정 필요: 배터리 건강 센서'].state == "on") return true;
-                  else return false;
+                  const unavailable = Number(states['sensor.unavailable_entities_count']?.state ?? 0) > 0;
+                  const lowBattery = states['binary_sensor.low_battery_devices']?.state === 'on';
+                  return unavailable || lowBattery;
                 ]]]
               color: var(--red-color)
           - url: /integrated-dashboard/energy
@@ -263,23 +294,23 @@ navbar-templates:
               count: |
                 [[[ return states['todo.shopping_list'].state ]]]
           - icon: mdi:bookshelf
-            url:   # ⚠️ 수정 필요: Music Assistant 애드온 URL
+            url: /integrated-dashboard/music
             label: Music Assistant
           - icon: mdi:cog
             url: /config/dashboard
             label: Settings
             badge:
               show: >
-                [[[ return states['binary_sensor.home_assistant_update'].state
+                [[[ return states['binary_sensor.home_assistant_versions_update_available'].state
                 === 'on' ]]]
               color: var(--red-color)
             hidden: |
-              [[[ return   # ⚠️ 수정 필요: Home Assistant 사용자 이름 ]]]
+              [[[ return user.name !== "김우현" ]]]
           - icon: mdi:hammer
             url: /developer-tools/yaml
             label: Developer Tools
             hidden: |
-              [[[ return   # ⚠️ 수정 필요: Home Assistant 사용자 이름 ]]]
+              [[[ return user.name !== "김우현" ]]]
     styles: |
       .navbar {
         --navbar-primary-color: var(--purple-color);
@@ -832,23 +863,17 @@ button_card_templates:
               - margin-bottom: 5px
       play_state: |
         [[[
-          if (entity.entity_id == "media_player.music") {
-            if (states[entity.entity_id].attributes.active_child == "media_player.spotify_mustername") {
-              return states[entity.entity_id].state + " - " + states[entity.entity_id].attributes.source
-            } else if (states[entity.entity_id].attributes.active_child == "media_player.playstation_5") {
-              return states[entity.entity_id].state + " - Playstation 5"
-            } else if (states[entity.entity_id].attributes.active_child == "media_player.audiobook") {
-              return states[entity.entity_id].state + " - Alarm Clock"
-            } else if (states[entity.entity_id].attributes.active_child == "media_player.plex_bedroom") {
-              return states[entity.entity_id].state + " - Bedroom TV"
-            } else if (states[entity.entity_id].attributes.active_child == "media_player.apple_tv_4k_2") {
-              return states[entity.entity_id].state + " - " + states[entity.entity_id].attributes.app_name
-            } else {
-              return states[entity.entity_id].state + " - " + states["sensor.music_room"].state
-            }
-          } else {
-            return states[entity.entity_id].state + " - " + states[entity.entity_id].attributes.friendly_name
-          }
+          const media = states[entity.entity_id];
+          if (!media) return '';
+          const attr = media.attributes || {};
+          const source =
+            attr.media_artist ||
+            attr.media_series_title ||
+            attr.app_name ||
+            attr.source ||
+            attr.friendly_name ||
+            '';
+          return source ? `${media.state} - ${source}` : media.state;
         ]]]
       select_room: '[[[ return variables.room ]]]'
       icon1: |
@@ -866,18 +891,13 @@ button_card_templates:
     show_label: true
     entity: |
       [[[
-        if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.julian";
-        else return "person." + user.name.toLowerCase();
+        return "person.mrpc2003";
       ]]]
     name: '[[[return "Hello, " + user.name +"!"]]]'
     label: |
       [[[
         if (entity.state == "home") {
-          if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) {
-            return "Room: " + states["sensor.julians_apple_watch_area"].state;
-          } else {
-            return "Welcome home.";
-          }
+          return "Welcome home.";
         } else {
           return "See you later.";
         }
@@ -977,11 +997,7 @@ button_card_templates:
       one:
         card:
           type: custom:button-card
-          entity: |
-            [[[
-              if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.anna";
-              else return   # ⚠️ 수정 필요: person entity 교체;
-            ]]]
+          entity: person.gimyeji
           show_name: false
           show_entity_picture: true
           state:
@@ -1008,12 +1024,7 @@ button_card_templates:
       two:
         card:
           type: custom:button-card
-          entity: |
-            [[[
-              if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.dog";
-              else if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.dog";
-              else return   # ⚠️ 수정 필요: person entity 교체;
-            ]]]
+          entity: person.jeonyecan
           show_name: false
           show_entity_picture: true
           state:
@@ -1040,12 +1051,7 @@ button_card_templates:
       three:
         card:
           type: custom:button-card
-          entity: |
-            [[[
-              if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.dog_simone";
-              else if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.dog_simone";
-              else return "person.dog";
-            ]]]
+          entity: person.iilhwan
           show_name: false
           show_entity_picture: true
           state:
@@ -1072,12 +1078,7 @@ button_card_templates:
       four:
         card:
           type: custom:button-card
-          entity: |
-            [[[
-              if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.guest";
-              else if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.guest";
-              else return "person.dog_simone";
-            ]]]
+          entity: person.gimseonghyeog
           show_name: false
           show_entity_picture: true
           state:
@@ -2895,8 +2896,7 @@ button_card_templates:
     show_label: true
     entity: |
       [[[
-        if (  # ⚠️ 수정 필요: Home Assistant 사용자 이름) return "person.julian";
-        else return "person." + user.name.toLowerCase();
+        return "person.mrpc2003";
       ]]]
     name: '[[[return "Hello, " + user.name +"!"]]]'
     label: |
