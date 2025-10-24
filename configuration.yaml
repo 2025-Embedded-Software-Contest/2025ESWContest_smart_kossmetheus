@@ -94,6 +94,7 @@ http:
   trusted_proxies:
     - 172.30.33.0/24 # Supervisor 애드온 네트워크
     - 192.168.0.0/24 # NPM이 속한 내부 네트워크 대역
+    - 100.64.0.0/10 # Tailscale IP 범위
     - 127.0.0.1 # 로컬 루프백
 
 # Google OAuth
@@ -219,7 +220,7 @@ input_number:
     max: 9999
     step: 0.01
     mode: box
-  
+
   electricity_energy_prev2_monthly:
     name: "전기 전전월 사용량"
     unit_of_measurement: "kWh"
