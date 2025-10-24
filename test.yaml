@@ -160,3 +160,4 @@ styles: |
 media_player:
   entity: media_player.spotify_gimuhyeon
   album_cover_background: true
+  show: true
