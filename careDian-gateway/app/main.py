@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse, PlainTextResponse
 import logging
 
 from app.core.config import settings
@@ -9,6 +10,7 @@ from app.api import fall as fall_router
 from app.api.influx_routes import router as influx_router
 from app.services import influx
 from app.api import ha  
+
 
 def create_app() -> FastAPI:
     setup_logging(level=settings.log_level, json_mode=settings.log_json)
@@ -35,6 +37,11 @@ def create_app() -> FastAPI:
     app.include_router(influx_router)
     app.include_router(ha.router)
 
+    @app.get("/", include_in_schema=False)
+    def root():
+        # 루트로 들어오면 /docs로 보내기
+        return RedirectResponse(url="/docs")
+
     @app.get("/healthz")
     async def healthz():
         return {"status": "ok"}
@@ -42,6 +49,10 @@ def create_app() -> FastAPI:
     @app.get("/readyz")
     async def readyz():
         return {"status": "ready" if influx.healthy() else "not-ready"}
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    def favicon():
+        return PlainTextResponse(status_code=204)
 
     @app.get("/diag/influx")
     def diag_influx():

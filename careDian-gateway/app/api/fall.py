@@ -3,6 +3,7 @@ import asyncio
 from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
+
 from app.core.rate_limit import should_alert
 from app.services.ha_notify import send_fall_alert
 from app.services import influx_v1 as influx
@@ -10,6 +11,7 @@ from app.core.config import settings
 from collections import defaultdict
 from app.services.influx_v1 import InfluxServiceV1
 from app.services.fall_runtime import FallRuntime  
+
 
 influx = InfluxServiceV1(
     url=settings.influx_url,
@@ -20,15 +22,14 @@ influx = InfluxServiceV1(
 
 router = APIRouter(prefix="/events", tags=["fall"])
 
-#추가 모델 런타임 초기화 & 보정 파라미터
+# 추가 모델 런타임 초기화 & 보정 파라미터
 runtime = FallRuntime(  # ADDED
     model_path   = getattr(settings, "fall_model_path", "/models/fall_lstm_model_final_v2.keras"),
     scaler_path  = getattr(settings, "fall_scaler_path", "/models/scaler_final_v2.pkl"),
     meta_path    = getattr(settings, "fall_meta_path", None),
     threshold    = getattr(settings, "fall_threshold", None),
     smooth_k     = getattr(settings, "fall_smooth_k", 3),
-    backend      = getattr(settings, "fall_backend", "keras"),  
-
+    backend      = getattr(settings, "fall_backend", "keras"),
 )
 _ai_over_cnt: Dict[str, int] = defaultdict(int)  
 AI_SUSTAIN_K = getattr(settings, "fall_ai_sustain_k", 1)  
