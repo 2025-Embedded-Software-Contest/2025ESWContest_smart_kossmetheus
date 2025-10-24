@@ -102,7 +102,7 @@ class InfluxServiceV1:
                 out.append(item)
                 
         return out
-    
+
     def select_range(
         self,
         measurement: str,
@@ -113,7 +113,8 @@ class InfluxServiceV1:
         desc: bool = True,
     ) -> List[Dict[str, Any]]:
         def ident(x: str) -> str:
-            return f'"{x.replace("\"", "\\\"")}"'
+            x = x.replace("\\", "\\\\").replace('"', '\\"')  # 백슬래시, 쌍따옴표 이스케이프
+            return f'"{x}"'
         def tag_val(v: str) -> str:
             return "'" + v.replace("\\", "\\\\").replace("'", "\\'") + "'"
 
