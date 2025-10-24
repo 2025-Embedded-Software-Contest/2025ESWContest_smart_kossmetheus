@@ -1,0 +1,162 @@
+type: custom:navbar-card
+layout:
+  auto_padding:
+    enabled: true
+desktop:
+  position: left
+  show_labels: true
+mobile:
+  show_labels: true
+routes:
+  - icon: mdi:home-outline
+    icon_selected: mdi:home
+    url: /lovelace/air-quality-dashboard
+    label: Home
+  - icon: mdi:sofa-outline
+    icon_selected: mdi:sofa
+    label: Rooms
+    selected: |
+      [[[ const hash = location.hash || ''; return ['#stue_nede', '#stue_oppe', '#kjokken', '#gang', '#bad_nede', '#bad_oppe', '#soverom', '#barnerom'].includes(hash); ]]]
+    badge:
+      show: |
+        [[[ return is_state('group.all_lights', 'on'); ]]]
+      color: var(--yellow-color, var(--warning-color))
+      count: |
+        [[[ const sensor = states['sensor.lights_on']; return sensor ? sensor.state : '0'; ]]]
+    tap_action:
+      action: open-popup
+    popup:
+      - icon: mdi:sofa-outline
+        url: /lovelace/air-quality-dashboard#stue_nede
+        label: 거실 (1층)
+      - icon: mdi:sofa
+        url: /lovelace/air-quality-dashboard#stue_oppe
+        label: 거실 (2층)
+      - icon: mdi:silverware-fork-knife
+        url: /lovelace/air-quality-dashboard#kjokken
+        label: 주방
+      - icon: mdi:door
+        url: /lovelace/air-quality-dashboard#gang
+        label: 복도
+      - icon: mdi:shower
+        url: /lovelace/air-quality-dashboard#bad_nede
+        label: 욕실 (1층)
+      - icon: mdi:shower-head
+        url: /lovelace/air-quality-dashboard#bad_oppe
+        label: 욕실 (2층)
+      - icon: mdi:bed-king-outline
+        url: /lovelace/air-quality-dashboard#soverom
+        label: 안방
+      - icon: mdi:bed-outline
+        url: /lovelace/air-quality-dashboard#barnerom
+        label: 아이방
+  - icon: mdi:music
+    url: /lovelace/air-quality-dashboard#media
+    label: Music
+    badge:
+      show: |
+        [[[ return is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
+      color: var(--green-color, var(--success-color))
+    hidden: |
+      [[[ return is_state('remote.ir_jeeogi', 'on') && !is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
+    hold_action:
+      action: open-popup
+    popup:
+      - icon: mdi:music
+        url: /lovelace/air-quality-dashboard#media
+        label: 미디어
+      - icon: mdi:speaker
+        url: /lovelace/air-quality-dashboard#media
+        label: 스피커
+  - icon: mdi:television
+    url: /lovelace/air-quality-dashboard#media
+    label: TV
+    badge:
+      show: |
+        [[[ const tv = states['media_player.samsung_tv2']; return tv ? tv.state !== 'off' : false; ]]]
+      color: var(--green-color, var(--success-color))
+    hidden: |
+      [[[ return is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
+    selected: |
+      [[[ return location.hash === '#media'; ]]]
+    hold_action:
+      action: open-popup
+    popup:
+      - icon: mdi:television
+        url: /lovelace/air-quality-dashboard#media
+        label: TV 제어
+      - icon: mdi:remote
+        url: /lovelace/air-quality-dashboard#media
+        label: IR 리모컨
+  - icon: mdi:shield-outline
+    icon_selected: mdi:shield-home
+    url: /lovelace/air-quality-dashboard#settings
+    label: Security
+    badge:
+      show: |
+        [[[ const grp = states['group.security_doors']; return grp ? grp.state === 'on' : false; ]]]
+      color: var(--red-color, var(--error-color))
+      count: |
+        [[[ const grp = states['group.security_doors']; if (!grp) return 0; const members = grp.attributes.entity_id || []; return members.filter(e => states[e] && states[e].state === 'on').length; ]]]
+  - image: |
+      [[[ const person = states['person.mrpc2003']; return person && person.attributes && person.attributes.entity_picture ? person.attributes.entity_picture : '/local/avatar_default.png'; ]]]
+    url: /lovelace/air-quality-dashboard#owner
+    label: 김우현
+    selected: |
+      [[[ return location.hash === '#owner'; ]]]
+  - image: |
+      [[[ const person = states['person.gimyeji']; return person && person.attributes && person.attributes.entity_picture ? person.attributes.entity_picture : '/local/avatar_default.png'; ]]]
+    url: /lovelace/air-quality-dashboard#guest
+    label: 김예지
+    selected: |
+      [[[ return location.hash === '#guest'; ]]]
+  - icon: mdi:dots-horizontal
+    label: More
+    badge:
+      show: |
+        [[[
+          return is_state('binary_sensor.any_device_update_available', 'on') ||
+                 is_state('binary_sensor.home_assistant_versions_update_available', 'on') ||
+                 is_state('binary_sensor.any_co2_out_of_range', 'on') ||
+                 is_state('binary_sensor.any_air_quality_out_of_range', 'on');
+        ]]]
+      color: var(--red-color, var(--error-color))
+    tap_action:
+      action: open-popup
+    popup:
+      - icon: mdi:server
+        url: /lovelace/air-quality-dashboard#server
+        label: 서버
+        badge:
+          show: |
+            [[[
+              return is_state('binary_sensor.any_device_update_available', 'on') ||
+                     is_state('binary_sensor.home_assistant_versions_update_available', 'on');
+            ]]]
+          color: var(--red-color, var(--error-color))
+      - icon: mdi:lightning-bolt
+        url: /lovelace/air-quality-dashboard#strom
+        label: 에너지
+      - icon: mdi:check-circle-outline
+        url: /lovelace/air-quality-dashboard#settings
+        label: 자동화
+      - icon: mdi:cart
+        url: /shopping-list
+        label: 쇼핑 리스트
+        badge:
+          show: |
+            [[[ const todo = states['todo.shopping_list']; return todo ? Number(todo.state) > 0 : false; ]]]
+          color: var(--red-color, var(--error-color))
+          count: |
+            [[[ const todo = states['todo.shopping_list']; return todo ? todo.state : 0; ]]]
+styles: |
+  .navbar-card {
+    --navbar-primary-color: var(--contrast20);
+    background: var(--gray800);
+  }
+  .image {
+    border-radius: 16px !important;
+  }
+media_player:
+  entity: media_player.spotify_gimuhyeon
+  album_cover_background: true
