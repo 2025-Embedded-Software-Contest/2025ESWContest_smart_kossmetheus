@@ -359,3 +359,36 @@
       device_class: energy
       attributes:
         state_class: total
+
+# ===========================
+# 핵심 칩을 위한 보조 템플릿들
+# ===========================
+- sensor:
+    # 켜진 조명 개수
+    - name: "lights_on"
+      unique_id: "lights_on_count"
+      unit_of_measurement: "개"
+      state: >
+        {% if states('group.all_lights') in ['unknown','unavailable'] %}
+          0
+        {% else %}
+          {{ expand('group.all_lights') | selectattr('state','eq','on') | list | length }}
+        {% endif %}
+      icon: mdi:lightbulb-group
+
+- binary_sensor:
+    # 문이 일정 시간 이상 열려있을 때 경고
+    - name: "living_door_open_too_long"
+      unique_id: "living_door_open_too_long"
+      device_class: problem
+      state: "{{ is_state('binary_sensor.multipurpose_sensor_1_door','on') }}"
+      delay_on:
+        minutes: 3
+      delay_off:
+        seconds: 15
+      icon: >
+        {% if is_state('binary_sensor.living_door_open_too_long','on') %}
+          mdi:door-open
+        {% else %}
+          mdi:door
+        {% endif %}
