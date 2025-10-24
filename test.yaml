@@ -1,163 +1,3449 @@
-type: custom:navbar-card
-layout:
-  auto_padding:
-    enabled: true
-desktop:
-  position: left
-  show_labels: true
-mobile:
-  show_labels: true
-routes:
-  - icon: mdi:home-outline
-    icon_selected: mdi:home
-    url: /lovelace/air-quality-dashboard
-    label: Home
-  - icon: mdi:sofa-outline
-    icon_selected: mdi:sofa
-    label: Rooms
-    selected: |
-      [[[ const hash = location.hash || ''; return ['#stue_nede', '#stue_oppe', '#kjokken', '#gang', '#bad_nede', '#bad_oppe', '#soverom', '#barnerom'].includes(hash); ]]]
-    badge:
-      show: |
-        [[[ return is_state('group.all_lights', 'on'); ]]]
-      color: var(--yellow-color, var(--warning-color))
-      count: |
-        [[[ const sensor = states['sensor.lights_on']; return sensor ? sensor.state : '0'; ]]]
-    tap_action:
-      action: open-popup
-    popup:
-      - icon: mdi:sofa-outline
-        url: /lovelace/air-quality-dashboard#stue_nede
-        label: 거실 (1층)
-      - icon: mdi:sofa
-        url: /lovelace/air-quality-dashboard#stue_oppe
-        label: 거실 (2층)
-      - icon: mdi:silverware-fork-knife
-        url: /lovelace/air-quality-dashboard#kjokken
-        label: 주방
-      - icon: mdi:door
-        url: /lovelace/air-quality-dashboard#gang
-        label: 복도
-      - icon: mdi:shower
-        url: /lovelace/air-quality-dashboard#bad_nede
-        label: 욕실 (1층)
-      - icon: mdi:shower-head
-        url: /lovelace/air-quality-dashboard#bad_oppe
-        label: 욕실 (2층)
-      - icon: mdi:bed-king-outline
-        url: /lovelace/air-quality-dashboard#soverom
-        label: 안방
-      - icon: mdi:bed-outline
-        url: /lovelace/air-quality-dashboard#barnerom
-        label: 아이방
-  - icon: mdi:music
-    url: /lovelace/air-quality-dashboard#media
-    label: Music
-    badge:
-      show: |
-        [[[ return is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
-      color: var(--green-color, var(--success-color))
-    hidden: |
-      [[[ return is_state('remote.ir_jeeogi', 'on') && !is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
-    hold_action:
-      action: open-popup
-    popup:
-      - icon: mdi:music
-        url: /lovelace/air-quality-dashboard#media
-        label: 미디어
-      - icon: mdi:speaker
-        url: /lovelace/air-quality-dashboard#media
-        label: 스피커
-  - icon: mdi:television
-    url: /lovelace/air-quality-dashboard#media
-    label: TV
-    badge:
-      show: |
-        [[[ const tv = states['media_player.samsung_tv2']; return tv ? tv.state !== 'off' : false; ]]]
-      color: var(--green-color, var(--success-color))
-    hidden: |
-      [[[ return is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
-    selected: |
-      [[[ return location.hash === '#media'; ]]]
-    hold_action:
-      action: open-popup
-    popup:
-      - icon: mdi:television
-        url: /lovelace/air-quality-dashboard#media
-        label: TV 제어
-      - icon: mdi:remote
-        url: /lovelace/air-quality-dashboard#media
-        label: IR 리모컨
-  - icon: mdi:shield-outline
-    icon_selected: mdi:shield-home
-    url: /lovelace/air-quality-dashboard#settings
-    label: Security
-    badge:
-      show: |
-        [[[ const grp = states['group.security_doors']; return grp ? grp.state === 'on' : false; ]]]
-      color: var(--red-color, var(--error-color))
-      count: |
-        [[[ const grp = states['group.security_doors']; if (!grp) return 0; const members = grp.attributes.entity_id || []; return members.filter(e => states[e] && states[e].state === 'on').length; ]]]
-  - image: |
-      [[[ const person = states['person.mrpc2003']; return person && person.attributes && person.attributes.entity_picture ? person.attributes.entity_picture : '/local/avatar_default.png'; ]]]
-    url: /lovelace/air-quality-dashboard#owner
-    label: 김우현
-    selected: |
-      [[[ return location.hash === '#owner'; ]]]
-  - image: |
-      [[[ const person = states['person.gimyeji']; return person && person.attributes && person.attributes.entity_picture ? person.attributes.entity_picture : '/local/avatar_default.png'; ]]]
-    url: /lovelace/air-quality-dashboard#guest
-    label: 김예지
-    selected: |
-      [[[ return location.hash === '#guest'; ]]]
-  - icon: mdi:dots-horizontal
-    label: More
-    badge:
-      show: |
-        [[[
-          return is_state('binary_sensor.any_device_update_available', 'on') ||
-                 is_state('binary_sensor.home_assistant_versions_update_available', 'on') ||
-                 is_state('binary_sensor.any_co2_out_of_range', 'on') ||
-                 is_state('binary_sensor.any_air_quality_out_of_range', 'on');
-        ]]]
-      color: var(--red-color, var(--error-color))
-    tap_action:
-      action: open-popup
-    popup:
-      - icon: mdi:server
-        url: /lovelace/air-quality-dashboard#server
-        label: 서버
-        badge:
-          show: |
-            [[[
-              return is_state('binary_sensor.any_device_update_available', 'on') ||
-                     is_state('binary_sensor.home_assistant_versions_update_available', 'on');
-            ]]]
-          color: var(--red-color, var(--error-color))
-      - icon: mdi:lightning-bolt
-        url: /lovelace/air-quality-dashboard#strom
-        label: 에너지
-      - icon: mdi:check-circle-outline
-        url: /lovelace/air-quality-dashboard#settings
-        label: 자동화
-      - icon: mdi:cart
-        url: /shopping-list
-        label: 쇼핑 리스트
-        badge:
-          show: |
-            [[[ const todo = states['todo.shopping_list']; return todo ? Number(todo.state) > 0 : false; ]]]
-          color: var(--red-color, var(--error-color))
-          count: |
-            [[[ const todo = states['todo.shopping_list']; return todo ? todo.state : 0; ]]]
-styles: |
-  .navbar-card {
-    --navbar-primary-color: var(--contrast20);
-    background: var(--gray800);
-  }
-  .image {
-    border-radius: 16px !important;
-  }
-media_player:
-  entity: media_player.spotify_gimuhyeon
-  album_cover_background: true
-  show: true
+views:
+  - icon: mdi:home
+    path: home
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            icon: ''
+            heading_style: title
+            grid_options:
+              columns: 6
+              rows: 1
+            badges:
+              - type: entity
+                entity: person.gimseonghyeog
+              - type: entity
+                entity: person.mrpc2003
+              - type: entity
+                entity: person.gimyeji
+              - type: entity
+                entity: person.iilhwan
+              - type: entity
+                entity: person.jeonyecan
+          - type: heading
+            heading_style: title
+            badges:
+              - type: entity
+                entity: sensor.time_date
+            grid_options:
+              columns: 6
+              rows: 1
+          - type: picture-elements
+            image: /local/floor/main.png
+            elements:
+              - type: image
+                entity: switch.sihas_switch_4
+                image: /local/floor/ahyeon-room-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.sihas_switch_5
+                image: /local/floor/woohyeon-room-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: light.smart_bulb_3
+                image: /local/floor/master-bedroom-lamp-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.anbang_hwajangsil_deung
+                image: /local/floor/master-bedroom-bathroom-left-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.anbang_syaweosil_deung
+                image: /local/floor/master-bedroom-bathroom-upper-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.deureseurum_deung
+                image: /local/floor/dressing-room-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.geosil_jomyeong_1beon
+                image: /local/floor/living-room-light-left-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.geosil_jomyeong_2beon
+                image: /local/floor/living-room-light-right-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.geosil_jomyeong_3beon
+                image: /local/floor/3-socket-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.sihas_switch_2
+                image: /local/floor/kitchen-light-upper-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.sihas_switch_1
+                image: /local/floor/kitchen-light-left-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+              - type: image
+                entity: switch.sihas_switch_3
+                image: /local/floor/dining-table-light-on.png
+                state_filter:
+                  'on': opacity(1)
+                  'off': opacity(0)
+                  unknown: opacity(0)
+                  unavailable: opacity(0)
+                style:
+                  top: 50%
+                  left: 50%
+                  width: 100%
+                  transform: translate(-50%, -50%)
+                  pointer-events: none
+                  mix-blend-mode: lighten
+          - type: vertical-stack
+            cards:
+              - type: custom:mushroom-template-card
+                icon: mdi:lightning-bolt
+                primary: Energy
+                secondary: >
+                  {{ states('sensor.total_power_consumption') | default('—') }}
+                  W · {{ states('sensor.sihas_energy_monitor_energy') |
+                  default('—') }} kWh
+                tap_action:
+                  action: none
+                features_position: bottom
+                card_mod:
+                  style: |
+                    ha-card {
+                      background: #ffc100;
+                      border-radius: 16px;
+                      padding: 8px 12px;
+                    }
+          - type: vertical-stack
+            cards:
+              - type: custom:mushroom-template-card
+                icon: mdi:air-filter
+                primary: Environment · Air Quality
+                secondary: >
+                  CO₂ {{ states('sensor.eeomoniteo_peulreoseu_carbon_dioxide') |
+                  default('—') }} ppm · PM2.5 {{
+                  states('sensor.eeomoniteo_peulreoseu_pm2_5') | default('—') }}
+                  ㎍/㎥
+                tap_action:
+                  action: none
+                features_position: bottom
+                card_mod:
+                  style: |
+                    ha-card {
+                      background: #00AAFF;
+                      border-radius: 16px;
+                      padding: 8px 12px;
+                    }
+          - type: vertical-stack
+            cards:
+              - type: custom:mushroom-template-card
+                icon: mdi:water-thermometer-outline
+                primary: Environment · Temp & Humidity
+                secondary: >
+                  {{ states('sensor.average_indoor_temperature') | default('—')
+                  }} °C · {{ states('sensor.average_indoor_humidity') |
+                  default('—') }} %
+                tap_action:
+                  action: none
+                features_position: bottom
+                card_mod:
+                  style: |
+                    ha-card {
+                      background: #fa8ee5;
+                      border-radius: 16px;
+                      padding: 8px 12px;
+                    }
+          - type: custom:button-card
+            name: Energy
+            icon: mdi:light-switch-off
+            tap_action:
+              action: navigate
+              navigation_path: '#energy'
+            show_state: false
+            show_label: false
+            styles:
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 60px 1fr 40px
+              icon:
+                - width: 24px
+                - color: black
+              img_cell:
+                - background: '#bcfdf7'
+                - border-radius: 515px
+                - width: 50px
+                - height: 50px
+              name:
+                - justify-self: start
+                - font-size: 14px
+                - font-weight: 500
+                - padding-left: 10px
+                - color: black
+              card:
+                - margin: 0
+                - border-radius: 12px 14px 12px 8px
+                - padding: 0
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#energy'
+                button_type: name
+                name: Energy
+                icon: mdi:lightning-bolt
+              - type: entity
+                entity: sensor.sihas_energy_monitor_energy
+                state_color: true
+              - type: entity
+                entity: sensor.deseukeutab_jeonweon_energy
+                state_color: true
+              - type: entity
+                entity: sensor.wi_fi_smart_plug_2_energy_2
+                state_color: true
+              - type: entity
+                entity: sensor.wi_fi_smart_plug_1_energy_2
+                state_color: true
+              - type: entity
+                entity: sensor.seutaendeuhyeong_eeokeon_energy
+                state_color: true
+              - type: entity
+                entity: sensor.zigbee_dimmer_energy
+                state_color: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:button-card
+            name: Air quality
+            icon: mdi:light-switch-off
+            tap_action:
+              action: navigate
+              navigation_path: '#AirQuality'
+            show_state: false
+            show_label: false
+            styles:
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 60px 1fr 40px
+              icon:
+                - width: 24px
+                - color: black
+              img_cell:
+                - background: '#bcfdf7'
+                - border-radius: 515px
+                - width: 50px
+                - height: 50px
+              name:
+                - justify-self: start
+                - font-size: 14px
+                - font-weight: 500
+                - padding-left: 10px
+                - color: black
+              card:
+                - margin: 0
+                - border-radius: 12px 14px 12px 8px
+                - padding: 0
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#AirQuality'
+                button_type: name
+                name: Air Quality
+                icon: mdi:air-filter
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_air_quality
+                    state_color: true
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_odor_sensor
+                    state_color: true
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_carbon_dioxide
+                    state_color: true
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_pm1
+                    state_color: true
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_pm2_5
+                    state_color: true
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_pm10
+                    state_color: true
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide
+                    state_color: true
+                  - type: entity
+                    entity: sensor.gonggijil_ceugjeonggi_1528_pm2_5
+                    state_color: true
+                  - type: entity
+                    entity: sensor.gonggijil_ceugjeonggi_1528_pm10
+                    state_color: true
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: >-
+                      sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts
+                    state_color: true
+                  - type: entity
+                    entity: >-
+                      sensor.haengsin_dong_goyang_si_gyeonggi_south_korea_haengsindong_gyeonggi_air_quality_index
+                    state_color: true
+            grid_options:
+              columns: 12
+              rows: 1
+          - type: custom:button-card
+            name: Temp&Humidity
+            icon: mdi:light-switch-off
+            tap_action:
+              action: navigate
+              navigation_path: '#Temp&Humidity'
+            show_state: false
+            show_label: false
+            styles:
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 60px 1fr 40px
+              icon:
+                - width: 24px
+                - color: black
+              img_cell:
+                - background: '#bcfdf7'
+                - border-radius: 515px
+                - width: 50px
+                - height: 50px
+              name:
+                - justify-self: start
+                - font-size: 14px
+                - font-weight: 500
+                - padding-left: 10px
+                - color: black
+              card:
+                - margin: 0
+                - border-radius: 12px 14px 12px 8px
+                - padding: 0
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#Temp&Humidity'
+                button_type: name
+                name: Temp&Humidity
+                icon: mdi:water-thermometer-outline
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: sensor.multipurpose_sensor_1_temperature
+                    state_color: true
+                  - type: entity
+                    entity: sensor.gonggijil_ceugjeonggi_1528_temperature
+                    state_color: true
+                  - type: entity
+                    entity: sensor.seutaendeuhyeong_eeokeon_temperature
+                    state_color: true
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: sensor.multipurpose_sensor_temperature
+                    state_color: true
+                  - type: entity
+                    entity: sensor.multipurpose_sensor_2_temperature
+                    state_color: true
+                  - type: entity
+                    entity: sensor.eeomoniteo_peulreoseu_temperature
+                    state_color: true
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: >-
+                      sensor.aqara_temperature_and_humidity_sensor_t1_1_temperature
+                    state_color: true
+                  - type: entity
+                    entity: >-
+                      sensor.aqara_temperature_and_humidity_sensor_t1_temperature
+                    state_color: true
+                  - type: entity
+                    entity: sensor.button_temperature
+                    state_color: true
+              - type: horizontal-stack
+                cards:
+                  - type: entity
+                    entity: sensor.sihas_energy_monitor_temperature
+                    state_color: true
+            grid_options:
+              columns: 12
+              rows: 1
+      - max_columns: 3
+        type: grid
+        cards:
+          - type: custom:bubble-card
+            card_type: separator
+            name: 요약
+            icon: mdi:view-dashboard
+            card_layout: large
+            sub_button:
+              - visibility:
+                  - condition: numeric_state
+                    entity: sensor.count_alerts_true
+                    above: 0
+                tap_action:
+                  action: navigate
+                  navigation_path: '#alert'
+                icon: mdi:alarm-light
+                entity: binary_sensor.any_alert
+              - visibility:
+                  - condition: numeric_state
+                    entity: sensor.count_updates_available
+                    above: 0
+                tap_action:
+                  action: navigate
+                  navigation_path: '#update'
+                entity: group.device_updates
+                icon: mdi:cellphone-arrow-down
+              - visibility:
+                  - condition: numeric_state
+                    entity: binary_sensor.low_battery_devices
+                    above: 0
+                tap_action:
+                  action: navigate
+                  navigation_path: '#battery'
+                entity: binary_sensor.low_battery_devices
+                icon: mdi:battery-low
+              - visibility:
+                  - condition: numeric_state
+                    entity: sensor.persistent_notifications
+                    above: 0
+                tap_action:
+                  action: navigate
+                  navigation_path: '#persistent-notification'
+                entity: sensor.persistent_notifications
+              - entity: binary_sensor.iphone_focus
+                visibility:
+                  - condition: state
+                    entity: binary_sensor.iphone_focus
+                    state: 'on'
+            grid_options:
+              columns: full
+          - type: custom:paper-buttons-row
+            styles:
+              justify-content: flex-start
+              flex-wrap: wrap
+              font-size: 1.4em
+              line-height: 1.2em
+              margin: 6px 0 12px 0
+              width: 100%
+            buttons:
+              - layout: name
+                name: '현재 외부 온도는 '
+                styles:
+                  button:
+                    flex-basis: 1
+                    flex-shrink: 0
+                  name:
+                    color: var(--gray1000)
+              - layout: name|icon
+                entity: weather.forecast_jib
+                name: '{{ states(''sensor.wn_jib_temperature'') | float | round(1) }}°C'
+                image: >-
+                  {% set pic =
+                  state_attr('weather.forecast_jib','entity_picture') %} {{ pic
+                  if pic else '' }}
+                styles:
+                  button:
+                    padding: 2px 8px
+                    background-color: var(--gray1000)
+                    border-radius: 24px
+                    flex-basis: 1
+                    flex-shrink: 0
+                    display: flex
+                    align-items: center
+                  name:
+                    color: var(--gray100)
+                    display: inline-flex
+                    align-items: center
+                    gap: 6px
+                    line-height: 1.2em
+                  icon:
+                    '--mdc-icon-size': 20px
+                    width: 20px
+                    height: 20px
+                    border-radius: 50%
+              - layout: name
+                name: ' 이고, 전기 요금은 '
+                styles:
+                  button:
+                    flex-basis: 1
+                    flex-shrink: 0
+                  name:
+                    color: var(--gray1000)
+              - layout: name|state
+                name: 💸
+                entity: sensor.jeongiyogeum_gyesan_kwhto_won
+                styles:
+                  button:
+                    padding: 2px 8px
+                    background-color: var(--gray1000)
+                    border-radius: 24px
+                    flex-basis: 1
+                    flex-shrink: 0
+                    display: flex
+                    align-items: center
+                  name:
+                    color: var(--gray100)
+                    display: inline-flex
+                    align-items: center
+                    margin-right: 6px
+              - layout: name
+                name: '원 입니다. 현재 '
+                styles:
+                  button:
+                    flex-basis: 1
+                    flex-shrink: 0
+                  name:
+                    color: var(--gray1000)
+              - layout: name|state
+                name: ⚡️
+                entity: sensor.jeongiyogeum_gyesan_kwhto_kwh
+                styles:
+                  button:
+                    padding: 2px 8px
+                    background-color: var(--gray1000)
+                    border-radius: 24px
+                    flex-basis: 1
+                    flex-shrink: 0
+                    display: flex
+                    align-items: center
+                  name:
+                    color: var(--gray100)
+                    display: inline-flex
+                    align-items: center
+                    margin-right: 6px
+              - layout: name
+                name: 'kwh 를 사용 중이며, '
+                display: >-
+                  {{ 'flex' if states('sensor.count_lights_on') | int > 0 else
+                  'none' }}
+                styles:
+                  button:
+                    flex-basis: 1
+                    flex-shrink: 0
+                  name:
+                    color: var(--gray1000)
+              - layout: icon|state
+                entity: sensor.count_lights_on
+                icon: mdi:lightbulb-on-outline
+                display: '{{ ''flex'' if states(entity) | int > 0 else ''none'' }}'
+                styles:
+                  button:
+                    padding: 2px 8px
+                    background-color: var(--gray1000)
+                    border-radius: 24px
+                    flex-basis: 1
+                    flex-shrink: 0
+                    display: flex
+                    align-items: center
+                    color: var(--gray100)
+                  icon:
+                    '--mdc-icon-size': 20px
+                  name:
+                    color: var(--gray100)
+              - layout: name
+                name: 개의 조명이 켜져 있습니다.
+                display: >-
+                  {{ 'flex' if states('sensor.count_lights_on') | int > 0 else
+                  'none' }}
+                styles:
+                  button:
+                    flex-basis: 1
+                    flex-shrink: 0
+                  name:
+                    color: var(--gray1000)
+          - type: vertical-stack
+            cards:
+              - type: custom:gap-card
+                height: 12
+              - type: custom:button-card
+                view_layout:
+                  grid-area: weather
+                entity: weather.wn_jib
+                show_icon: false
+                show_name: false
+                show_state: false
+                tap_action:
+                  action: navigate
+                  navigation_path: '#weather'
+                custom_fields:
+                  icon: |
+                    [[[
+                      const weather = entity;
+                      const fallbackState = states['sensor.wn_jib_current_condition']?.state || '';
+                      const raw = weather?.state;
+                      const condition = typeof raw === 'string' ? raw : (raw ?? '').toString();
+                      const normalized = condition ? condition.replace(/_/g, '-') : '';
+                      const map = {
+                        'clear-night': 'mdi:weather-night',
+                        night: 'mdi:weather-night',
+                        clear: 'mdi:weather-sunny',
+                        sunny: 'mdi:weather-sunny',
+                        cloudy: 'mdi:weather-cloudy',
+                        overcast: 'mdi:weather-cloudy',
+                        fog: 'mdi:weather-fog',
+                        mist: 'mdi:weather-fog',
+                        haze: 'mdi:weather-fog',
+                        hail: 'mdi:weather-hail',
+                        lightning: 'mdi:weather-lightning',
+                        'lightning-rainy': 'mdi:weather-lightning-rainy',
+                        partlycloudy: 'mdi:weather-partly-cloudy',
+                        partly_cloudy: 'mdi:weather-partly-cloudy',
+                        pouring: 'mdi:weather-pouring',
+                        rainy: 'mdi:weather-rainy',
+                        rain: 'mdi:weather-rainy',
+                        snowy: 'mdi:weather-snowy',
+                        snow: 'mdi:weather-snowy',
+                        'snowy-rainy': 'mdi:weather-snowy-rainy',
+                        windy: 'mdi:weather-windy',
+                        'windy-variant': 'mdi:weather-windy-variant',
+                        exceptional: 'mdi:weather-cloud-alert',
+                        맑음: 'mdi:weather-sunny',
+                        흐림: 'mdi:weather-cloudy',
+                        구름: 'mdi:weather-partly-cloudy',
+                        비: 'mdi:weather-rainy',
+                        눈: 'mdi:weather-snowy',
+                        안개: 'mdi:weather-fog',
+                        황사: 'mdi:weather-hazy',
+                        '맑고 가끔 구름': 'mdi:weather-partly-cloudy'
+                      };
+                      const candidates = [
+                        condition,
+                        normalized,
+                        fallbackState,
+                        fallbackState && fallbackState.replace(/\s+/g, '')
+                      ].filter(Boolean);
+                      let icon = '';
+                      for (const key of candidates) {
+                        if (key && map[key]) {
+                          icon = map[key];
+                          break;
+                        }
+                      }
+                      if (!icon && normalized) {
+                        icon = `mdi:weather-${normalized}`;
+                      }
+                      if (!icon || icon === 'mdi:weather-') {
+                        icon = 'mdi:weather-cloudy';
+                      }
+                      return `<ha-icon icon="${icon}" style="--mdc-icon-size: 64px; color: #fff5e6;"></ha-icon>`;
+                    ]]]
+                  temp: |
+                    [[[
+                      const parseNumber = (value) => {
+                        const num = Number(value);
+                        return Number.isFinite(num) ? num : undefined;
+                      };
+                      let temp = parseNumber(entity?.attributes?.temperature);
+                      if (temp === undefined) {
+                        temp = parseNumber(states['sensor.wn_jib_temperature']?.state);
+                      }
+                      if (temp === undefined) {
+                        return '--';
+                      }
+                      const unit = entity?.attributes?.temperature_unit
+                        || states['sensor.wn_jib_temperature']?.attributes?.unit_of_measurement
+                        || hass.config.unit_system.temperature
+                        || '°C';
+                      return `${(Math.round(temp * 10) / 10).toLocaleString()}${unit}`;
+                    ]]]
+                  feels: |
+                    [[[
+                      const parseNumber = (value) => {
+                        const num = Number(value);
+                        return Number.isFinite(num) ? num : undefined;
+                      };
+                      let feels = parseNumber(entity?.attributes?.apparent_temperature);
+                      if (feels === undefined) {
+                        feels = parseNumber(states['sensor.wn_jib_temperature_feels_like']?.state);
+                      }
+                      if (feels === undefined) {
+                        return '';
+                      }
+                      const unit = entity?.attributes?.temperature_unit
+                        || states['sensor.wn_jib_temperature_feels_like']?.attributes?.unit_of_measurement
+                        || hass.config.unit_system.temperature
+                        || '°C';
+                      return `${(Math.round(feels * 10) / 10).toLocaleString()}${unit}`;
+                    ]]]
+                  condition: |
+                    [[[
+                      const fallback = states['sensor.wn_jib_current_condition']?.state || '';
+                      const raw = entity?.state;
+                      const condition = typeof raw === 'string' ? raw : (raw ?? '').toString();
+                      const localized = condition ? hass.localize(`component.weather.state._.${condition}`) : '';
+                      const english = condition ? condition.replace(/[_-]/g, ' ') : '';
+                      const candidate = localized && localized !== `component.weather.state._.${condition}`
+                        ? localized
+                        : english;
+                      const text = (candidate || fallback || '').toString().trim();
+                      return text || '날씨 정보 없음';
+                    ]]]
+                  details: |
+                    [[[
+                      const parseNumber = (value) => {
+                        const num = Number(value);
+                        return Number.isFinite(num) ? num : undefined;
+                      };
+                      const humidity = parseNumber(entity?.attributes?.humidity)
+                        ?? parseNumber(states['sensor.wn_jib_relative_humidity']?.state);
+                      const wind = parseNumber(entity?.attributes?.wind_speed)
+                        ?? parseNumber(states['sensor.wn_jib_wind_speed']?.state);
+                      const windUnit = entity?.attributes?.wind_speed_unit
+                        || states['sensor.wn_jib_wind_speed']?.attributes?.unit_of_measurement
+                        || 'km/h';
+                      const precip = parseNumber(states['sensor.wn_jib_precipitation_probability']?.state);
+                      const segments = [];
+                      if (humidity !== undefined) {
+                        segments.push(`습도 ${humidity}%`);
+                      }
+                      if (wind !== undefined) {
+                        segments.push(`바람 ${wind}${windUnit}`);
+                      }
+                      if (precip !== undefined) {
+                        segments.push(`강수확률 ${precip}%`);
+                      }
+                      return segments.join(' · ');
+                    ]]]
+                styles:
+                  grid:
+                    - grid-template-areas: '"icon temp" "icon feels" "icon condition" "icon details"'
+                    - grid-template-columns: 80px 1fr
+                    - grid-template-rows: auto auto auto auto
+                    - column-gap: 16px
+                    - row-gap: 4px
+                    - align-items: center
+                  custom_fields:
+                    icon:
+                      - grid-area: icon
+                      - justify-self: center
+                      - align-self: center
+                    temp:
+                      - grid-area: temp
+                      - align-self: start
+                      - justify-self: start
+                      - font-size: 42px
+                      - font-weight: 600
+                      - color: null
+                    feels:
+                      - grid-area: feels
+                      - align-self: start
+                      - justify-self: start
+                      - font-size: 16px
+                      - color: rgba(255, 245, 230, 0.75)
+                    condition:
+                      - grid-area: condition
+                      - align-self: start
+                      - justify-self: start
+                      - font-size: 18px
+                      - font-weight: 500
+                      - color: rgba(255, 245, 230, 0.9)
+                    details:
+                      - grid-area: details
+                      - align-self: start
+                      - justify-self: start
+                      - font-size: 14px
+                      - color: rgba(255, 245, 230, 0.7)
+                  card:
+                    - background: >-
+                        linear-gradient(135deg, rgba(64, 64, 72, 0.92), rgba(32,
+                        32, 36, 0.92))
+                    - border-radius: 26px
+                    - padding: 16px 18px
+                    - box-shadow: none
+                    - overflow: hidden
+                  img_cell:
+                    - display: none
+              - type: custom:gap-card
+                height: 12
+              - type: custom:layout-card
+                layout_type: custom:grid-layout
+                layout:
+                  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr))
+                  grid-auto-rows: minmax(96px, auto)
+                  column-gap: 12px
+                  row-gap: 12px
+                cards:
+                  - type: custom:button-card
+                    entity: sensor.count_lights_on
+                    name: 조명
+                    icon: mdi:lightbulb-group
+                    show_state: false
+                    show_label: true
+                    tap_action:
+                      action: navigate
+                      navigation_path: '#lights'
+                    label: |
+                      [[[
+                        const raw = states['sensor.count_lights_on']?.state;
+                        if (!raw || raw === 'unknown' || raw === 'unavailable') {
+                          return '데이터 없음';
+                        }
+                        const value = Number(raw);
+                        if (!Number.isFinite(value) || value <= 0) {
+                          return '모두 꺼짐';
+                        }
+                        return `${value}개 켜짐`;
+                      ]]]
+                    styles:
+                      grid:
+                        - grid-template-areas: '"i name" "i l"'
+                        - grid-template-columns: min-content 1fr
+                        - align-items: center
+                        - column-gap: 12px
+                      card:
+                        - background: >-
+                            linear-gradient(135deg, rgba(68, 68, 76, 0.9),
+                            rgba(28, 28, 32, 0.9))
+                        - border-radius: 22px
+                        - padding: 14px 16px
+                        - box-shadow: none
+                      icon:
+                        - width: 28px
+                        - color: null
+                      name:
+                        - grid-area: name
+                        - justify-self: start
+                        - align-self: end
+                        - font-size: 16px
+                        - font-weight: 600
+                        - color: rgba(255, 245, 230, 0.9)
+                      label:
+                        - grid-area: l
+                        - justify-self: start
+                        - align-self: start
+                        - font-size: 13px
+                        - color: rgba(255, 245, 230, 0.7)
+                  - type: custom:button-card
+                    entity: sensor.sihas_energy_monitor_power
+                    name: 소비 전력
+                    icon: mdi:flash
+                    show_state: false
+                    show_label: true
+                    tap_action:
+                      action: navigate
+                      navigation_path: '#strom'
+                    label: |
+                      [[[
+                        const sensor = states['sensor.sihas_energy_monitor_power'];
+                        const raw = sensor?.state;
+                        if (!raw || raw === 'unknown' || raw === 'unavailable') {
+                          return '데이터 없음';
+                        }
+                        const value = Number(raw);
+                        if (!Number.isFinite(value)) {
+                          return '데이터 없음';
+                        }
+                        const unit = sensor?.attributes?.unit_of_measurement || 'W';
+                        return `${value.toFixed(0)} ${unit}`;
+                      ]]]
+                    styles:
+                      grid:
+                        - grid-template-areas: '"i name" "i l"'
+                        - grid-template-columns: min-content 1fr
+                        - align-items: center
+                        - column-gap: 12px
+                      card:
+                        - background: >-
+                            linear-gradient(135deg, rgba(68, 68, 76, 0.9),
+                            rgba(28, 28, 32, 0.9))
+                        - border-radius: 22px
+                        - padding: 14px 16px
+                        - box-shadow: none
+                      icon:
+                        - width: 28px
+                        - color: null
+                      name:
+                        - grid-area: name
+                        - justify-self: start
+                        - align-self: end
+                        - font-size: 16px
+                        - font-weight: 600
+                        - color: rgba(255, 245, 230, 0.9)
+                      label:
+                        - grid-area: l
+                        - justify-self: start
+                        - align-self: start
+                        - font-size: 13px
+                        - color: rgba(255, 245, 230, 0.7)
+                  - type: custom:button-card
+                    entity: sensor.average_indoor_temperature
+                    name: 실내 온도
+                    icon: mdi:home-thermometer
+                    show_state: false
+                    show_label: true
+                    tap_action:
+                      action: more-info
+                    label: |
+                      [[[
+                        const temp = states['sensor.average_indoor_temperature'];
+                        const hum = states['sensor.average_indoor_humidity'];
+                        const tempRaw = temp?.state;
+                        const humRaw = hum?.state;
+                        const tempUnit = temp?.attributes?.unit_of_measurement || '°C';
+                        const tempValue = Number(tempRaw);
+                        const humValue = Number(humRaw);
+                        const tempText = Number.isFinite(tempValue)
+                          ? `${(Math.round(tempValue * 10) / 10).toLocaleString()}${tempUnit}`
+                          : '온도 정보 없음';
+                        const humText = Number.isFinite(humValue)
+                          ? `습도 ${humValue.toFixed(0)}%`
+                          : '습도 정보 없음';
+                        return `${tempText} · ${humText}`;
+                      ]]]
+                    styles:
+                      grid:
+                        - grid-template-areas: '"i name" "i l"'
+                        - grid-template-columns: min-content 1fr
+                        - align-items: center
+                        - column-gap: 12px
+                      card:
+                        - background: >-
+                            linear-gradient(135deg, rgba(68, 68, 76, 0.9),
+                            rgba(28, 28, 32, 0.9))
+                        - border-radius: 22px
+                        - padding: 14px 16px
+                        - box-shadow: none
+                      icon:
+                        - width: 28px
+                        - color: null
+                      name:
+                        - grid-area: name
+                        - justify-self: start
+                        - align-self: end
+                        - font-size: 16px
+                        - font-weight: 600
+                        - color: rgba(255, 245, 230, 0.9)
+                      label:
+                        - grid-area: l
+                        - justify-self: start
+                        - align-self: start
+                        - font-size: 13px
+                        - color: rgba(255, 245, 230, 0.7)
+                  - type: custom:button-card
+                    entity: group.security_doors
+                    name: 문/창 감시
+                    icon: mdi:door-closed-lock
+                    show_state: false
+                    show_label: true
+                    tap_action:
+                      action: more-info
+                    label: |
+                      [[[
+                        const state = states['group.security_doors']?.state;
+                        if (!state || state === 'unknown' || state === 'unavailable') {
+                          return '상태 확인 불가';
+                        }
+                        return state === 'on' ? '열림 감지됨' : '모두 닫힘';
+                      ]]]
+                    styles:
+                      grid:
+                        - grid-template-areas: '"i name" "i l"'
+                        - grid-template-columns: min-content 1fr
+                        - align-items: center
+                        - column-gap: 12px
+                      card:
+                        - background: >-
+                            linear-gradient(135deg, rgba(68, 68, 76, 0.9),
+                            rgba(28, 28, 32, 0.9))
+                        - border-radius: 22px
+                        - padding: 14px 16px
+                        - box-shadow: none
+                      icon:
+                        - width: 28px
+                        - color: null
+                      name:
+                        - grid-area: name
+                        - justify-self: start
+                        - align-self: end
+                        - font-size: 16px
+                        - font-weight: 600
+                        - color: rgba(255, 245, 230, 0.9)
+                      label:
+                        - grid-area: l
+                        - justify-self: start
+                        - align-self: start
+                        - font-size: 13px
+                        - color: rgba(255, 245, 230, 0.7)
+            grid_options:
+              columns: 12
+              rows: auto
+          - type: custom:auto-entities
+            card:
+              type: grid
+              square: false
+              columns: 3
+            card_param: cards
+            sort:
+              method: entity_id
+            filter:
+              template: |-
+                type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: grid
+                  columns: 3
+                  square: false
+                card_param: cards
+                filter:
+                  include:
+                    - label: favorite
+                      options:
+                        type: tile
+                  exclude:
+                    - domain: scene
+                    - attributes:
+                        hidden_by: '*'
+                sort:
+                  method: name
+            visibility:
+              - condition: numeric_state
+                entity: sensor.count_favorite_entities
+                above: 0
+            grid_options:
+              columns: full
+          - type: custom:bubble-card
+            card_type: separator
+            name: 즐겨찾기
+            icon: mdi:star-box-multiple
+            card_layout: large
+            sub_button:
+              - tap_action:
+                  action: call-service
+                  service: browser_mod.popup
+                  data:
+                    deviceID:
+                      - this
+                    title: 알리기
+                    content:
+                      type: custom:notify-card
+                      card_title: Send Notification
+                      label: Notification Text
+                      action: notify.mobile_app_sm_s936n
+                      data:
+                        message: '{{ msg }}'
+                icon: mdi:bullhorn
+              - tap_action:
+                  action: call-service
+                  service: browser_mod.popup
+                  data:
+                    title: 알리기
+                    content:
+                      type: horizontal-stack
+                      cards:
+                        - type: entities
+                          entities:
+                            - entity: input_text.message_to_bedroom
+                              name: What You Got to Say?
+                              icon: mdi:chat
+                            - entity: input_select.tts_target_speaker
+                              name: Speaker
+                              icon: mdi:speaker
+                        - type: custom:button-card
+                          icon: hass:send
+                          show_icon: true
+                          show_name: false
+                          styles:
+                            card:
+                              - height: 90px
+                              - width: 90px
+                          tap_action:
+                            action: call-service
+                            service: script.turn_on
+                            service_data:
+                              entity_id: script.announce_tts_message
+                icon: mdi:bullhorn
+            grid_options:
+              columns: full
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: custom:mushroom-chips-card
+              card_param: chips
+            sort:
+              method: entity_id
+            filter:
+              template: |-
+                {% for ENTITY in states.scene
+                  | selectattr('entity_id', 'in', label_entities('favorite')) %}
+                  {
+                    "type": "entity",
+                    "entity_id": "{{ ENTITY.entity_id }}",
+                    "name": "{{ state_attr(ENTITY.entity_id, 'friendly_name') }}",
+                    "tap_action": {
+                      "action": "perform-action",
+                      "perform_action": "scene.turn_on",
+                      "data": {},
+                      "target": {
+                        "entity_id": "{{ ENTITY.entity_id }}"
+                      }
+                    }
+                  },
+                {% endfor %}
+            grid_options:
+              columns: full
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: grid
+              columns: 3
+              square: false
+            card_param: cards
+            filter:
+              include:
+                - options:
+                    type: tile
+                  label: favorite
+              exclude:
+                - options: {}
+                  domain: scene
+                - options: {}
+                  attributes:
+                    hidden_by: '*'
+            sort:
+              method: name
+            grid_options:
+              columns: full
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: grid
+              columns: 3
+              square: false
+            card_param: cards
+            filter:
+              include:
+                - label: Favorite
+                  options:
+                    type: tile
+              exclude:
+                - domain: scene
+            sort:
+              method: name
+          - type: heading
+            heading_style: title
+            heading: Areas
+            icon: mdi:home
+          - type: custom:css-swipe-card
+            template: slider-horizontal
+            width: 100%
+            height: 220px
+            pagination: true
+            card_gap: 0px
+            custom_css:
+              '--pagination-bullet-active-background-color': var(--grey50)
+              '--pagination-bullet-background-color': var(--grey800)
+              '--pagination-bullet-distance': 0px
+              '--navigation-button-next-color': var(--disabled-text-color)
+              '--navigation-button-prev-color': var(--disabled-text-color)
+              '--navigation-button-next-background-color': transparent
+              '--navigation-button-prev-background-color': transparent
+              '--navigation-button-next-border': none
+              '--navigation-button-prev-border': none
+              '--navigation-button-distance': 12px
+            cards:
+              - type: custom:button-card
+                show_icon: false
+                name: 거실
+                entity: climate.seutaendeuhyeong_eeokeon
+                tap_action:
+                  action: navigate
+                  navigation_path: /lovelace/거실
+                styles:
+                  card:
+                    - border-radius: 35px
+                    - padding: 0
+                    - position: relative
+                    - background: '#2c2c2c'
+                    - overflow: hidden
+                    - height: 200px
+                  name:
+                    - position: absolute
+                    - top: 16px
+                    - left: 16px
+                    - font-size: 34px
+                    - font-weight: 700
+                    - z-index: 10
+                    - color: white
+                  custom_fields:
+                    temp:
+                      - position: absolute
+                      - left: 16px
+                      - bottom: 30px
+                      - font-size: 36px
+                      - font-weight: 800
+                      - z-index: 10
+                      - color: white
+                    hum:
+                      - position: absolute
+                      - left: 100px
+                      - bottom: 33px
+                      - font-size: 12px
+                      - font-weight: 600
+                      - z-index: 10
+                      - color: rgba(255, 255, 255, 0.7)
+                    badge:
+                      - position: absolute
+                      - top: 16px
+                      - right: 16px
+                      - width: 48px
+                      - height: 48px
+                      - border-radius: 50%
+                      - display: flex
+                      - align-items: center
+                      - justify-content: center
+                      - background: rgba(100, 149, 237, 0.3)
+                      - z-index: 10
+                    graph:
+                      - position: absolute
+                      - left: 0
+                      - right: 0
+                      - bottom: 0
+                      - height: 57%
+                      - z-index: 0
+                custom_fields:
+                  badge: >-
+                    <ha-icon icon="mdi:sofa"
+                    style="color:white;--mdc-icon-size:28px;"></ha-icon>
+                  temp: |
+                    [[[ 
+                      const t = entity?.attributes?.current_temperature;
+                      if (t != null && t !== 'unavailable' && t !== 'unknown' && !isNaN(t)) {
+                        return Math.round(t) + '°';
+                      }
+                      return '';
+                    ]]]
+                  hum: |
+                    [[[ 
+                      const h = states['sensor.seutaendeuhyeong_eeokeon_humidity']?.state;
+                      if (h != null && h !== 'unavailable' && h !== 'unknown' && !isNaN(h)) {
+                        return Number(h).toFixed(0) + '%';
+                      }
+                      return '';
+                    ]]]
+                  graph:
+                    card:
+                      type: custom:mini-graph-card
+                      entities:
+                        - entity: climate.seutaendeuhyeong_eeokeon
+                          attribute: current_temperature
+                      hours_to_show: 24
+                      points_per_hour: 2
+                      line_width: 2
+                      show:
+                        name: false
+                        icon: false
+                        state: false
+                        legend: false
+                        labels: false
+                        points: false
+                        fill: fade
+                      color_thresholds:
+                        - value: 0
+                          color: '#6495ED'
+                        - value: 25
+                          color: '#FF6347'
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                          border-radius: 0 !important;
+                          padding: 0 !important;
+                          margin: 0 !important;
+                          height: 100% !important;
+                        }
+              - type: custom:button-card
+                show_icon: false
+                name: 안방
+                entity: sensor.aqara_temperature_and_humidity_sensor_t1_1_temperature
+                tap_action:
+                  action: more-info
+                styles:
+                  card:
+                    - border-radius: 35px
+                    - padding: 0
+                    - position: relative
+                    - background: '#2c2c2c'
+                    - overflow: hidden
+                    - height: 200px
+                  name:
+                    - position: absolute
+                    - top: 16px
+                    - left: 16px
+                    - font-size: 34px
+                    - font-weight: 700
+                    - z-index: 10
+                    - color: white
+                  custom_fields:
+                    temp:
+                      - position: absolute
+                      - left: 16px
+                      - bottom: 30px
+                      - font-size: 36px
+                      - font-weight: 800
+                      - z-index: 10
+                      - color: white
+                    hum:
+                      - position: absolute
+                      - left: 100px
+                      - bottom: 33px
+                      - font-size: 12px
+                      - font-weight: 600
+                      - z-index: 10
+                      - color: rgba(255, 255, 255, 0.7)
+                    badge:
+                      - position: absolute
+                      - top: 16px
+                      - right: 16px
+                      - width: 48px
+                      - height: 48px
+                      - border-radius: 50%
+                      - display: flex
+                      - align-items: center
+                      - justify-content: center
+                      - background: rgba(100, 149, 237, 0.3)
+                      - z-index: 10
+                    graph:
+                      - position: absolute
+                      - left: 0
+                      - right: 0
+                      - bottom: 0
+                      - height: 57%
+                      - z-index: 0
+                custom_fields:
+                  badge: >-
+                    <ha-icon icon="mdi:bed-queen"
+                    style="color:white;--mdc-icon-size:28px;"></ha-icon>
+                  temp: |
+                    [[[ 
+                      const t = entity?.state;
+                      if (t != null && t !== 'unavailable' && t !== 'unknown' && !isNaN(t)) {
+                        return Number(t).toFixed(1) + '°';
+                      }
+                      return '';
+                    ]]]
+                  hum: |
+                    [[[
+                      const h = states['sensor.aqara_temperature_and_humidity_sensor_t1_1_humidity']?.state;
+                      if (h != null && h !== 'unavailable' && h !== 'unknown' && !isNaN(h)) {
+                        return Number(h).toFixed(1) + '%';
+                      }
+                      return '';
+                    ]]]
+                  graph:
+                    card:
+                      type: custom:mini-graph-card
+                      entities:
+                        - >-
+                          sensor.aqara_temperature_and_humidity_sensor_t1_1_temperature
+                      hours_to_show: 24
+                      points_per_hour: 2
+                      line_width: 2
+                      show:
+                        name: false
+                        icon: false
+                        state: false
+                        legend: false
+                        labels: false
+                        points: false
+                        fill: fade
+                      color_thresholds:
+                        - value: 0
+                          color: '#6495ED'
+                        - value: 25
+                          color: '#FF6347'
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                          border-radius: 0 !important;
+                          padding: 0 !important;
+                          margin: 0 !important;
+                          height: 100% !important;
+                        }
+              - type: custom:button-card
+                show_icon: false
+                name: 주방
+                entity: sensor.gonggijil_ceugjeonggi_1528_temperature
+                tap_action:
+                  action: more-info
+                styles:
+                  card:
+                    - border-radius: 35px
+                    - padding: 0
+                    - position: relative
+                    - background: '#2c2c2c'
+                    - overflow: hidden
+                    - height: 200px
+                  name:
+                    - position: absolute
+                    - top: 16px
+                    - left: 16px
+                    - font-size: 34px
+                    - font-weight: 700
+                    - z-index: 10
+                    - color: white
+                  custom_fields:
+                    temp:
+                      - position: absolute
+                      - left: 16px
+                      - bottom: 30px
+                      - font-size: 36px
+                      - font-weight: 800
+                      - z-index: 10
+                      - color: white
+                    hum:
+                      - position: absolute
+                      - left: 100px
+                      - bottom: 33px
+                      - font-size: 12px
+                      - font-weight: 600
+                      - z-index: 10
+                      - color: rgba(255, 255, 255, 0.7)
+                    badge:
+                      - position: absolute
+                      - top: 16px
+                      - right: 16px
+                      - width: 48px
+                      - height: 48px
+                      - border-radius: 50%
+                      - display: flex
+                      - align-items: center
+                      - justify-content: center
+                      - background: rgba(100, 149, 237, 0.3)
+                      - z-index: 10
+                    graph:
+                      - position: absolute
+                      - left: 0
+                      - right: 0
+                      - bottom: 0
+                      - height: 57%
+                      - z-index: 0
+                custom_fields:
+                  badge: >-
+                    <ha-icon icon="mdi:stove"
+                    style="color:white;--mdc-icon-size:28px;"></ha-icon>
+                  temp: |
+                    [[[ 
+                      const t = entity?.state;
+                      if (t != null && t !== 'unavailable' && t !== 'unknown' && !isNaN(t)) {
+                        return Number(t).toFixed(1) + '°';
+                      }
+                      return '';
+                    ]]]
+                  hum: |
+                    [[[
+                      const h = states['sensor.gonggijil_ceugjeonggi_1528_humidity']?.state;
+                      if (h != null && h !== 'unavailable' && h !== 'unknown' && !isNaN(h)) {
+                        return Number(h).toFixed(1) + '%';
+                      }
+                      return '';
+                    ]]]
+                  graph:
+                    card:
+                      type: custom:mini-graph-card
+                      entities:
+                        - sensor.gonggijil_ceugjeonggi_1528_temperature
+                      hours_to_show: 24
+                      points_per_hour: 2
+                      line_width: 2
+                      show:
+                        name: false
+                        icon: false
+                        state: false
+                        legend: false
+                        labels: false
+                        points: false
+                        fill: fade
+                      color_thresholds:
+                        - value: 0
+                          color: '#6495ED'
+                        - value: 25
+                          color: '#FF6347'
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                          border-radius: 0 !important;
+                          padding: 0 !important;
+                          margin: 0 !important;
+                          height: 100% !important;
+                        }
+              - type: custom:button-card
+                show_icon: false
+                name: 아현이방
+                entity: sensor.aqara_temperature_and_humidity_sensor_t1_temperature
+                tap_action:
+                  action: more-info
+                styles:
+                  card:
+                    - border-radius: 35px
+                    - padding: 0
+                    - position: relative
+                    - background: '#2c2c2c'
+                    - overflow: hidden
+                    - height: 200px
+                  name:
+                    - position: absolute
+                    - top: 16px
+                    - left: 16px
+                    - font-size: 34px
+                    - font-weight: 700
+                    - z-index: 10
+                    - color: white
+                  custom_fields:
+                    temp:
+                      - position: absolute
+                      - left: 16px
+                      - bottom: 30px
+                      - font-size: 36px
+                      - font-weight: 800
+                      - z-index: 10
+                      - color: white
+                    hum:
+                      - position: absolute
+                      - left: 100px
+                      - bottom: 33px
+                      - font-size: 12px
+                      - font-weight: 600
+                      - z-index: 10
+                      - color: rgba(255, 255, 255, 0.7)
+                    badge:
+                      - position: absolute
+                      - top: 16px
+                      - right: 16px
+                      - width: 48px
+                      - height: 48px
+                      - border-radius: 50%
+                      - display: flex
+                      - align-items: center
+                      - justify-content: center
+                      - background: rgba(100, 149, 237, 0.3)
+                      - z-index: 10
+                    graph:
+                      - position: absolute
+                      - left: 0
+                      - right: 0
+                      - bottom: 0
+                      - height: 57%
+                      - z-index: 0
+                custom_fields:
+                  badge: >-
+                    <ha-icon icon="mdi:bed"
+                    style="color:white;--mdc-icon-size:28px;"></ha-icon>
+                  temp: |
+                    [[[ 
+                      const t = entity?.state;
+                      if (t != null && t !== 'unavailable' && t !== 'unknown' && !isNaN(t)) {
+                        return Number(t).toFixed(1) + '°';
+                      }
+                      return '';
+                    ]]]
+                  hum: |
+                    [[[
+                      const h = states['sensor.aqara_temperature_and_humidity_sensor_t1_humidity']?.state;
+                      if (h != null && h !== 'unavailable' && h !== 'unknown' && !isNaN(h)) {
+                        return Number(h).toFixed(1) + '%';
+                      }
+                      return '';
+                    ]]]
+                  graph:
+                    card:
+                      type: custom:mini-graph-card
+                      entities:
+                        - >-
+                          sensor.aqara_temperature_and_humidity_sensor_t1_temperature
+                      hours_to_show: 24
+                      points_per_hour: 2
+                      line_width: 2
+                      show:
+                        name: false
+                        icon: false
+                        state: false
+                        legend: false
+                        labels: false
+                        points: false
+                        fill: fade
+                      color_thresholds:
+                        - value: 0
+                          color: '#6495ED'
+                        - value: 25
+                          color: '#FF6347'
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                          border-radius: 0 !important;
+                          padding: 0 !important;
+                          margin: 0 !important;
+                          height: 100% !important;
+                        }
+              - type: custom:button-card
+                show_icon: false
+                name: 우현이방
+                entity: sensor.eeomoniteo_peulreoseu_temperature
+                tap_action:
+                  action: more-info
+                styles:
+                  card:
+                    - border-radius: 35px
+                    - padding: 0
+                    - position: relative
+                    - background: '#2c2c2c'
+                    - overflow: hidden
+                    - height: 200px
+                  name:
+                    - position: absolute
+                    - top: 16px
+                    - left: 16px
+                    - font-size: 34px
+                    - font-weight: 700
+                    - z-index: 10
+                    - color: white
+                  custom_fields:
+                    temp:
+                      - position: absolute
+                      - left: 16px
+                      - bottom: 30px
+                      - font-size: 36px
+                      - font-weight: 800
+                      - z-index: 10
+                      - color: white
+                    hum:
+                      - position: absolute
+                      - left: 100px
+                      - bottom: 33px
+                      - font-size: 12px
+                      - font-weight: 600
+                      - z-index: 10
+                      - color: rgba(255, 255, 255, 0.7)
+                    badge:
+                      - position: absolute
+                      - top: 16px
+                      - right: 16px
+                      - width: 48px
+                      - height: 48px
+                      - border-radius: 50%
+                      - display: flex
+                      - align-items: center
+                      - justify-content: center
+                      - background: rgba(100, 149, 237, 0.3)
+                      - z-index: 10
+                    graph:
+                      - position: absolute
+                      - left: 0
+                      - right: 0
+                      - bottom: 0
+                      - height: 57%
+                      - z-index: 0
+                custom_fields:
+                  badge: >-
+                    <ha-icon icon="mdi:account-child"
+                    style="color:white;--mdc-icon-size:28px;"></ha-icon>
+                  temp: |
+                    [[[ 
+                      const t = entity?.state;
+                      if (t != null && t !== 'unavailable' && t !== 'unknown' && !isNaN(t)) {
+                        return Number(t).toFixed(1) + '°';
+                      }
+                      return '';
+                    ]]]
+                  hum: |
+                    [[[
+                      const h = states['sensor.eeomoniteo_peulreoseu_humidity']?.state;
+                      if (h != null && h !== 'unavailable' && h !== 'unknown' && !isNaN(h)) {
+                        return Number(h).toFixed(1) + '%';
+                      }
+                      return '';
+                    ]]]
+                  graph:
+                    card:
+                      type: custom:mini-graph-card
+                      entities:
+                        - sensor.eeomoniteo_peulreoseu_temperature
+                      hours_to_show: 24
+                      points_per_hour: 2
+                      line_width: 2
+                      show:
+                        name: false
+                        icon: false
+                        state: false
+                        legend: false
+                        labels: false
+                        points: false
+                        fill: fade
+                      color_thresholds:
+                        - value: 0
+                          color: '#6495ED'
+                        - value: 25
+                          color: '#FF6347'
+                      style: |
+                        ha-card {
+                          background: transparent !important;
+                          box-shadow: none !important;
+                          border: none !important;
+                          border-radius: 0 !important;
+                          padding: 0 !important;
+                          margin: 0 !important;
+                          height: 100% !important;
+                        }
+          - type: custom:button-card
+            name: Voice Record
+            icon: mdi:light-switch-off
+            tap_action:
+              action: navigate
+              navigation_path: '#voice'
+            show_state: false
+            show_label: false
+            styles:
+              grid:
+                - grid-template-areas: '"i n" "i s"'
+                - grid-template-columns: 60px 1fr 40px
+              icon:
+                - width: 24px
+                - color: black
+              img_cell:
+                - background: '#bcfdf7'
+                - border-radius: 515px
+                - width: 50px
+                - height: 50px
+              name:
+                - justify-self: start
+                - font-size: 14px
+                - font-weight: 500
+                - padding-left: 10px
+                - color: black
+              card:
+                - margin: 0
+                - border-radius: 12px 14px 12px 8px
+                - padding: 0
+          - type: heading
+            heading_style: title
+            heading: Areas
+            icon: mdi:home
+            badges: []
+          - type: custom:apexcharts-card
+            update_delay: 1s
+            update_interval: 10min
+            graph_span: 9d
+            span:
+              start: day
+              offset: +1d
+            experimental:
+              color_threshold: true
+            apex_config:
+              chart:
+                height: 220px
+              grid:
+                borderColor: rgba(127,127,127,0.3)
+                strokeDashArray: 2
+                xaxis:
+                  lines:
+                    show: true
+              tooltip:
+                enabled: false
+                x:
+                  show: false
+              xaxis:
+                labels:
+                  show: true
+                  rotate: -45
+                  rotateAlways: true
+                  hideOverlappingLabels: false
+                  showDuplicates: false
+                  trim: false
+                  format: M/d
+                  offsetY: -5
+              dataLabels:
+                enabled: true
+                offsetX: 0
+                offsetY: -4
+                style:
+                  fontSize: 11px
+                  fontWeight: 400
+                background:
+                  enabled: false
+              legend:
+                show: true
+            all_series_config:
+              show:
+                legend_value: false
+            header:
+              title: 미세먼지 일별 예보
+              show_states: false
+              show: true
+              colorize_states: true
+            series:
+              - entity: sensor.wn_jib_pm_forecast
+                name: 미세먼지
+                type: line
+                stroke_width: 4
+                curve: smooth
+                show:
+                  datalabels: true
+                color_threshold:
+                  - value: 0
+                    color: blue
+                  - value: 31
+                    color: green
+                  - value: 81
+                    color: orange
+                  - value: 151
+                    color: red
+                data_generator: >
+                  return
+                  Object.entries(entity.attributes.pmForecastDaily).map(([k,data])
+                  => {
+                    return [new Date(data.date).getTime(), data.pm10];
+                  });
+              - entity: sensor.wn_jib_pm_forecast
+                name: 초미세먼지
+                type: line
+                stroke_width: 2
+                curve: smooth
+                show:
+                  datalabels: true
+                color_threshold:
+                  - value: 0
+                    color: blue
+                  - value: 16
+                    color: green
+                  - value: 36
+                    color: orange
+                  - value: 76
+                    color: red
+                data_generator: >
+                  return
+                  Object.entries(entity.attributes.pmForecastDaily).map(([k,data])
+                  =>
+
+                  {
+                    return [new Date(data.date).getTime(), data.pm25];
+                  });type: ""
+          - type: custom:apexcharts-card
+            update_delay: 1s
+            update_interval: 10min
+            graph_span: 1d
+            span:
+              start: hour
+            experimental:
+              color_threshold: true
+            apex_config:
+              chart:
+                height: 220px
+              grid:
+                borderColor: rgba(127,127,127,0.3)
+                strokeDashArray: 2
+                xaxis:
+                  lines:
+                    show: true
+              tooltip:
+                enabled: false
+                x:
+                  show: false
+              xaxis:
+                labels:
+                  format: HH
+              dataLabels:
+                enabled: true
+                offsetX: 0
+                offsetY: -4
+                style:
+                  fontSize: 10px
+                  fontWeight: 400
+                background:
+                  enabled: false
+              legend:
+                show: true
+            all_series_config:
+              show:
+                legend_value: false
+            header:
+              title: 미세먼지 시별 예보
+              show_states: false
+              show: true
+              colorize_states: true
+            series:
+              - entity: sensor.wn_jib_pm_forecast
+                name: 미세먼지
+                type: line
+                stroke_width: 4
+                curve: smooth
+                show:
+                  datalabels: true
+                color_threshold:
+                  - value: 0
+                    color: blue
+                  - value: 31
+                    color: green
+                  - value: 81
+                    color: orange
+                  - value: 151
+                    color: red
+                data_generator: >
+                  return
+                  Object.entries(entity.attributes.pmForecastHourly).map(([k,data])
+                  => {
+                    return [new Date(data.date).getTime(), data.pm10];
+                  });
+              - entity: sensor.wn_jib_pm_forecast
+                name: 초미세먼지
+                type: line
+                stroke_width: 2
+                curve: smooth
+                show:
+                  datalabels: true
+                color_threshold:
+                  - value: 0
+                    color: blue
+                  - value: 16
+                    color: green
+                  - value: 36
+                    color: orange
+                  - value: 76
+                    color: red
+                data_generator: >
+                  return
+                  Object.entries(entity.attributes.pmForecastHourly).map(([k,data])
+                  =>
+
+                  {
+                    return [new Date(data.date).getTime(), data.pm25];
+                  });
+          - type: custom:apexcharts-card
+            update_delay: 1s
+            update_interval: 10min
+            graph_span: 9d
+            span:
+              start: day
+              offset: +1d
+            experimental:
+              color_threshold: true
+            apex_config:
+              chart:
+                height: 150px
+              grid:
+                borderColor: rgba(127,127,127,0.3)
+                strokeDashArray: 2
+                xaxis:
+                  lines:
+                    show: true
+              tooltip:
+                enabled: false
+                x:
+                  show: true
+              xaxis:
+                labels:
+                  show: true
+                  rotate: -45
+                  rotateAlways: true
+                  hideOverlappingLabels: false
+                  showDuplicates: false
+                  trim: false
+                  format: M/d
+                  offsetY: -5
+              dataLabels:
+                enabled: true
+                offsetX: 0
+                offsetY: -4
+                style:
+                  fontSize: 11px
+                  fontWeight: 400
+                background:
+                  enabled: false
+              legend:
+                show: true
+            all_series_config:
+              show:
+                legend_value: false
+            header:
+              title: 통합대기 일별 예보
+              show_states: false
+              show: true
+              colorize_states: true
+            series:
+              - entity: sensor.wn_jib_pm_forecast
+                name: AQI
+                type: line
+                stroke_width: 4
+                curve: smooth
+                show:
+                  datalabels: true
+                color_threshold:
+                  - value: 0
+                    color: blue
+                  - value: 51
+                    color: green
+                  - value: 101
+                    color: orange
+                  - value: 251
+                    color: red
+                data_generator: >
+                  return
+                  Object.entries(entity.attributes.pmForecastDaily).map(([k,data])
+                  => {
+                    return [new Date(data.date).getTime(), data.aqi];
+                  });
+          - type: vertical-stack
+            cards:
+              - type: custom:bubble-card
+                card_type: pop-up
+                hash: '#voice'
+                button_type: name
+                name: voice record
+                icon: mdi:account-tie-voice
+                show_header: true
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: heading
+                    heading: 🎙️ 음성 복제 스튜디오
+                    heading_style: title
+                    view_layout:
+                      grid-column: 1 / -1
+                  - type: custom:stack-in-card
+                    mode: vertical
+                    view_layout:
+                      grid-column: 1 / 8
+                    card_mod: null
+                    cards:
+                      - type: heading
+                        heading: 음성 녹음
+                        heading_style: subtitle
+                      - type: custom:voice-recorder-card
+                        token: >
+                          eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyNzYxZmNhYTcxYTg0ZTI5YTRjOTUxNzRjMDhjNGJhMSIsImlhdCI6MTc1OTI5NjU4MSwiZXhwIjoyMDc0NjU2NTgxfQ.T_goDPAyFWbnwxG-weH25KMMvJIujHFJE6DgUzfqMUM
+                        event_options:
+                          - default
+                        notify: false
+                        button_mode: click
+                        volume_gain: 2
+                        audio_quality: good
+                  - type: custom:stack-in-card
+                    mode: vertical
+                    view_layout:
+                      grid-column: 8 / -1
+                    card_mod: null
+                    cards:
+                      - type: heading
+                        heading: 🧩 가이드 & 대본
+                        heading_style: subtitle
+                      - type: markdown
+                        content: |
+                          <details open>
+                            <summary><b>녹음 대본</b></summary>
+                            <br/>
+                            현관문을 열고 오늘도 집 밖으로 나가 아무 일 없듯이
+                            아니 어제와 같이 별다른 감흥도 없이 하루를 시작하고
+                            또 하루는 그렇게 어느 때와 같이 평범하게 산다.
+                            그리고 집에 돌아오면 길었고 지루했던 하루에 치여 오늘도 살아냈다.
+                          </details>
+          - type: custom:mushroom-template-card
+            primary: 식기세척기
+            secondary: >-
+              {% if is_state("sensor.jubang_siggiseceoggi_current_status", "on")
+              %}
+                작동 중: {{ states("sensor.jubang_siggiseceoggi_current_course") }}
+                상태: {{ states("sensor.jubang_siggiseceoggi_current_status") }}
+                전체 시간: {{ states("sensor.jubang_siggiseceoggi_total_time") }}, 남은 시간: {{ states("sensor.jubang_siggiseceoggi_remaining_time") }}
+              {% else %}
+                {% if is_state("binary_sensor.jubang_siggiseceoggi_run_completed", "on") %}
+                  완료됨
+                {% else %}
+                  꺼짐
+                {% endif %}
+              {% endif %} {% if
+              is_state("binary_sensor.jubang_siggiseceoggi_error_state", "on")
+              %}
+                \n오류: {{ states("sensor.jubang_siggiseceoggi_error_message") }}
+              {% endif %}
+            icon: mdi:dishwasher
+            entity: sensor.jubang_siggiseceoggi_current_status
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+            color: >-
+              {{ "indigo" if
+              is_state("sensor.jubang_siggiseceoggi_current_status", "on") else
+              "" }}
+            features_position: bottom
+            vertical: true
+            grid_options:
+              columns: 3
+              rows: 2
+          - type: custom:mushroom-template-card
+            primary: 김치냉장고
+            secondary: >-
+              {% set notif =
+              states('event.jubang_gimcinaengjanggo_notification') %}
+
+              {% set has_notif = notif not in ['unknown','unavailable',''] %}
+
+              {% set deodor_on =
+              is_state('binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter','on')
+              %}
+
+              {{ '알림: ' ~ notif if has_notif else '알림 없음' }}
+
+              원터치 탈취: {{ '동작 중' if deodor_on else '꺼짐' }}
+            icon: mdi:fridge
+            entity: binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter
+            multiline_secondary: true
+            tap_action:
+              action: more-info
+            color: >
+              {{ 'indigo' if
+              is_state('binary_sensor.jubang_gimcinaengjanggo_fresh_air_filter','on')
+              else '' }}
+            features_position: bottom
+            grid_options:
+              columns: 3
+              rows: 2
+            vertical: true
+          - type: vertical-stack
+            cards: []
+            grid_options:
+              columns: full
+        column_span: 2
+      - type: grid
+        cards:
+          - type: custom:navbar-card
+            layout:
+              auto_padding:
+                enabled: true
+            desktop:
+              position: left
+              show_labels: true
+            mobile:
+              show_labels: true
+            routes:
+              - icon: mdi:home-outline
+                icon_selected: mdi:home
+                url: /lovelace/air-quality-dashboard
+                label: Home
+              - icon: mdi:sofa-outline
+                icon_selected: mdi:sofa
+                label: Rooms
+                selected: >
+                  [[[ const hash = location.hash || ''; return ['#stue_nede',
+                  '#stue_oppe', '#kjokken', '#gang', '#bad_nede', '#bad_oppe',
+                  '#soverom', '#barnerom'].includes(hash); ]]]
+                badge:
+                  show: |
+                    [[[ return is_state('group.all_lights', 'on'); ]]]
+                  color: var(--yellow-color, var(--warning-color))
+                  count: >
+                    [[[ const sensor = states['sensor.lights_on']; return sensor
+                    ? sensor.state : '0'; ]]]
+                tap_action:
+                  action: open-popup
+                popup:
+                  - icon: mdi:sofa-outline
+                    url: /lovelace/air-quality-dashboard#stue_nede
+                    label: 거실 (1층)
+                  - icon: mdi:sofa
+                    url: /lovelace/air-quality-dashboard#stue_oppe
+                    label: 거실 (2층)
+                  - icon: mdi:silverware-fork-knife
+                    url: /lovelace/air-quality-dashboard#kjokken
+                    label: 주방
+                  - icon: mdi:door
+                    url: /lovelace/air-quality-dashboard#gang
+                    label: 복도
+                  - icon: mdi:shower
+                    url: /lovelace/air-quality-dashboard#bad_nede
+                    label: 욕실 (1층)
+                  - icon: mdi:shower-head
+                    url: /lovelace/air-quality-dashboard#bad_oppe
+                    label: 욕실 (2층)
+                  - icon: mdi:bed-king-outline
+                    url: /lovelace/air-quality-dashboard#soverom
+                    label: 안방
+                  - icon: mdi:bed-outline
+                    url: /lovelace/air-quality-dashboard#barnerom
+                    label: 아이방
+              - icon: mdi:music
+                url: /lovelace/air-quality-dashboard#media
+                label: Music
+                badge:
+                  show: >
+                    [[[ return is_state('media_player.spotify_gimuhyeon',
+                    'playing'); ]]]
+                  color: var(--green-color, var(--success-color))
+                hidden: >
+                  [[[ return is_state('remote.ir_jeeogi', 'on') &&
+                  !is_state('media_player.spotify_gimuhyeon', 'playing'); ]]]
+                hold_action:
+                  action: open-popup
+                popup:
+                  - icon: mdi:music
+                    url: /lovelace/air-quality-dashboard#media
+                    label: 미디어
+                  - icon: mdi:speaker
+                    url: /lovelace/air-quality-dashboard#media
+                    label: 스피커
+              - icon: mdi:television
+                url: /lovelace/air-quality-dashboard#media
+                label: TV
+                badge:
+                  show: >
+                    [[[ const tv = states['media_player.samsung_tv2']; return tv
+                    ? tv.state !== 'off' : false; ]]]
+                  color: var(--green-color, var(--success-color))
+                hidden: >
+                  [[[ return is_state('media_player.spotify_gimuhyeon',
+                  'playing'); ]]]
+                selected: |
+                  [[[ return location.hash === '#media'; ]]]
+                hold_action:
+                  action: open-popup
+                popup:
+                  - icon: mdi:television
+                    url: /lovelace/air-quality-dashboard#media
+                    label: TV 제어
+                  - icon: mdi:remote
+                    url: /lovelace/air-quality-dashboard#media
+                    label: IR 리모컨
+              - icon: mdi:shield-outline
+                icon_selected: mdi:shield-home
+                url: /lovelace/air-quality-dashboard#settings
+                label: Security
+                badge:
+                  show: >
+                    [[[ const grp = states['group.security_doors']; return grp ?
+                    grp.state === 'on' : false; ]]]
+                  color: var(--red-color, var(--error-color))
+                  count: >
+                    [[[ const grp = states['group.security_doors']; if (!grp)
+                    return 0; const members = grp.attributes.entity_id || [];
+                    return members.filter(e => states[e] && states[e].state ===
+                    'on').length; ]]]
+              - image: >
+                  [[[ const person = states['person.mrpc2003']; return person &&
+                  person.attributes && person.attributes.entity_picture ?
+                  person.attributes.entity_picture :
+                  '/local/avatar_default.png'; ]]]
+                url: /lovelace/air-quality-dashboard#owner
+                label: 김우현
+                selected: |
+                  [[[ return location.hash === '#owner'; ]]]
+              - image: >
+                  [[[ const person = states['person.gimyeji']; return person &&
+                  person.attributes && person.attributes.entity_picture ?
+                  person.attributes.entity_picture :
+                  '/local/avatar_default.png'; ]]]
+                url: /lovelace/air-quality-dashboard#guest
+                label: 김예지
+                selected: |
+                  [[[ return location.hash === '#guest'; ]]]
+              - icon: mdi:dots-horizontal
+                label: More
+                badge:
+                  show: |
+                    [[[
+                      return is_state('binary_sensor.any_device_update_available', 'on') ||
+                             is_state('binary_sensor.home_assistant_versions_update_available', 'on') ||
+                             is_state('binary_sensor.any_co2_out_of_range', 'on') ||
+                             is_state('binary_sensor.any_air_quality_out_of_range', 'on');
+                    ]]]
+                  color: var(--red-color, var(--error-color))
+                tap_action:
+                  action: open-popup
+                popup:
+                  - icon: mdi:server
+                    url: /lovelace/air-quality-dashboard#server
+                    label: 서버
+                    badge:
+                      show: |
+                        [[[
+                          return is_state('binary_sensor.any_device_update_available', 'on') ||
+                                 is_state('binary_sensor.home_assistant_versions_update_available', 'on');
+                        ]]]
+                      color: var(--red-color, var(--error-color))
+                  - icon: mdi:lightning-bolt
+                    url: /lovelace/air-quality-dashboard#strom
+                    label: 에너지
+                  - icon: mdi:check-circle-outline
+                    url: /lovelace/air-quality-dashboard#settings
+                    label: 자동화
+                  - icon: mdi:cart
+                    url: /shopping-list
+                    label: 쇼핑 리스트
+                    badge:
+                      show: >
+                        [[[ const todo = states['todo.shopping_list']; return
+                        todo ? Number(todo.state) > 0 : false; ]]]
+                      color: var(--red-color, var(--error-color))
+                      count: >
+                        [[[ const todo = states['todo.shopping_list']; return
+                        todo ? todo.state : 0; ]]]
+            styles: |
+              .navbar-card {
+                --navbar-primary-color: var(--contrast20);
+                background: var(--gray800);
+              }
+              .image {
+                border-radius: 16px !important;
+              }
+            media_player:
+              entity: media_player.spotify_gimuhyeon
+              album_cover_background: true
+              show: true
+        column_span: 3
+    header:
+      layout: center
+      badges_position: top
+      badges_wrap: scroll
+    badges:
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.wn_jib_current_condition
+        show_entity_picture: false
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.overview_climate
+        name: 환경
+        show_entity_picture: false
+        icon: mdi:fan
+        state_content: state
+      - type: entity
+        entity: lock.aqara_smart_lock_l100
+      - type: custom:mod-card
+        card:
+          type: custom:hui-entity-badge
+          entity: sensor.overview_lights
+          icon: mdi:lightbulb
+          show_name: true
+          name: 조명
+          color: yellow
+          double_tap_action:
+            action: none
+          hold_action:
+            action: none
+          tap_action:
+            action: navigate
+            navigation_path: /dashboard-unknown/light
+        card_mod:
+          style:
+            hui-entity-badge: |
+              ha-card {
+                border: 2px solid {{ 'var(--primary-color)' if states('sensor.count_lights_on')|int > 0 else 'var(--primary-background-color)' }} !important;
+                border-radius: 24px;
+                --icon-primary-color: {{ 'var(--icon-primary-color)' if states('sensor.count_lights_on')|int > 0 else 'grey' }};
+                
+                {% if states('sensor.count_lights_on')|int > 0 %}
+                  animation: blink 2s ease infinite;
+                {% endif %}
+              }
+
+              {% if states('sensor.count_lights_on')|int > 0 %}
+                @keyframes blink {
+                  50% {
+                    opacity: 0.2;
+                  }
+                }
+              {% endif %}
+      - type: custom:mod-card
+        card:
+          type: custom:hui-entity-badge
+          entity: sensor.count_media_playing
+          icon: mdi:speaker-wireless
+          show_name: true
+          name: 스피커 및 TV
+          color: purple
+          double_tap_action:
+            action: none
+          hold_action:
+            action: none
+          tap_action:
+            action: navigate
+            navigation_path: /dashboard-unknown/media-player
+        card_mod:
+          style:
+            hui-entity-badge: |
+              ha-card {
+                border: 2px solid {{ 'var(--primary-color)' if states('sensor.count_media_playing')|int > 0 else 'var(--primary-background-color)' }} !important;
+                border-radius: 24px;
+                --icon-primary-color: {{ 'var(--icon-primary-color)' if states('sensor.count_media_playing')|int > 0 else 'grey' }};
+                
+                {% if states('sensor.count_media_playing')|int > 0 %}
+                            animation: blink 2s ease infinite;
+                {% endif %}
+              }
+
+              {% if states('sensor.count_media_playing')|int > 0 %}
+                @keyframes blink {
+                  50% {
+                    opacity: 0.2;
+                  }
+                }
+              {% endif %}
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.95beon_beoseu_docag_jeongbo_bs264177
+        show_entity_picture: false
+        name: 95번 버스
+        icon: mdi:bus-clock
+      - type: entity
+        show_name: true
+        show_state: true
+        show_icon: true
+        entity: sensor.730beon_beoseu_docag_jeongbo_bs264177
+        name: 730번 버스
+        icon: mdi:bus-clock
+  - type: sections
+    max_columns: 4
+    title: light
+    path: light
+    sections:
+      - type: grid
+        cards:
+          - type: custom:expander-card
+            title: Lights
+            cards:
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: custom:slider-button-card
+                    entity: light.geosil_jomyeong_1beon
+                    name: 거실 조명 1
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:ceiling-light
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.geosil_jomyeong_2beon
+                    name: 거실 조명 2
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:ceiling-light
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.geosil_jomyeong_3beon
+                    name: 거실 조명 3
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:ceiling-light
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.deureseurum_deung
+                    name: 드레스룸 등
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:hanger
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.hwajangdae_deung
+                    name: 화장대 등
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:face-woman
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.anbang_hwajangsil_deung
+                    name: 안방 화장실 등
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:toilet
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.anbang_syaweosil_deung
+                    name: 안방 샤워실 등
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:shower-head
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.smart_bulb
+                    name: 우현이방 책상 조명
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:desk-lamp
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.smart_bulb_3
+                    name: 안방 조명
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:bed-king
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+                  - type: custom:slider-button-card
+                    entity: light.sihas_switch_5
+                    name: 우현이방 등
+                    slider:
+                      direction: left-right
+                      background: gradient
+                      use_state_color: false
+                      use_percentage_bg_opacity: true
+                      show_track: true
+                    show_name: true
+                    show_state: true
+                    compact: false
+                    icon:
+                      icon: mdi:light-switch
+                      show: true
+                      use_state_color: false
+                    action_button:
+                      show: false
+                    card_mod:
+                      style: |
+                        :host {
+                          --slider-color: rgba(255, 232, 198, 0.95);
+                          --slider-bg: linear-gradient(90deg, rgba(86, 75, 63, 0.92) 0%, rgba(255, 226, 187, 0.95) 48%, rgba(255, 240, 210, 0.97) 52%, rgba(86, 75, 63, 0.92) 100%);
+                          --slider-bg-filter: brightness(105%);
+                          --icon-color: #fff5e6;
+                          --state-color-on: #fff9ed;
+                          --state-color-off: rgba(255, 249, 237, 0.7);
+                          --label-color-on: #fff5e6;
+                          --label-color-off: rgba(255, 249, 237, 0.6);
+                          --action-icon-color-on: #fff5e6;
+                          --action-icon-color-off: rgba(255, 249, 237, 0.6);
+                        }
+                        ha-card {
+                          background: linear-gradient(90deg, rgba(56, 51, 47, 0.75) 0%, rgba(238, 207, 162, 0.88) 45%, rgba(254, 235, 205, 0.94) 55%, rgba(56, 51, 47, 0.75) 100%);
+                          color: #fff5e6;
+                          border-radius: 22px;
+                          box-shadow: none;
+                        }
+                        ha-card ha-icon {
+                          color: #fff5e6;
+                        }
+                        ha-card .name,
+                        ha-card .state,
+                        ha-card .label,
+                        ha-card .value {
+                          color: #fff5e6 !important;
+                        }
+    badges:
+      - type: custom:mod-card
+        card:
+          type: custom:hui-entity-badge
+          entity: sensor.overview_lights
+          icon: mdi:lightbulb
+          show_name: true
+          name: 조명
+          color: yellow
+          double_tap_action:
+            action: none
+          hold_action:
+            action: none
+          tap_action:
+            action: navigate
+            navigation_path: /dashboard-unknown/home
+        card_mod:
+          style:
+            hui-entity-badge: |
+              ha-card {
+                border: 2px solid {{ 'var(--primary-color)' if states('sensor.count_lights_on')|int > 0 else 'var(--primary-background-color)' }} !important;
+                border-radius: 24px;
+                --icon-primary-color: {{ 'var(--icon-primary-color)' if states('sensor.count_lights_on')|int > 0 else 'grey' }};
+                --ha-card-background: var(--primary-color);
+                --primary-text-color: var(--primary-background-color);
+                --secondary-text-color: var(--primary-background-color);                
+                {% if states('sensor.count_lights_on')|int > 0 %}
+                  animation: blink 2s ease infinite;
+                {% endif %}
+              }
+
+              {% if states('sensor.count_lights_on')|int > 0 %}
+                @keyframes blink {
+                  50% {
+                    opacity: 0.2;
+                  }
+                }
+              {% endif %}
+    subview: true
+  - type: sections
+    max_columns: 4
+    path: media-player
+    title: media-player
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: vertical-stack
+              card_param: cards
+            sort:
+              method: entity_id
+            filter:
+              template: |-
+                {% for ENTITY in expand('media_player.uhyeonibang') %}
+                  {
+                    "type": "conditional",
+                    "conditions": [
+                      {
+                        "condition": "state",
+                        "entity": "{{ ENTITY.entity_id }}",
+                        "state": "playing"
+                      }
+                    ],
+                    "card": {
+                      "type": "custom:mini-media-player",
+                      "entity": "{{ ENTITY.entity_id }}",
+                      "name": "{{ state_attr(ENTITY.entity_id, 'friendly_name') | replace(' 스피커', '') }}",
+                      "artwork": "full-cover",
+                      "speaker_group": {
+                        "platform": "media_player",
+                        "show_group_count": "true",
+                        "entities": [
+                          {% for mass_entity in integration_entities('music_assistant') %}
+                            {
+                              "entity_id": "{{ mass_entity }}",
+                              "name": "{{ state_attr(mass_entity, 'friendly_name') }}"
+                            }{% if not loop.last %},{% endif %}
+                          {% endfor %}
+                        ]
+                      }
+                    }
+                  }{% if not loop.last %},{% endif %}
+                {% endfor %}
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: vertical-stack
+            card_param: cards
+            sort:
+              method: entity_id
+            filter:
+              template: |-
+                {% for ENTITY in expand('group.all_media_players')
+                  | selectattr('state', 'eq', 'playing') %}
+                  {
+                    "type": "conditional",
+                    "conditions": [
+                      {
+                        "condition": "state",
+                        "entity": "{{ ENTITY.entity_id }}",
+                        "state": "playing"
+                      }
+                    ],
+                    "card": {
+                      "type": "custom:mini-media-player",
+                      "entity": "{{ ENTITY.entity_id }}",
+                      "name": "{{ state_attr(ENTITY.entity_id, 'friendly_name') }}",
+                      "artwork": "full-cover"
+                    }
+                  },
+                {% endfor %}
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
+          - type: vertical-stack
+            cards:
+              - type: heading
+                heading: 재생 중인 미디어
+                heading_style: title
+                card_mod:
+                  style:
+                    .: |
+                      ha-card {
+                        border: 2px solid var(--primary-color); 
+                        border-radius: 24px;      
+                        background-color: var(--primary-background-color) !important;
+                        border-style: solid;
+                      }
+                      .title > p {
+                        color: var(--primary-text-color) !important;
+                        font-size: 20px !important;
+                        font-weight: bold;
+                        padding-left: 12px;
+                      }
+              - type: custom:auto-entities
+                card:
+                  type: grid
+                  square: false
+                  columns: 1
+                card_param: cards
+                filter:
+                  include:
+                    - group: group.all_media_players
+                      options:
+                        type: custom:bubble-card
+                        card_type: button
+                        button_type: slider
+                        scrolling_effect: true
+                        slider_live_update: false
+                        show_name: true
+                        card_layout: large
+                        force_icon: false
+                sort:
+                  method: entity_id
+            visibility:
+              - condition: numeric_state
+                entity: sensor.count_media_playing
+                above: 0
+    subview: true
+    cards: []
+  - type: sections
+    max_columns: 4
+    subview: true
+    path: energy
+    title: 에너지
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
+  - type: sections
+    max_columns: 4
+    title: Home Assistant
+    path: home-assistant
+    subview: true
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
+          - type: entities
+            show_header_toggle: false
+            title: Home Assistant
+            entities:
+              - type: attribute
+                entity: update.home_assistant_core_update
+                attribute: installed_version
+                icon: mdi:home-assistant
+                name: Core
+              - type: attribute
+                entity: update.home_assistant_supervisor_update
+                attribute: installed_version
+                icon: mdi:home-assistant
+                name: Supervisor
+              - type: attribute
+                entity: update.home_assistant_operating_system_update
+                attribute: installed_version
+                icon: mdi:home-assistant
+                name: OS
+              - type: divider
+              - entity: sensor.system_monitor_processor_use
+                name: CPU
+                card_mod:
+                  style: |
+                    hui-generic-entity-row {
+                      background:
+                        {% set perc = states(config.entity)|float(0) %}
+                        {% if perc >= 59 %} {% set bar = '255,0,0' %}
+                        {% elif perc >= 44 %} {% set bar = '128,0,0' %}
+                        {% elif perc >= 24 %} {% set bar = '255,165,0' %}
+                        {% elif perc >= 9 %} {% set bar = '0,100,0' %}
+                        {% else %} {% set bar = '0,128,0' %}
+                        {% endif %}
+                        linear-gradient(to right, rgb({{bar}},0.9) 0%, rgb({{bar}},0.6) {{perc}}%,
+                                                  rgba({{bar}},0.3) {{perc}}%, rgba({{bar}},0.1) 100%);
+                    }
+              - entity: sensor.pi5_memory_usage
+                name: Memory
+                card_mod:
+                  style: |
+                    hui-generic-entity-row {
+                      background:
+                        {% set perc = states(config.entity)|float(0) %}
+                        {% if perc >= 85 %} {% set bar = '255,0,0' %}
+                        {% elif perc >= 75 %} {% set bar = '128,0,0' %}
+                        {% elif perc >= 60 %} {% set bar = '255,165,0' %}
+                        {% elif perc >= 50 %} {% set bar = '165,42,42' %}
+                        {% else %} {% set bar = '0,128,0' %}
+                        {% endif %}
+                        linear-gradient(to right, rgba({{bar}},0.9) 0%, rgb({{bar}},0.9) {{perc}}%,
+                                                  rgba({{bar}},0.6) {{perc}}%, rgba({{bar}},0.2) 100%);
+                    }
+              - entity: sensor.system_monitor_disk_usage
+                name: Disk
+                card_mod:
+                  style: |
+                    hui-generic-entity-row {
+                      background:
+                        {% set perc = states(config.entity)|float(0) %}
+                        {% if perc >= 59 %} {% set bar = '255,0,0' %}
+                        {% elif perc >= 44 %} {% set bar = '128,0,0' %}
+                        {% elif perc >= 24 %} {% set bar = '255,165,0' %}
+                        {% elif perc >= 9 %} {% set bar = '0,100,0' %}
+                        {% else %} {% set bar = '0,128,0' %}
+                        {% endif %}
+                        linear-gradient(to right, rgb({{bar}},0.9) 0%, rgb({{bar}},0.6) {{perc}}%,
+                                                  rgba({{bar}},0.3) {{perc}}%, rgba({{bar}},0.1) 100%);
+                    }
+              - type: divider
+              - entity: sensor.ha_log_size
+                name: Log
+                icon: mdi:file-document
+              - type: divider
+              - entity: sensor.uptime
+                name: 마지막 재부팅
+              - type: custom:hui-element
+                card_type: horizontal-stack
+                cards:
+                  - type: custom:button-card
+                    name: Restart
+                    tap_action:
+                      action: perform-action
+                      confirmation:
+                        text: 정말로 재시작하시겠습니까?
+                      perform_action: homeassistant.restart
+                  - type: custom:button-card
+                    name: Reload All
+                    tap_action:
+                      action: perform-action
+                      confirmation:
+                        text: 정말로 리로드 하시겠습니까?
+                      perform_action: homeassistant.reload_all
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
+          - type: entities
+            title: 📊 InfluxDB 백업 상태
+            entities:
+              - entity: sensor.influxdb_latest_backup
+                name: 최근 백업
+                icon: mdi:database-clock
+              - entity: sensor.influxdb_backup_count
+                name: 백업 개수
+                icon: mdi:counter
+              - entity: sensor.influxdb_backup_size
+                name: 총 용량
+                icon: mdi:harddisk
+              - entity: sensor.influxdb_backup_status
+                name: 백업 상태
+                icon: mdi:check-circle
+            state_color: true
+  - title: 거실
+    path: areas-geosil-pro
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: title
+            heading: 거실 개요
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: entity
+                entity: climate.seutaendeuhyeong_eeokeon
+                name: 에어컨
+              - type: entity
+                entity: sensor.seutaendeuhyeong_eeokeon_temperature
+                name: 온도
+              - type: entity
+                entity: sensor.seutaendeuhyeong_eeokeon_humidity
+                name: 습도
+              - type: entity
+                entity: sensor.mi_body_composition_scale_fda2_weight
+                name: 체중
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:home-thermometer
+            heading: 냉난방
+          - type: tile
+            entity: climate.seutaendeuhyeong_eeokeon
+            vertical: false
+            features:
+              - type: target-temperature
+            features_position: bottom
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:lightbulb-group-outline
+            heading: 조명
+          - type: custom:mushroom-entity-card
+            entity: switch.geosil_jomyeong_1beon
+            name: 거실 조명 1
+            icon: mdi:lightbulb
+            layout: horizontal
+          - type: custom:mushroom-entity-card
+            entity: switch.geosil_jomyeong_2beon
+            name: 거실 조명 2
+            icon: mdi:lightbulb
+            layout: horizontal
+          - type: custom:mushroom-entity-card
+            entity: switch.geosil_jomyeong_3beon
+            name: 거실 조명 3
+            icon: mdi:lightbulb
+            layout: horizontal
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:fan
+            heading: 전열교환기
+          - type: custom:mushroom-entity-card
+            entity: switch.jeonyeolgyohwangi_gangpung
+            name: 강풍
+            icon: mdi:fan-speed-3
+            layout: horizontal
+          - type: custom:mushroom-entity-card
+            entity: switch.jeonyeolgyohwangi_mipung
+            name: 중풍
+            icon: mdi:fan-speed-2
+            layout: horizontal
+          - type: custom:mushroom-entity-card
+            entity: switch.jeonyeolgyohwangi_mipung
+            name: 약풍
+            icon: mdi:fan-speed-1
+            layout: horizontal
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:power-socket-us
+            heading: 전원·소형 디바이스
+          - type: custom:mushroom-entity-card
+            entity: switch.wi_fi_smart_plug_2
+            name: 서재 전원
+            icon: mdi:power-socket-eu
+            layout: horizontal
+          - type: custom:mushroom-entity-card
+            entity: switch.fingerbot_touch_switch_1
+            name: Fingerbot Touch
+            icon: mdi:gesture-tap-button
+            layout: horizontal
+          - type: custom:mushroom-entity-card
+            entity: switch.fingerbot_touch_switch_2
+            name: IR 제어기
+            icon: mdi:remote
+            layout: horizontal
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:window-open-variant
+            heading: 창문
+          - type: custom:mushroom-entity-card
+            name: 오른쪽 창문
+            layout: horizontal
+            entity: binary_sensor.multipurpose_sensor_1_door
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:scale-bathroom
+            heading: 헬스
+          - type: custom:mushroom-entity-card
+            entity: sensor.mi_body_composition_scale_fda2_weight
+            name: 체중
+            icon: mdi:scale
+            layout: horizontal
+  - type: sections
+    max_columns: 4
+    title: weather
+    path: weather
+    subview: true
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.wn_jib
+            forecast_type: daily
+            forecast_slots: 7
+            secondary_info_attribute: apparent_temperature
+      - type: grid
+        cards:
+          - type: heading
+            heading: 새 섹션
