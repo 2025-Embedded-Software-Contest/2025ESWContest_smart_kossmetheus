@@ -1,0 +1,18 @@
+# Energy Sensors Entities Card
+type: grid
+cards:
+  - type: entities
+    entities:
+      - entity: sensor.sihas_energy_monitor_power
+        name: Current Power (W)
+      - entity: sensor.sihas_energy_monitor_energy
+        name: Total Energy (kWh)
+      - entity: sensor.electricity_energy_monthly
+        name: This Month (kWh)
+      - entity: sensor.electricity_energy_prev_monthly
+        name: Last Month (kWh)
+      - entity: sensor.wi_fi_smart_plug_1_energy_2
+        name: Washer Energy (kWh)
+      - entity: sensor.wi_fi_smart_plug_2_energy_2
+        name: Study Plug Energy (kWh)
+

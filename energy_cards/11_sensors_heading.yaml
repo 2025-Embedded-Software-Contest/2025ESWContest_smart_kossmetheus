@@ -1,0 +1,8 @@
+# Sensors Heading Card
+type: grid
+cards:
+  - type: heading
+    icon: mdi:home-lightning-bolt-outline
+    heading: Sensors
+    heading_style: title
+

@@ -1,383 +1,506 @@
-type: horizontal-stack
+type: vertical-stack
 cards:
-  # Weather
-  - type: custom:button-card
-    entity: weather.wn_jib
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: |
-      [[[
-        const m = {
-          sunny: 'mdi:weather-sunny',
-          'clear-night': 'mdi:weather-night',
-          cloudy: 'mdi:weather-cloudy',
-          partlycloudy: 'mdi:weather-partly-cloudy',
-          rainy: 'mdi:weather-pouring',
-          pouring: 'mdi:weather-pouring',
-          windy: 'mdi:weather-windy',
-          snowy: 'mdi:weather-snowy',
-          fog: 'mdi:weather-fog'
-        };
-        return m[states[entity.entity_id].state] || 'mdi:weather-partly-cloudy';
-      ]]]
-    label: "날씨"
-    name: |
-      [[[
-        const t = states[entity.entity_id].attributes.temperature;
-        return (t !== undefined) ? (Number(t).toFixed(1) + "°C") : "—";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#f5c842'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+  # 시스템 정보 팝업 카드
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: '#server'
+    name: 시스템 정보
+    icon: mdi:server
+    state: null
+    is_sidebar_hidden: true
+    styles: >-
+      .bubble-pop-up-container {
+        --vertical-stack-card-gap: 0px!important;
+      } #header-container > div > div {
+        background: var(--popupBG)!important;
+      }     
 
-  # Temperature
-  - type: custom:button-card
-    entity: sensor.average_indoor_temperature
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:thermometer
-    label: "온도"
-    name: |
-      [[[
-        const v = Number(states[entity.entity_id].state);
-        return isNaN(v) ? states[entity.entity_id].state : v.toFixed(1) + "°C";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#a7e97b'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      #header-container > button {background: none;}    
 
-  # Humidity
-  - type: custom:button-card
-    entity: sensor.average_indoor_humidity
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:water-percent
-    label: "습도"
-    name: |
-      [[[
-        const v = Number(states[entity.entity_id].state);
-        return isNaN(v) ? states[entity.entity_id].state : v.toFixed(1) + "%";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#68b7ff'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      .icon-container {background-color:var(--gray800)!important;} 
 
-  # Energy
-  - type: custom:button-card
-    entity: sensor.sihas_energy_monitor_energy
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:lightning-bolt
-    label: "에너지"
-    name: |
-      [[[
-        const v = Number(states[entity.entity_id].state);
-        return isNaN(v) ? states[entity.entity_id].state : Math.round(v) + "kWh";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#ffde82'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      .icon-container > ha-icon
+      {color:var(--gray000)!important;opacity:1!important}
 
-  # Alarm
-  - type: custom:button-card
-    entity: sensor.paul_nest_alarms
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:alarm
-    label: "알람"
-    name: |
-      [[[
-        const v = states[entity.entity_id].state;
-        if (!v) return "—";
-        const d = new Date(v);
-        if (isNaN(d)) {
-          const m = (v || '').toString().match(/^(\d{2}):(\d{2})/);
-          return m ? `${m[1]}:${m[2]}` : v;
-        }
-        const hh = d.getHours().toString().padStart(2,'0');
-        const mm = d.getMinutes().toString().padStart(2,'0');
-        return `${hh}:${mm}`;
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#f5c977'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
-
-  # Vacuum
-  - type: custom:button-card
-    entity: switch.robot_vacuum_switch
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:robot-vacuum
-    label: "도비"
-    name: |
-      [[[
-        const s = (states[entity.entity_id].state || '').toString();
-        return s ? s.charAt(0).toUpperCase() + s.slice(1) : "—";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#c6c6c6'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      .bubble-icon {
+        --mdc-icon-size: 22px !important;
+      }
+    bg_blur: '5'
+    shadow_opacity: '20'
+    bg_opacity: '98'
+    margin_top_mobile: 50px
+    margin_top_desktop: 50px
+    card_layout: large
+  
+  - type: custom:gap-card
+    height: 0
+  
+  # 탭 버튼 행
+  - type: horizontal-stack
+    cards:
+      - type: custom:button-card
+        entity: input_select.server_tab
+        name: Home Assistant
+        icon: mdi:home-assistant
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            entity_id: input_select.server_tab
+            option: Home Assistant
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  return states['input_select.server_tab'].state === 'Home Assistant' 
+                    ? 'var(--active-small)' 
+                    : 'rgba(128, 128, 128, 0.3)';
+                ]]]
+            - color: |
+                [[[
+                  return states['input_select.server_tab'].state === 'Home Assistant' 
+                    ? 'white' 
+                    : 'var(--gray800)';
+                ]]]
+          name:
+            - font-size: 12px
+            - padding: 8px 16px
+      
+      - type: custom:button-card
+        entity: input_select.server_tab
+        name: Unifi
+        icon: mdi:wifi-check
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            entity_id: input_select.server_tab
+            option: Unifi
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  return states['input_select.server_tab'].state === 'Unifi' 
+                    ? 'var(--active-small)' 
+                    : 'rgba(128, 128, 128, 0.3)';
+                ]]]
+            - color: |
+                [[[
+                  return states['input_select.server_tab'].state === 'Unifi' 
+                    ? 'white' 
+                    : 'var(--gray800)';
+                ]]]
+          name:
+            - font-size: 12px
+            - padding: 8px 16px
+      
+      - type: custom:button-card
+        entity: input_select.server_tab
+        name: InfluxDB
+        icon: mdi:database
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            entity_id: input_select.server_tab
+            option: InfluxDB
+        styles:
+          card:
+            - background-color: |
+                [[[
+                  return states['input_select.server_tab'].state === 'InfluxDB' 
+                    ? 'var(--active-small)' 
+                    : 'rgba(128, 128, 128, 0.3)';
+                ]]]
+            - color: |
+                [[[
+                  return states['input_select.server_tab'].state === 'InfluxDB' 
+                    ? 'white' 
+                    : 'var(--gray800)';
+                ]]]
+          name:
+            - font-size: 12px
+            - padding: 8px 16px
+  
+  # Home Assistant 탭
+  - type: conditional
+    conditions:
+      - entity: input_select.server_tab
+        state: Home Assistant
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:gap-card
+          height: 6
+        
+        # 가동 시간 (상단)
+        - type: custom:button-card
+          template: sensor_big
+          entity: sensor.uptime
+          variables:
+            name: 가동 시간
+            icon: mdi:clock-outline
+            label: |
+              [[[
+                const uptimeState = states['sensor.uptime'].state;
+                const uptimeDate = new Date(uptimeState);
+                const now = new Date();
+                const diffMs = now - uptimeDate;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                return diffDays + '일 ' + diffHours + '시간';
+              ]]]
+            background: var(--popupBG)
+        
+        # 2x3 그리드 (CPU, 메모리, 디스크 / 온도, 팬속도, 로그크기)
+        - type: horizontal-stack
+          cards:
+            # 왼쪽: CPU 온도 (큰 카드)
+            - type: custom:button-card
+              template: sensor_big
+              entity: sensor.pi5_cpu_temperature
+              styles:
+                card:
+                  - height: 144px
+              variables:
+                name: CPU 온도
+                label: |
+                  [[[ 
+                    return Math.round((states['sensor.pi5_cpu_temperature'].state) * 10)/10 + '°C'
+                  ]]]
+                icon: mdi:thermometer
+                background: var(--popupBG)
+            
+            # 오른쪽: 3개 센서 (수직 배치)
+            - type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.pi5_fan_speed
+                  variables:
+                    name: 팬 속도
+                    icon: mdi:fan
+                    label: |
+                      [[[
+                        return (states['sensor.pi5_fan_speed'].state) + ' RPM'
+                      ]]]
+                    background: var(--popupBG)
+                
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.pi5_cpu_usage
+                  variables:
+                    name: CPU 사용량
+                    icon: mdi:cpu-64-bit
+                    label: |
+                      [[[
+                        return entity.state + "%"
+                      ]]]
+                    background: var(--popupBG)
+                
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.pi5_memory_usage
+                  variables:
+                    name: 메모리 사용량
+                    icon: mdi:memory
+                    label: |
+                      [[[
+                        return entity.state + "%"
+                      ]]]
+                    background: var(--popupBG)
+        
+        # 디스크 사용량 (퍼센테이지 바)
+        - type: custom:button-card
+          template: sensor_big_percentage
+          entity: sensor.system_monitor_disk_usage
+          variables:
+            name: 디스크 사용량
+            icon: mdi:harddisk
+            background: var(--popupBG)
+            bar: >
+              [[[
+                var color;
+                var state = entity.state;
+                if (state >= 70) {
+                  color = "var(--red)";
+                } else if (state >= 50) {
+                  color = "var(--orange)";
+                } else if (state >= 30) {
+                  color = "var(--yellow)";
+                } else if (state >= 20) {
+                  color = "var(--blue)";
+                } else {
+                  color = "var(--green)";
+                }
+                return `<div><div style="background:${color}; height: 30px; width:${state}%;"></div></div>`
+              ]]]
+            label: |
+              [[[
+                return entity.state + '%'
+              ]]]
+        
+        # 로그 크기
+        - type: custom:button-card
+          template: sensor_small
+          entity: sensor.ha_log_size
+          variables:
+            name: 로그 크기
+            icon: mdi:file-chart
+            label: |
+              [[[
+                return entity.state + " MB"
+              ]]]
+            background: var(--popupBG)
+  
+  # Unifi 탭
+  - type: conditional
+    conditions:
+      - entity: input_select.server_tab
+        state: Unifi
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:gap-card
+          height: 6
+        
+        # UCG Fiber 섹션
+        - type: markdown
+          content: "### UCG Fiber"
+          card_mod:
+            style: |
+              ha-card {
+                background: none;
+                box-shadow: none;
+                padding: 12px 8px 0px 8px;
+              }
+              ha-markdown {
+                color: var(--gray800);
+              }
+        
+        # UCG Fiber: 2x3 그리드
+        - type: horizontal-stack
+          cards:
+            # 왼쪽: CPU 온도 (큰 카드)
+            - type: custom:button-card
+              template: sensor_big
+              entity: sensor.ucg_fiber_ucg_fiber_cpu_temperature
+              styles:
+                card:
+                  - height: 144px
+              variables:
+                name: CPU 온도
+                label: |
+                  [[[ 
+                    return Math.round((states['sensor.ucg_fiber_ucg_fiber_cpu_temperature'].state) * 10)/10 + '°C'
+                  ]]]
+                icon: mdi:thermometer
+                background: var(--popupBG)
+            
+            # 오른쪽: 3개 센서
+            - type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.ucg_fiber_state
+                  variables:
+                    name: 상태
+                    icon: mdi:lan-check
+                    label: |
+                      [[[
+                        return states['sensor.ucg_fiber_state'].state
+                      ]]]
+                    background: var(--popupBG)
+                
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.ucg_fiber_cpu_utilization
+                  variables:
+                    name: CPU 사용량
+                    icon: mdi:cpu-64-bit
+                    label: |
+                      [[[
+                        return entity.state + "%"
+                      ]]]
+                    background: var(--popupBG)
+                
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.ucg_fiber_memory_utilization
+                  variables:
+                    name: 메모리 사용량
+                    icon: mdi:memory
+                    label: |
+                      [[[
+                        return entity.state + "%"
+                      ]]]
+                    background: var(--popupBG)
+        
+        # UCG Fiber: 추가 정보
+        - type: horizontal-stack
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.ucg_fiber_clients
+              variables:
+                name: 연결 기기
+                icon: mdi:devices
+                label: |
+                  [[[
+                    return entity.state + ' 개'
+                  ]]]
+                background: var(--popupBG)
+            
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.ucg_fiber_uptime
+              variables:
+                name: 가동 시간
+                icon: mdi:clock-outline
+                label: |
+                  [[[
+                    const uptimeState = states['sensor.ucg_fiber_uptime'].state;
+                    const uptimeDate = new Date(uptimeState);
+                    const now = new Date();
+                    const diffMs = now - uptimeDate;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    return diffDays + '일'
+                  ]]]
+                background: var(--popupBG)
+        
+        - type: custom:gap-card
+          height: 12
+        
+        # U7 Pro XG 섹션
+        - type: markdown
+          content: "### U7 Pro XG"
+          card_mod:
+            style: |
+              ha-card {
+                background: none;
+                box-shadow: none;
+                padding: 12px 8px 0px 8px;
+              }
+              ha-markdown {
+                color: var(--gray800);
+              }
+        
+        # U7 Pro XG: 정보
+        - type: horizontal-stack
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.u7_pro_xg_state
+              variables:
+                name: 상태
+                icon: mdi:access-point-check
+                label: |
+                  [[[
+                    return states['sensor.u7_pro_xg_state'].state
+                  ]]]
+                background: var(--popupBG)
+            
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.u7_pro_xg_uptime
+              variables:
+                name: 가동 시간
+                icon: mdi:clock-outline
+                label: |
+                  [[[
+                    const uptimeState = states['sensor.u7_pro_xg_uptime'].state;
+                    const uptimeDate = new Date(uptimeState);
+                    const now = new Date();
+                    const diffMs = now - uptimeDate;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    return diffDays + '일'
+                  ]]]
+                background: var(--popupBG)
+  
+  # InfluxDB 탭
+  - type: conditional
+    conditions:
+      - entity: input_select.server_tab
+        state: InfluxDB
+    card:
+      type: vertical-stack
+      cards:
+        - type: custom:gap-card
+          height: 6
+        
+        # DB 크기 및 백업 상태
+        - type: horizontal-stack
+          cards:
+            # 왼쪽: DB 크기 (큰 카드)
+            - type: custom:button-card
+              template: sensor_big
+              entity: sensor.influxdb_db_size
+              styles:
+                card:
+                  - height: 144px
+              variables:
+                name: DB 크기
+                label: |
+                  [[[ 
+                    return states['sensor.influxdb_db_size'].state + ' MB'
+                  ]]]
+                icon: mdi:database
+                background: var(--popupBG)
+            
+            # 오른쪽: 3개 센서
+            - type: vertical-stack
+              cards:
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.influxdb_backup_status
+                  variables:
+                    name: 백업 상태
+                    icon: mdi:backup-restore
+                    label: |
+                      [[[
+                        const status = states['sensor.influxdb_backup_status'].state;
+                        return status === 'failed' ? '실패' : status === 'success' ? '성공' : status
+                      ]]]
+                    background: var(--popupBG)
+                
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.influxdb_backup_count
+                  variables:
+                    name: 백업 개수
+                    icon: mdi:counter
+                    label: |
+                      [[[
+                        return states['sensor.influxdb_backup_count'].state + ' 개'
+                      ]]]
+                    background: var(--popupBG)
+                
+                - type: custom:button-card
+                  template: sensor_small
+                  entity: sensor.influxdb_backup_size
+                  variables:
+                    name: 백업 크기
+                    icon: mdi:folder-zip
+                    label: |
+                      [[[
+                        return states['sensor.influxdb_backup_size'].state
+                      ]]]
+                    background: var(--popupBG)
+        
+        # 최신 백업
+        - type: custom:button-card
+          template: sensor_small
+          entity: sensor.influxdb_latest_backup
+          variables:
+            name: 최신 백업
+            icon: mdi:calendar-clock
+            label: |
+              [[[
+                const backup = states['sensor.influxdb_latest_backup'].state;
+                const match = backup.match(/(\d{4})-(\d{2})-(\d{2})/);
+                if (match) {
+                  return match[2] + '/' + match[3];
+                }
+                return backup;
+              ]]]
+            background: var(--popupBG)
