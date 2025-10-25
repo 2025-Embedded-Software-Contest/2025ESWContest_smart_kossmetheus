@@ -80,7 +80,7 @@ styles:
   img_cell:
     - justify-self: end
     - align-self: start
-    - background: rgba(var(--highlight))
+    - background: "#4CAF50"
     - padding: 14px
     - border-radius: 50%
     - margin: 4px 4px 0 0
