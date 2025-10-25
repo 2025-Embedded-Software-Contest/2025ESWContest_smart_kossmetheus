@@ -195,6 +195,18 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         )
 
         print("HA RESPONSE] =>", notify_result)
+        try:
+            headers = {"Authorization": f"Bearer {settings.ha_token}"}
+            async with httpx.AsyncClient() as client:
+                r = await client.post(
+                    f"{settings.ha_base_url.rstrip('/')}/api/services/input_boolean/turn_on",
+                    headers=headers,
+                    json={"entity_id": "input_boolean.fall_triggered"}
+                )
+                print(f"[ENTITY] input_boolean.fall_triggered -> ON (status={r.status_code})")
+        except Exception as e:
+            print(f"[ENTITY ERROR] failed to update entity: {e}")
+            
         #낙상 후 일정 시간 지나면 태스크 실행
         asyncio.create_task(check_post_fall_motion(ev))
     else:
