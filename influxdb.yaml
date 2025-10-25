@@ -123,3 +123,38 @@ ignore_attributes:
   - context_parent_id
   - last_changed
   - last_updated
+
+queries:
+  # 1) 낙상 확률 (%). fall_events.measurement 의 predicted_prob(0~1)을 %로 변환
+  - name: "Fall Probability"
+    measurement: "fall_events"
+    where: "time > now() - 10m"
+    # 특정 디바이스/위치만 보고 싶으면 아래와 같이 태그 필터 추가
+    # where: "time > now() - 10m AND \"device_id\"='esp32_cam' AND \"location\"='거실'"
+    field: "predicted_prob"     # 필드명이 다르면 'prob' 등으로 바꾸세요.
+    group_function: "last"
+    value_template: "{{ (value | float * 100) | round(1) }}"
+    unit_of_measurement: "%"
+
+  # 2) 낙상 상태(0/1). 최근 값 그대로 노출
+  - name: "Fall State"
+    measurement: "fall_events"
+    where: "time > now() - 10m"
+    field: "fall_state"
+    group_function: "last"
+    value_template: "{{ value | int }}"
+
+  # 3) 재실/움직임 등(선택)
+  - name: "Fall Presence"
+    measurement: "fall_events"
+    where: "time > now() - 10m"
+    field: "presence"
+    group_function: "last"
+    value_template: "{{ value | int }}"
+
+  - name: "Fall Movement"
+    measurement: "fall_events"
+    where: "time > now() - 10m"
+    field: "movement"
+    group_function: "last"
+    value_template: "{{ value | int }}"
