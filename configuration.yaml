@@ -175,16 +175,10 @@ lovelace:
     - url: /hacsfiles/lovelace-layout-card/layout-card.js
       type: module
   dashboards:
-    integrated-dashboard:
-      mode: yaml
-      title: 통합 대시보드
+    caredian-dashboard:
+      mode: storage
+      title: cardian dashboard
       icon: mdi:view-dashboard-variant
-      show_in_sidebar: true
-      filename: integrated_dashboard.yaml
-    air-quality-dashboard:
-      mode: yaml
-      title: 공기질 대시보드 2025
-      icon: mdi:air-filter
       show_in_sidebar: true
       filename: dashboard.yaml
 
