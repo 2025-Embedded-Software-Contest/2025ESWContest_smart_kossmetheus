@@ -1,0 +1,38 @@
+- platform: influxdb
+  host: 192.168.1.175
+  port: 8086
+  database: !secret influxdb_database
+  username: !secret influxdb_username
+  password: !secret influxdb_password
+  ssl: false
+  verify_ssl: false
+
+  queries:
+    - name: "Fall Probability"
+      measurement: "fall_events"
+      where: "time > now() - 10m"
+      field: "predicted_prob"
+      group_function: "last"
+      value_template: "{{ (value | float * 100) | round(1) }}"
+      unit_of_measurement: "%"
+
+    - name: "Fall State"
+      measurement: "fall_events"
+      where: "time > now() - 10m"
+      field: "fall_state"
+      group_function: "last"
+      value_template: "{{ value | int }}"
+
+    - name: "Fall Presence"
+      measurement: "fall_events"
+      where: "time > now() - 10m"
+      field: "presence"
+      group_function: "last"
+      value_template: "{{ value | int }}"
+
+    - name: "Fall Movement"
+      measurement: "fall_events"
+      where: "time > now() - 10m"
+      field: "movement"
+      group_function: "last"
+      value_template: "{{ value | int }}"

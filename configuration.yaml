@@ -15,7 +15,7 @@ frontend:
 scene: !include_dir_merge_list scenes
 automation: !include automations.yaml
 script: !include scripts.yaml
-sensor: !include sensors.yaml
+sensor: !include_dir_merge_list sensors
 template: !include templates.yaml
 influxdb: !include influxdb.yaml
 group: !include groups.yaml

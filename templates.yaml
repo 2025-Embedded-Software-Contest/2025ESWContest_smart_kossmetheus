@@ -392,3 +392,9 @@
         {% else %}
           mdi:door
         {% endif %}
+
+- binary_sensor:
+    - name: "낙상 감지"
+      device_class: safety
+      state: "{{ states('sensor.fall_state') | int == 1 }}"
+      availability: "{{ states('sensor.fall_state') not in ['unknown','unavailable',''] }}"
