@@ -39,7 +39,7 @@ cards:
         - border-radius: 0
         - min-width: 120px
       grid:
-        - grid-template-areas: '"i n" "i l"'
+        - grid-template-areas: '"i label" "i name"'
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
@@ -48,21 +48,21 @@ cards:
         - color: '#f5c842'
         - width: 22px
         - height: 22px
-        - align-self: start
+        - align-self: center
       name:
-        - grid-area: n
-        - font-size: 14px
+        - grid-area: name
+        - font-size: 18px
         - font-weight: 600
         - color: var(--primary-text-color)
         - justify-self: start
         - align-self: center
         - text-align: left
       label:
-        - grid-area: l
-        - font-size: 12px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: 'rgba(var(--rgb-primary-text-color), 0.6)'
+        - grid-area: label
+        - font-size: 13px
+        - font-weight: 600
+        - letter-spacing: 0.2px
+        - color: 'rgba(var(--rgb-primary-text-color), 0.75)'
         - justify-self: start
         - align-self: center
         - text-align: left
@@ -92,7 +92,7 @@ cards:
         - border-radius: 0
         - min-width: 120px
       grid:
-        - grid-template-areas: '"i n" "i l"'
+        - grid-template-areas: '"i label" "i name"'
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
@@ -101,21 +101,21 @@ cards:
         - color: '#a7e97b'
         - width: 22px
         - height: 22px
-        - align-self: start
+        - align-self: center
       name:
-        - grid-area: n
-        - font-size: 14px
+        - grid-area: name
+        - font-size: 18px
         - font-weight: 600
         - color: var(--primary-text-color)
         - justify-self: start
         - align-self: center
         - text-align: left
       label:
-        - grid-area: l
-        - font-size: 12px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: 'rgba(var(--rgb-primary-text-color), 0.6)'
+        - grid-area: label
+        - font-size: 13px
+        - font-weight: 600
+        - letter-spacing: 0.2px
+        - color: 'rgba(var(--rgb-primary-text-color), 0.75)'
         - justify-self: start
         - align-self: center
         - text-align: left
@@ -145,7 +145,7 @@ cards:
         - border-radius: 0
         - min-width: 120px
       grid:
-        - grid-template-areas: '"i n" "i l"'
+        - grid-template-areas: '"i label" "i name"'
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
@@ -154,21 +154,21 @@ cards:
         - color: '#68b7ff'
         - width: 22px
         - height: 22px
-        - align-self: start
+        - align-self: center
       name:
-        - grid-area: n
-        - font-size: 14px
+        - grid-area: name
+        - font-size: 18px
         - font-weight: 600
         - color: var(--primary-text-color)
         - justify-self: start
         - align-self: center
         - text-align: left
       label:
-        - grid-area: l
-        - font-size: 12px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: 'rgba(var(--rgb-primary-text-color), 0.6)'
+        - grid-area: label
+        - font-size: 13px
+        - font-weight: 600
+        - letter-spacing: 0.2px
+        - color: 'rgba(var(--rgb-primary-text-color), 0.75)'
         - justify-self: start
         - align-self: center
         - text-align: left
@@ -198,7 +198,7 @@ cards:
         - border-radius: 0
         - min-width: 120px
       grid:
-        - grid-template-areas: '"i n" "i l"'
+        - grid-template-areas: '"i label" "i name"'
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
@@ -207,21 +207,21 @@ cards:
         - color: '#ffde82'
         - width: 22px
         - height: 22px
-        - align-self: start
+        - align-self: center
       name:
-        - grid-area: n
-        - font-size: 14px
+        - grid-area: name
+        - font-size: 18px
         - font-weight: 600
         - color: var(--primary-text-color)
         - justify-self: start
         - align-self: center
         - text-align: left
       label:
-        - grid-area: l
-        - font-size: 12px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: 'rgba(var(--rgb-primary-text-color), 0.6)'
+        - grid-area: label
+        - font-size: 13px
+        - font-weight: 600
+        - letter-spacing: 0.2px
+        - color: 'rgba(var(--rgb-primary-text-color), 0.75)'
         - justify-self: start
         - align-self: center
         - text-align: left
@@ -259,7 +259,7 @@ cards:
         - border-radius: 0
         - min-width: 120px
       grid:
-        - grid-template-areas: '"i n" "i l"'
+        - grid-template-areas: '"i label" "i name"'
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
@@ -268,21 +268,21 @@ cards:
         - color: '#f5c977'
         - width: 22px
         - height: 22px
-        - align-self: start
+        - align-self: center
       name:
-        - grid-area: n
-        - font-size: 14px
+        - grid-area: name
+        - font-size: 18px
         - font-weight: 600
         - color: var(--primary-text-color)
         - justify-self: start
         - align-self: center
         - text-align: left
       label:
-        - grid-area: l
-        - font-size: 12px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: 'rgba(var(--rgb-primary-text-color), 0.6)'
+        - grid-area: label
+        - font-size: 13px
+        - font-weight: 600
+        - letter-spacing: 0.2px
+        - color: 'rgba(var(--rgb-primary-text-color), 0.75)'
         - justify-self: start
         - align-self: center
         - text-align: left
@@ -312,7 +312,7 @@ cards:
         - border-radius: 0
         - min-width: 120px
       grid:
-        - grid-template-areas: '"i n" "i l"'
+        - grid-template-areas: '"i label" "i name"'
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
@@ -321,21 +321,21 @@ cards:
         - color: '#c6c6c6'
         - width: 22px
         - height: 22px
-        - align-self: start
+        - align-self: center
       name:
-        - grid-area: n
-        - font-size: 14px
+        - grid-area: name
+        - font-size: 18px
         - font-weight: 600
         - color: var(--primary-text-color)
         - justify-self: start
         - align-self: center
         - text-align: left
       label:
-        - grid-area: l
-        - font-size: 12px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: 'rgba(var(--rgb-primary-text-color), 0.6)'
+        - grid-area: label
+        - font-size: 13px
+        - font-weight: 600
+        - letter-spacing: 0.2px
+        - color: 'rgba(var(--rgb-primary-text-color), 0.75)'
         - justify-self: start
         - align-self: center
         - text-align: left
