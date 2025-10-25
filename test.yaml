@@ -43,12 +43,25 @@ cards:
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
-        - row-gap: 2px
+        - row-gap: 0px
       icon:
         - color: '#f5c842'
         - width: 22px
         - height: 22px
         - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
       name:
         - grid-area: name
         - font-size: 18px
@@ -59,18 +72,7 @@ cards:
         - text-align: left
         - margin: 0
         - padding: 0
-      label:
-        - grid-area: label
-        - font-size: 11px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
+        - line-height: 1.2
 
   # Temperature
   - type: custom:button-card
@@ -101,12 +103,25 @@ cards:
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
-        - row-gap: 2px
+        - row-gap: 0px
       icon:
         - color: '#a7e97b'
         - width: 22px
         - height: 22px
         - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
       name:
         - grid-area: name
         - font-size: 18px
@@ -117,18 +132,7 @@ cards:
         - text-align: left
         - margin: 0
         - padding: 0
-      label:
-        - grid-area: label
-        - font-size: 11px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
+        - line-height: 1.2
 
   # Humidity
   - type: custom:button-card
@@ -159,12 +163,25 @@ cards:
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
-        - row-gap: 2px
+        - row-gap: 0px
       icon:
         - color: '#68b7ff'
         - width: 22px
         - height: 22px
         - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
       name:
         - grid-area: name
         - font-size: 18px
@@ -175,18 +192,7 @@ cards:
         - text-align: left
         - margin: 0
         - padding: 0
-      label:
-        - grid-area: label
-        - font-size: 11px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
+        - line-height: 1.2
 
   # Energy
   - type: custom:button-card
@@ -217,12 +223,25 @@ cards:
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
-        - row-gap: 2px
+        - row-gap: 0px
       icon:
         - color: '#ffde82'
         - width: 22px
         - height: 22px
         - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
       name:
         - grid-area: name
         - font-size: 18px
@@ -233,18 +252,7 @@ cards:
         - text-align: left
         - margin: 0
         - padding: 0
-      label:
-        - grid-area: label
-        - font-size: 11px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
+        - line-height: 1.2
 
   # Alarm
   - type: custom:button-card
@@ -283,12 +291,25 @@ cards:
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
-        - row-gap: 2px
+        - row-gap: 0px
       icon:
         - color: '#f5c977'
         - width: 22px
         - height: 22px
         - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
       name:
         - grid-area: name
         - font-size: 18px
@@ -299,18 +320,7 @@ cards:
         - text-align: left
         - margin: 0
         - padding: 0
-      label:
-        - grid-area: label
-        - font-size: 11px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
+        - line-height: 1.2
 
   # Vacuum
   - type: custom:button-card
@@ -341,12 +351,25 @@ cards:
         - grid-template-columns: min-content 1fr
         - grid-template-rows: min-content min-content
         - column-gap: 8px
-        - row-gap: 2px
+        - row-gap: 0px
       icon:
         - color: '#c6c6c6'
         - width: 22px
         - height: 22px
         - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
       name:
         - grid-area: name
         - font-size: 18px
@@ -357,15 +380,4 @@ cards:
         - text-align: left
         - margin: 0
         - padding: 0
-      label:
-        - grid-area: label
-        - font-size: 11px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
+        - line-height: 1.2
