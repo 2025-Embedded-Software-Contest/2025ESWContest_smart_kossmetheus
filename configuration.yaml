@@ -176,11 +176,11 @@ lovelace:
       type: module
   dashboards:
     caredian-dashboard:
-      mode: storage
+      mode: yaml
       title: cardian dashboard
       icon: mdi:view-dashboard-variant
       show_in_sidebar: true
-      url_path: caredian-dashboard
+      filename: dashboard.yaml
 
 homeassistant:
   # Gas meter (ESP32-CAM + OCR)
