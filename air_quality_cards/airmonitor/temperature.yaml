@@ -10,7 +10,7 @@ variables:
   state_data: |
     [[[
       const state = entity.state;
-      const levels = ["Cold", "Comfort", "Hot"];
+      const levels = ["추움", "쾌적", "더움"];
       const colors = ["#64B5F6", "#FF9800", "#FF5722"];
       const thresholds = [28, 20, 0];
       let data = {

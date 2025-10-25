@@ -10,7 +10,7 @@ variables:
   state_data: |
     [[[
       const state = entity.state;
-      const levels = ["Bad", "Moderate", "Good"];
+      const levels = ["나쁨", "보통", "좋음"];
       const colors = ["#F44336", "#FF9800", "#4CAF50"];
       const thresholds = [3, 1, 0];
       let data = {
@@ -50,7 +50,7 @@ variables:
 label: |
   [[[
     const data = variables.state_data;
-    const levels_kr = ["Bad", "Moderate", "Good"];
+    const levels_kr = ["나쁨", "보통", "좋음"];
     const displayValue = data.level !== 'Unknown' ? data.level : 'N/A';
     return displayValue;
   ]]]
