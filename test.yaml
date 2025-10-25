@@ -1,383 +1,510 @@
-type: horizontal-stack
+type: vertical-stack
 cards:
-  # Weather
-  - type: custom:button-card
-    entity: weather.wn_jib
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: |
-      [[[
-        const m = {
-          sunny: 'mdi:weather-sunny',
-          'clear-night': 'mdi:weather-night',
-          cloudy: 'mdi:weather-cloudy',
-          partlycloudy: 'mdi:weather-partly-cloudy',
-          rainy: 'mdi:weather-pouring',
-          pouring: 'mdi:weather-pouring',
-          windy: 'mdi:weather-windy',
-          snowy: 'mdi:weather-snowy',
-          fog: 'mdi:weather-fog'
-        };
-        return m[states[entity.entity_id].state] || 'mdi:weather-partly-cloudy';
-      ]]]
-    label: "날씨"
-    name: |
-      [[[
-        const t = states[entity.entity_id].attributes.temperature;
-        return (t !== undefined) ? (Number(t).toFixed(1) + "°C") : "—";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#f5c842'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+  - type: custom:bubble-card
+    card_type: pop-up
+    hash: "#server"
+    name: 시스템 정보
+    icon: mdi:server
+    state: null
+    is_sidebar_hidden: true
+    styles: >-
+      .bubble-pop-up-container {
+        --vertical-stack-card-gap: 0px!important;
+      } #header-container > div > div {
+        background: var(--popupBG)!important;
+      }     
 
-  # Temperature
-  - type: custom:button-card
-    entity: sensor.average_indoor_temperature
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:thermometer
-    label: "온도"
-    name: |
-      [[[
-        const v = Number(states[entity.entity_id].state);
-        return isNaN(v) ? states[entity.entity_id].state : v.toFixed(1) + "°C";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#a7e97b'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      #header-container > button {background: none;}    
 
-  # Humidity
-  - type: custom:button-card
-    entity: sensor.average_indoor_humidity
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:water-percent
-    label: "습도"
-    name: |
-      [[[
-        const v = Number(states[entity.entity_id].state);
-        return isNaN(v) ? states[entity.entity_id].state : v.toFixed(1) + "%";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#68b7ff'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      .icon-container {background-color:var(--gray800)!important;} 
 
-  # Energy
-  - type: custom:button-card
-    entity: sensor.sihas_energy_monitor_energy
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:lightning-bolt
-    label: "에너지"
-    name: |
-      [[[
-        const v = Number(states[entity.entity_id].state);
-        return isNaN(v) ? states[entity.entity_id].state : Math.round(v) + "kWh";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#ffde82'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      .icon-container > ha-icon
+      {color:var(--gray000)!important;opacity:1!important}
 
-  # Alarm
-  - type: custom:button-card
-    entity: sensor.paul_nest_alarms
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:alarm
-    label: "알람"
-    name: |
-      [[[
-        const v = states[entity.entity_id].state;
-        if (!v) return "—";
-        const d = new Date(v);
-        if (isNaN(d)) {
-          const m = (v || '').toString().match(/^(\d{2}):(\d{2})/);
-          return m ? `${m[1]}:${m[2]}` : v;
-        }
-        const hh = d.getHours().toString().padStart(2,'0');
-        const mm = d.getMinutes().toString().padStart(2,'0');
-        return `${hh}:${mm}`;
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#f5c977'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
-
-  # Vacuum
-  - type: custom:button-card
-    entity: switch.robot_vacuum_switch
-    show_icon: true
-    show_name: true
-    show_label: true
-    show_state: false
-    size: 24px
-    icon: mdi:robot-vacuum
-    label: "도비"
-    name: |
-      [[[
-        const s = (states[entity.entity_id].state || '').toString();
-        return s ? s.charAt(0).toUpperCase() + s.slice(1) : "—";
-      ]]]
-    tap_action:
-      action: more-info
-    styles:
-      card:
-        - padding: 0 16px 0 0
-        - background: none
-        - box-shadow: none
-        - border-radius: 0
-        - min-width: 120px
-      grid:
-        - grid-template-areas: '"i label" "i name"'
-        - grid-template-columns: min-content 1fr
-        - grid-template-rows: min-content min-content
-        - column-gap: 8px
-        - row-gap: 0px
-      icon:
-        - color: '#c6c6c6'
-        - width: 22px
-        - height: 22px
-        - align-self: center
-      label:
-        - grid-area: label
-        - font-size: 10px
-        - font-weight: 400
-        - letter-spacing: 0px
-        - color: var(--secondary-text-color, #8c8c8c)
-        - opacity: 0.7
-        - justify-self: start
-        - align-self: end
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1
-      name:
-        - grid-area: name
-        - font-size: 18px
-        - font-weight: 600
-        - color: var(--primary-text-color)
-        - justify-self: start
-        - align-self: start
-        - text-align: left
-        - margin: 0
-        - padding: 0
-        - line-height: 1.2
+      .bubble-icon {
+        --mdc-icon-size: 22px !important;
+      }
+    bg_blur: "5"
+    shadow_opacity: "20"
+    bg_opacity: "98"
+    margin_top_mobile: 50px
+    margin_top_desktop: 50px
+    card_layout: large
+  - type: horizontal-stack
+    cards:
+      - type: button
+        name: Home Assistant
+        icon: mdi:home-assistant
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            entity_id: input_select.system_popup_tab
+            option: Home Assistant
+      - type: button
+        name: Unifi
+        icon: mdi:lan
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            entity_id: input_select.system_popup_tab
+            option: Unifi
+      - type: button
+        name: InfluxDB
+        icon: mdi:database
+        tap_action:
+          action: call-service
+          service: input_select.select_option
+          service_data:
+            entity_id: input_select.system_popup_tab
+            option: InfluxDB
+  - type: conditional
+    conditions:
+      - entity: input_select.system_popup_tab
+        state: Home Assistant
+    card:
+      type: vertical-stack
+      cards:
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_big
+              styles:
+                card:
+                  - height: 144px
+                  - margin-bottom: 12px
+              variables:
+                name: CPU 온도
+                label: |
+                  [[[
+                    const sensor = states['sensor.pi5_cpu_temperature'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${Math.round(value * 10) / 10}°C`;
+                  ]]]
+                icon: mdi:thermometer
+                background: var(--popupBG)
+            - type: grid
+              square: false
+              columns: 1
+              cards:
+                - type: custom:button-card
+                  template: sensor_small
+                  variables:
+                    label: |
+                      [[[
+                        const sensor = states['sensor.pi5_fan_speed'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return `${sensor.state} RPM`;
+                      ]]] 
+                    icon: mdi:fan
+                    name: 팬 속도
+                    background: var(--popupBG)
+                - type: custom:button-card
+                  template: sensor_small
+                  variables:
+                    label: |
+                      [[[
+                        const uptimeSensor = states['sensor.uptime'];
+                        if (!uptimeSensor || !uptimeSensor.state || ['unknown', 'unavailable'].includes(uptimeSensor.state)) {
+                          return 'N/A';
+                        }
+                        const uptimeDate = new Date(uptimeSensor.state);
+                        if (Number.isNaN(uptimeDate.getTime())) {
+                          return 'N/A';
+                        }
+                        const now = new Date();
+                        const diffMs = now - uptimeDate;
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        return `${diffDays}일 ${diffHours}시간`;
+                      ]]] 
+                    icon: mdi:clock-outline
+                    name: 가동 시간
+                    background: var(--popupBG)
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.pi5_cpu_usage
+              variables:
+                name: CPU 사용량
+                icon: mdi:cpu-64-bit
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.pi5_memory_usage
+              variables:
+                name: 메모리 사용량
+                icon: mdi:memory
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
+                  ]]]
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_big_percentage
+              variables:
+                name: 디스크 사용량
+                entity: sensor.system_monitor_disk_usage
+                icon: mdi:harddisk
+                background: var(--popupBG)
+                label: |
+                  [[[
+                    const sensor = states['sensor.system_monitor_disk_usage'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${Math.round(value)}<span style="font-size:14px"> %</span>`;
+                  ]]]
+                bar: |
+                  [[[
+                    const sensor = states['sensor.system_monitor_disk_usage'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return '<div style="height:30px;"></div>';
+                    }
+                    const raw = Number(sensor.state);
+                    if (Number.isNaN(raw)) {
+                      return '<div style="height:30px;"></div>';
+                    }
+                    const value = Math.max(0, Math.min(100, raw));
+                    let color = 'var(--green)';
+                    if (value >= 70) {
+                      color = 'var(--red)';
+                    } else if (value >= 50) {
+                      color = 'var(--orange)';
+                    } else if (value >= 30) {
+                      color = 'var(--yellow)';
+                    } else if (value >= 20) {
+                      color = 'var(--blue)';
+                    }
+                    const pattern = `repeating-linear-gradient(45deg,transparent,transparent 2px,${color} 3px,transparent 4px)`;
+                    return `<div style="background-image:${pattern}; height:30px; width:100%"><div style="background:${color}; height:30px; width:${value}%;"></div></div>`;
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.ha_log_size
+              variables:
+                name: 로그 크기
+                icon: mdi:file-chart
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value} MB`;   
+                  ]]]
+  - type: conditional
+    conditions:
+      - entity: input_select.system_popup_tab
+        state: Unifi
+    card:
+      type: vertical-stack
+      cards:
+        - type: markdown
+          content: "### UCG Fiber"
+          card_mod:
+            style: |
+              ha-card {
+                background: none;
+                box-shadow: none;
+                padding: 12px 8px 0px 8px;
+              }
+              ha-markdown {
+                color: var(--gray800);
+              }
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_big
+              styles:
+                card:
+                  - height: 144px
+                  - margin-bottom: 12px
+              variables:
+                name: CPU 온도
+                label: |
+                  [[[
+                    const sensor = states['sensor.ucg_fiber_ucg_fiber_cpu_temperature'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${Math.round(value * 10) / 10}°C`;
+                  ]]]  
+                icon: mdi:thermometer
+                background: var(--popupBG)
+            - type: grid
+              square: false
+              columns: 1
+              cards:
+                - type: custom:button-card
+                  template: sensor_small
+                  variables:
+                    label: |
+                      [[[
+                        const sensor = states['sensor.ucg_fiber_state'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return sensor.state;
+                      ]]] 
+                    icon: mdi:lan-check
+                    name: 상태
+                    background: var(--popupBG)
+                - type: custom:button-card
+                  template: sensor_small
+                  variables:
+                    label: |
+                      [[[
+                        const sensor = states['sensor.ucg_fiber_clients'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return `${sensor.state} 개`;
+                      ]]] 
+                    icon: mdi:devices
+                    name: 연결 기기
+                    background: var(--popupBG)
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.ucg_fiber_cpu_utilization
+              variables:
+                name: CPU 사용량
+                icon: mdi:cpu-64-bit
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.ucg_fiber_memory_utilization
+              variables:
+                name: 메모리 사용량
+                icon: mdi:memory
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
+                  ]]]
+        - type: markdown
+          content: "### U7 Pro XG"
+          card_mod:
+            style: |
+              ha-card {
+                background: none;
+                box-shadow: none;
+                padding: 12px 8px 0px 8px;
+              }
+              ha-markdown {
+                color: var(--gray800);
+              }
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              variables:
+                label: |
+                  [[[
+                    const sensor = states['sensor.u7_pro_xg_state'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    return sensor.state;
+                  ]]] 
+                icon: mdi:access-point-check
+                name: 상태
+                background: var(--popupBG)
+            - type: custom:button-card
+              template: sensor_small
+              variables:
+                label: |
+                  [[[
+                    const uptimeSensor = states['sensor.u7_pro_xg_uptime'];
+                    if (!uptimeSensor || !uptimeSensor.state || ['unknown', 'unavailable'].includes(uptimeSensor.state)) {
+                      return 'N/A';
+                    }
+                    const uptimeDate = new Date(uptimeSensor.state);
+                    if (Number.isNaN(uptimeDate.getTime())) {
+                      return 'N/A';
+                    }
+                    const now = new Date();
+                    const diffMs = now - uptimeDate;
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    return `${diffDays}일`;
+                  ]]] 
+                icon: mdi:clock-outline
+                name: 가동 시간
+                background: var(--popupBG)
+  - type: conditional
+    conditions:
+      - entity: input_select.system_popup_tab
+        state: InfluxDB
+    card:
+      type: vertical-stack
+      cards:
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_big
+              styles:
+                card:
+                  - height: 144px
+                  - margin-bottom: 12px
+              variables:
+                name: DB 크기
+                label: |
+                  [[[
+                    const sensor = states['sensor.influxdb_db_size'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${value} MB`;
+                  ]]]  
+                icon: mdi:database
+                background: var(--popupBG)
+            - type: grid
+              square: false
+              columns: 1
+              cards:
+                - type: custom:button-card
+                  template: sensor_small
+                  variables:
+                    label: |
+                      [[[
+                        const sensor = states['sensor.influxdb_backup_status'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        const status = sensor.state;
+                        return status === 'failed' ? '실패' : status === 'success' ? '성공' : status;
+                      ]]] 
+                    icon: mdi:backup-restore
+                    name: 백업 상태
+                    background: var(--popupBG)
+                - type: custom:button-card
+                  template: sensor_small
+                  variables:
+                    label: |
+                      [[[
+                        const sensor = states['sensor.influxdb_backup_count'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return `${sensor.state} 개`;
+                      ]]] 
+                    icon: mdi:counter
+                    name: 백업 개수
+                    background: var(--popupBG)
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.influxdb_backup_size
+              variables:
+                name: 백업 크기
+                icon: mdi:folder-zip
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      return entity.state;   
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.influxdb_latest_backup
+              variables:
+                name: 최신 백업
+                icon: mdi:calendar-clock
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const backup = entity.state;
+                      const match = backup.match(/(\d{4})-(\d{2})-(\d{2})/);
+                      if (match) {
+                        return match[2] + '/' + match[3];
+                      }
+                      return backup;
+                  ]]]

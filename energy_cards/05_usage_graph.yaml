@@ -1,0 +1,5 @@
+# Energy Usage Graph Card
+type: grid
+cards:
+  - type: energy-usage-graph
+
