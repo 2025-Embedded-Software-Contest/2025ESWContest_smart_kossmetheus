@@ -128,21 +128,24 @@ voice_timer_complete_notice:
 play_favorite_playlist_video:
   alias: Play Favorite Playlist (Video)
   sequence:
+  - variables:
+      target_player: "{{ entity if entity is defined and entity not in [none, ''] else 'media_player.spotify_gimuhyeon' }}"
   - target:
       entity_id: input_text.music_playlist
     data:
       value: '{{ playlist }}'
     action: input_text.set_value
   - target:
-      entity_id: '{{ entity_id }}'
+      entity_id: '{{ target_player }}'
     data:
       media_content_id: '{{ playlist }}'
       media_content_type: playlist
     action: media_player.play_media
   fields:
     entity:
-      description: Entity to start playback on
-      example: media_player.living_room
+      name: 재생할 미디어 플레이어
+      description: 실제 재생을 시작할 미디어 플레이어
+      default: media_player.spotify_gimuhyeon
       selector:
         entity:
           domain: media_player
@@ -155,6 +158,21 @@ play_favorite_playlist_video:
 set_playlist_and_play_video:
   alias: Set Playlist and Play (Video)
   sequence:
+  - variables:
+      preferred_players:
+      - media_player.spotify_gimuhyeon
+      - media_player.gimuhyeonyi_macbook_pro
+      - media_player.uhyeonibang
+      - media_player.paul_nest
+      - media_player.vlc_telnet
+      active_player: >-
+        {% set playing_states = ['playing', 'buffering'] %}
+        {% for player in preferred_players %}
+          {% if states(player) in playing_states %}
+            {{ player }}
+            {% break %}
+          {% endif %}
+        {% endfor %}
   - target:
       entity_id: input_text.music_playlist
     data:
@@ -162,19 +180,22 @@ set_playlist_and_play_video:
     action: input_text.set_value
   - choose:
     - conditions:
-      - condition: state
-        entity_id: media_player.music
-        state: playing
+      - condition: template
+        value_template: "{{ active_player | default('', true) | trim != '' }}"
       sequence:
       - target:
-          entity_id: '{{ state_attr(''media_player.music'', ''active_child'') | replace(''media_player.'',
-            ''media_player.mass_'') }}
-
-            '
+          entity_id: '{{ active_player | trim }}'
         data:
-          media_content_id: '{{ states(''input_text.music_playlist'') }}'
+          media_content_id: "{{ states('input_text.music_playlist') }}"
           media_content_type: playlist
         action: media_player.play_media
+    default:
+    - target:
+        entity_id: media_player.spotify_gimuhyeon
+      data:
+        media_content_id: "{{ states('input_text.music_playlist') }}"
+        media_content_type: playlist
+      action: media_player.play_media
   fields:
     playlist:
       description: Playlist media ID
@@ -182,3 +203,4 @@ set_playlist_and_play_video:
       selector:
         text:
   description: ''
+

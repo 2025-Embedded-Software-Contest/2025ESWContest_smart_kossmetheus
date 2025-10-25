@@ -21,6 +21,19 @@ influxdb: !include influxdb.yaml
 group: !include groups.yaml
 light: !include lights.yaml
 
+media_player:
+  - platform: universal
+    name: Music
+    unique_id: musicuniversal
+    children:
+      - media_player.paul_nest
+      - media_player.paul_nest_airplay
+      - media_player.uhyeonibang
+      - media_player.uhyeonibang_airplay
+      - media_player.gimuhyeonyi_macbook_pro
+      - media_player.spotify_gimuhyeon
+      - media_player.music_player_daemon
+
 command_line:
   - sensor:
       name: Pi5 Fan Speed

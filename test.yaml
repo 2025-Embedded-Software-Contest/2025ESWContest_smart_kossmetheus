@@ -1,643 +1,85 @@
-# ================================================
-# CareDian 대시보드 - 기능별 카드 모음
-# 참고 출처: https://github.com/jlnbln/My-HA-Dashboard
-# 아래 각 섹션은 개별 카드(또는 카드 묶음)로 구성되어
-# 어떤 Lovelace 화면에도 쉽게 포함할 수 있습니다.
-# ================================================
-
-type: vertical-stack
-cards:
-  # ----------------------------------------------
-  # 인사 및 날씨 요약
-  # ----------------------------------------------
-  - type: markdown
-    content: |-
-      {% set period = states('sensor.time_of_day') %}
-      {% set weather_state = state_translated('weather.home') %}
-      {% set temperature = state_attr('weather.home', 'temperature') %}
-      {% set time_now = states('sensor.time') %}
-      {% set lights_on = states('sensor.lights_on_count') %}
-      {% set windows_open = states('sensor.window_open_count') %}
-      {% set security_state = state_translated('alarm_control_panel.security_system') %}
-      {% set door_state = states('lock.flat_door') %}
-
-      {% if period == 'morning' %}
-      ### 좋은 아침이에요, {{ user }}님!
-      {{ states('input_text.ai_morning_brief') }}
-      {% elif period == 'day' %}
-      ### 안녕하세요, {{ user }}님!
-      지금 시간은 {{ time_now }}이고, 날씨는 {{ weather_state | lower }}이며 기온은 {{ temperature }}°C입니다.
-      현재 켜진 조명: {{ lights_on }}개 · 열린 창문: {{ windows_open }}개 · 보안 상태: {{ security_state }} · 현관문: {{ door_state }}
-      {% elif period == 'evening' %}
-      ### 좋은 저녁이에요, {{ user }}님!
-      지금 시간은 {{ time_now }}이고, 날씨는 {{ weather_state | lower }}이며 기온은 {{ temperature }}°C입니다.
-      현재 켜진 조명: {{ lights_on }}개 · 열린 창문: {{ windows_open }}개 · 보안 상태: {{ security_state }} · 현관문: {{ door_state }}
-      {% else %}
-      ### 편안한 밤 되세요, {{ user }}님!
-      지금 시간은 {{ time_now }}이고, 날씨는 {{ weather_state | lower }}이며 기온은 {{ temperature }}°C입니다.
-      현재 켜진 조명: {{ lights_on }}개 · 열린 창문: {{ windows_open }}개 · 보안 상태: {{ security_state }} · 현관문: {{ door_state }}
-      {% endif %}
-
-  # ----------------------------------------------
-  # 주요 상태 칩 모음
-  # ----------------------------------------------
-  - type: horizontal-stack
-    cards:
-      - type: custom:button-card
-        entity: input_boolean.vacation_mode
-        name: 휴가 모드
-        icon: mdi:airplane
-        tap_action:
-          action: toggle
-        styles:
-          card:
-            - border-radius: 16px
-            - padding: 12px
-            - background: var(--contrast3)
-            - color: var(--contrast20)
-          name:
-            - font-size: 12px
-            - margin-top: 6px
-          icon:
-            - width: 24px
-        layout: vertical
-        state:
-          - value: 'on'
-            styles:
-              card:
-                - background: var(--yellow)
-              icon:
-                - color: var(--black)
-              name:
-                - color: var(--black)
-
-      - type: custom:button-card
-        entity: sensor.lights_on_count
-        name: 조명
-        icon: mdi:lightbulb-group
-        show_label: true
-        label: '[[[ return `${entity.state}개 켜짐`; ]]]'
-        tap_action:
-          action: navigate
-          navigation_path: '#lights'
-        styles:
-          card:
-            - border-radius: 16px
-            - padding: 12px
-            - background: var(--contrast3)
-          name:
-            - font-size: 12px
-            - color: var(--contrast18)
-          label:
-            - font-size: 11px
-            - color: var(--contrast14)
-          icon:
-            - width: 24px
-
-      - type: custom:button-card
-        entity: sensor.dishwasher_status
-        name: 식기세척기
-        icon: mdi:dishwasher
-        show_label: true
-        label: |-
-          [[[ 
-            if (entity.state === 'Running') return '동작 중';
-            if (entity.state === 'Clean') return '완료';
-            if (entity.state === 'Idle') return '대기';
-            if (entity.state === 'Off') return '꺼짐';
-            return entity.state || '꺼짐';
-          ]]]
-        tap_action:
-          action: perform-action
-          perform_action: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.chores_dishwasher
-        styles:
-          card:
-            - border-radius: 16px
-            - padding: 12px
-            - background: var(--contrast3)
-          name:
-            - font-size: 12px
-            - color: var(--contrast18)
-          label:
-            - font-size: 11px
-            - color: var(--contrast14)
-          icon:
-            - width: 24px
-
-      - type: custom:button-card
-        entity: sensor.washing_machine_status
-        name: 세탁기
-        icon: mdi:washing-machine
-        show_label: true
-        label: |-
-          [[[ 
-            if (entity.state === 'Running') return '동작 중';
-            if (entity.state === 'Clean') return '완료';
-            if (entity.state === 'Idle') return '대기';
-            if (entity.state === 'Off') return '꺼짐';
-            return entity.state || '꺼짐';
-          ]]]
-        tap_action:
-          action: perform-action
-          perform_action: input_boolean.turn_off
-          target:
-            entity_id: input_boolean.chores_laundry
-        styles:
-          card:
-            - border-radius: 16px
-            - padding: 12px
-            - background: var(--contrast3)
-          name:
-            - font-size: 12px
-            - color: var(--contrast18)
-          label:
-            - font-size: 11px
-            - color: var(--contrast14)
-          icon:
-            - width: 24px
-
-  # ----------------------------------------------
-  # 빠른 제어 카드
-  # ----------------------------------------------
-  - type: markdown
-    content: "#### 빠른 제어"
-
-  - type: grid
-    square: false
-    columns: 2
-    cards:
-      - type: custom:button-card
-        entity: lock.flat_door
-        name: 현관문
-        icon: mdi:door-closed
-        tap_action:
-          action: more-info
-        styles:
-          card:
-            - border-radius: 20px
-            - padding: 16px
-            - background: var(--contrast3)
-          name:
-            - font-size: 14px
-            - color: var(--contrast18)
-          icon:
-            - width: 26px
-        state:
-          - value: locked
-            icon: mdi:door-closed-lock
-            styles:
-              card:
-                - background: var(--contrast6)
-          - value: unlocked
-            icon: mdi:door-open
-            styles:
-              card:
-                - background: var(--warning-color)
-
-      - type: custom:button-card
-        entity: switch.fan_outlet
-        name: 선풍기
-        icon: mdi:fan
-        tap_action:
-          action: toggle
-        styles:
-          card:
-            - border-radius: 20px
-            - padding: 16px
-            - background: var(--contrast3)
-          name:
-            - font-size: 14px
-            - color: var(--contrast18)
-          icon:
-            - width: 26px
-        state:
-          - value: 'on'
-            styles:
-              card:
-                - background: var(--green)
-              icon:
-                - color: var(--black)
-              name:
-                - color: var(--black)
-
-      - type: custom:button-card
-        entity: switch.desk_webcam
-        name: 책상 카메라
-        icon: mdi:webcam
-        tap_action:
-          action: toggle
-        styles:
-          card:
-            - border-radius: 20px
-            - padding: 16px
-            - background: var(--contrast3)
-          name:
-            - font-size: 14px
-            - color: var(--contrast18)
-          icon:
-            - width: 26px
-        state:
-          - value: 'on'
-            styles:
-              card:
-                - background: var(--blue)
-              icon:
-                - color: var(--black)
-              name:
-                - color: var(--black)
-
-      - type: custom:button-card
-        entity: vacuum.dobby
-        name: 청소 로봇
-        icon: mdi:robot-vacuum
-        tap_action:
-          action: more-info
-        hold_action:
-          action: call-service
-          service: vacuum.start
-          data: {}
-          target:
-            entity_id: vacuum.dobby
-        styles:
-          card:
-            - border-radius: 20px
-            - padding: 16px
-            - background: var(--contrast3)
-          name:
-            - font-size: 14px
-            - color: var(--contrast18)
-          icon:
-            - width: 26px
-        state:
-          - value: cleaning
-            styles:
-              card:
-                - background: var(--purple)
-              icon:
-                - color: var(--black)
-              name:
-                - color: var(--black)
-
-  # ----------------------------------------------
-  # 실내 환경 요약
-  # ----------------------------------------------
-  - type: markdown
-    content: "#### 실내 환경 요약"
-
-  - type: entities
-    entities:
-      - entity: sensor.average_indoor_temperature
-        name: 실내 평균 온도
-      - entity: sensor.average_indoor_humidity
-        name: 실내 평균 습도
-      - entity: sensor.average_device_battery
-        name: 기기 평균 배터리
-      - entity: sensor.overview_climate
-        name: 실내 온도 범위
-    state_color: true
-
-  # ----------------------------------------------
-  # 보안 현황 카드
-  # ----------------------------------------------
-  - type: markdown
-    content: "#### 보안 현황"
-
-  - type: custom:button-card
-    entity: alarm_control_panel.camera_hub_g5pro_9489_security_system
-    icon: mdi:shield-lock
-    name: 홈 보안
-    show_state: true
-    show_label: true
-    label: |-
-      [[[ 
-        const motion = states['sensor.overview_security']?.state || '알 수 없음';
-        return `상태: ${motion}`;
+type: custom:button-card
+variables:
+  target_entity: binary_sensor.your_connection_sensor
+  card_title: Connection Monitor
+  icon_on: mdi:router-wireless
+  icon_off: mdi:router-wireless-off
+  state_on: 'on'
+  state_off: 'off'
+  text_on: Connected
+  text_off: Disconnected
+  text_unknown: Unknown
+  background_color_on: var(--green)
+  background_color_off: var(--red)
+  color_on: var(--black)
+  color_off: var(--black)
+entity: '[[[ return variables.target_entity || "binary_sensor.placeholder" ]]]'
+name: '[[[ return variables.card_title || "Connection" ]]]'
+show_label: true
+show_icon: false
+label: |-
+  [[[
+    const target = variables.target_entity || "binary_sensor.placeholder";
+    const stateObj = states[target];
+    const onValue = variables.state_on ?? 'on';
+    const textOn = variables.text_on ?? 'Connected';
+    const textOff = variables.text_off ?? 'Disconnected';
+    const textUnknown = variables.text_unknown ?? 'Unknown';
+    if (!stateObj) {
+      return `<span style="font-size:18px;">${textUnknown}</span>`;
+    }
+    const isOn = stateObj.state === onValue;
+    return `<span style="font-size:18px;">${isOn ? textOn : textOff}</span>`;
+  ]]]
+state:
+  - operator: template
+    value: |-
+      [[[
+        const target = variables.target_entity || "binary_sensor.placeholder";
+        const onValue = variables.state_on ?? 'on';
+        return states[target]?.state === onValue;
       ]]]
-    tap_action:
-      action: more-info
-    hold_action:
-      action: call-service
-      service: alarm_control_panel.alarm_arm_home
-      data: {}
-      target:
-        entity_id: alarm_control_panel.camera_hub_g5pro_9489_security_system
-    double_tap_action:
-      action: call-service
-      service: alarm_control_panel.alarm_disarm
-      data: {}
-      target:
-        entity_id: alarm_control_panel.camera_hub_g5pro_9489_security_system
+    icon: '[[[ return variables.icon_on ?? "mdi:check-circle" ]]]'
     styles:
       card:
-        - border-radius: 24px
-        - padding: 18px
-        - background: var(--contrast3)
+        - background-color: '[[[ return variables.background_color_on ?? "var(--green)" ]]]'
       name:
-        - font-size: 16px
-        - font-weight: 600
-        - color: var(--contrast18)
-      state:
-        - font-size: 13px
-        - color: var(--contrast12)
+        - color: '[[[ return variables.color_on ?? "var(--contrast-0)" ]]]'
       label:
-        - font-size: 12px
-        - color: var(--contrast14)
-      icon:
-        - width: 32px
-        - color: var(--contrast20)
-    state:
-      - value: armed_home
-        styles:
-          card:
-            - background: var(--green)
-          icon:
-            - color: var(--black)
-          name:
-            - color: var(--black)
-          state:
-            - color: var(--black)
-          label:
-            - color: var(--black)
-      - value: armed_away
-        styles:
-          card:
-            - background: var(--blue)
-          icon:
-            - color: var(--black)
-          name:
-            - color: var(--black)
-          state:
-            - color: var(--black)
-          label:
-            - color: var(--black)
-      - value: triggered
-        styles:
-          card:
-            - background: var(--red)
-          icon:
-            - color: var(--black)
-          name:
-            - color: var(--black)
-          state:
-            - color: var(--black)
-          label:
-            - color: var(--black)
-
-  # ----------------------------------------------
-  # 하단 미디어 플레이어 오버레이 (button-card 기반)
-  # dashboard.yaml의 custom_card_mediaplayer_bottom에서 변형 사용
-  # ----------------------------------------------
-  - type: conditional
-    conditions:
-      - entity: sensor.count_media_playing
-        state_not: '0'
-      - entity: sensor.count_media_playing
-        state_not: unknown
-    card:
-      type: custom:button-card
-      entity: |-
-        [[[ 
-          const defaultEntity = 'media_player.spotify_gimuhyeon';
-          const group = states['group.all_media_players'];
-          const members = Array.isArray(group?.attributes?.entity_id) 
-            ? group.attributes.entity_id : [];
-          const active = members.find(id => 
-            ['playing', 'paused'].includes(states[id]?.state)
-          );
-          return active || members[0] || defaultEntity;
-        ]]]
-      show_entity_picture: true
-      show_name: false
-      entity_picture: |-
-        [[[ 
-          const s = states[entity.entity_id];
-          const a = s?.attributes || {};
-          if (a.entity_picture) return a.entity_picture;
-          if (a.media_image_url) return a.media_image_url;
-          return '/local/images/abstract-gif-colors.gif';
-        ]]]
-      tap_action:
-        action: more-info
-      styles:
-        grid:
-          - grid-template-areas: '"info"'
-          - grid-template-columns: 1fr
-          - grid-template-rows: min-content
-        card:
-          - background: var(--contrast3)
-          - padding: 0
-          - position: fixed
-          - '--ha-ripple-press-opacity': 0
-          - height: 80px
-          - width: calc(100vw - 20px)
-          - margin: 0
-          - bottom: 90px
-          - left: 10px
-          - border-radius: 24px
-          - z-index: 2
-          - box-shadow: >-
-              rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px
-          - overflow: hidden
-        img_cell:
-          - position: absolute
-          - top: 0
-          - left: 0
-          - width: 100%
-          - height: 100%
-          - z-index: 0
-        icon:
-          - width: 150%
-          - opacity: var(--color-tint)
-          - '-webkit-filter': blur(30px)
-          - '-moz-filter': blur(30px)
-          - '-o-filter': blur(30px)
-          - '-ms-filter': blur(30px)
-          - filter: blur(30px)
-        custom_fields:
-          progress:
-            - background-color: var(--contrast10)
-            - position: absolute
-            - top: unset
-            - bottom: 10px
-            - left: 30px
-            - height: 2px
-            - width: 300px
-          bar:
-            - background-color: var(--green)
-            - position: absolute
-            - bottom: 10px
-            - left: 30px
-            - top: unset
-            - height: 2px
-            - z-index: 1
-            - transition: 1s ease-out
-      custom_fields:
-        bar: |-
-          [[[
-            if (entity?.attributes?.media_position !== undefined) {
-              const elt = this.shadowRoot;
-              setTimeout(() => {
-                const card = elt.getElementById('card');
-                const container = elt.getElementById('container');
-                let bar = elt.getElementById('bar');
-
-                if (!bar) {
-                  bar = document.createElement('div');
-                  bar.id = 'bar';
-                  bar.style.cssText = 'position: absolute; bottom: 10px; left: 30px; height: 2px; background-color: var(--green); z-index: 1; transition: width 1s ease-out;';
-                  card.insertBefore(bar, container);
-                }
-
-                function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
-
-                function update() {
-                  let mediaPosition = entity.attributes.media_position || 0;
-                  const mediaPositionUpdated = entity.attributes.media_position_updated_at;
-                  const mediaDuration = entity.attributes.media_duration || 0;
-
-                  if (entity.state === 'playing' && mediaPositionUpdated) {
-                    const elapsed = (Date.now() - new Date(mediaPositionUpdated).getTime()) / 1000;
-                    mediaPosition += elapsed;
-                  }
-
-                  const pct = mediaDuration > 0 ? (mediaPosition / mediaDuration) * 100 : 0;
-                  const widthPct = clamp(pct, 0, 100) * 0.8;
-                  bar.style.width = widthPct.toFixed(1) + '%';
-
-                  requestAnimationFrame(update);
-                }
-
-                requestAnimationFrame(update);
-              }, 0);
-              return ' ';
-            }
-            return '';
-          ]]]
-        progress: |-
-          [[[
-            if (entity.attributes.media_position != undefined) {
-              return '';
-            }
-          ]]]
-        info:
-          card:
-            type: custom:button-card
-            entity: '[[[ return entity.entity_id ]]]'
-            show_label: true
-            show_state: false
-            show_entity_picture: true
-            show_name: true
-            icon: mdi:music
-            name: |-
-              [[[
-                const stateObj = states[entity.entity_id];
-                const attrs = stateObj?.attributes || {};
-                return attrs.media_title || attrs.media_series_title || 
-                  attrs.media_playlist || stateObj?.state || '';
-              ]]]
-            label: |-
-              [[[
-                const stateObj = states[entity.entity_id];
-                const attrs = stateObj?.attributes || {};
-                return attrs.media_artist || attrs.media_series_title || 
-                  attrs.app_name || stateObj?.attributes?.friendly_name || 
-                  entity.entity_id;
-              ]]]
-            styles:
-              grid:
-                - grid-template-areas: |
-                    "i play_state button"
-                    "i l button"
-                    "i n button"
-                - grid-template-columns: min-content 1fr min-content
-                - grid-template-rows: min-content min-content min-content
-                - column-gap: 15px
-              icon:
-                - width: 60px
-                - height: 60px
-                - color: var(--red)
-              card:
-                - padding: 15px 20px
-                - background: none
-                - height: 80px
-                - width: calc(100vw - 20px)
-              img_cell:
-                - background: none
-                - border-radius: 10px
-                - width: 45px
-                - height: 45px
-                - justify-self: start
-                - align-self: start
-              entity_picture:
-                - object-fit: cover
-              state:
-                - font-size: 10px
-                - justify-self: start
-                - align-self: start
-                - color: var(--contrast10)
-                - padding-left: 0px
-              name:
-                - font-size: 11px
-                - justify-self: start
-                - align-self: start
-                - padding-left: 0px
-                - animation: my-animation 15s linear infinite
-              label:
-                - justify-self: start
-                - align-self: end
-                - font-weight: 700
-                - padding-left: 0px
-                - font-size: 13px
-                - margin-top: '-5px'
-              custom_fields:
-                button:
-                  - justify-self: end
-                  - align-self: center
-                  - padding-right: 0px
-                  - padding-top: 0px
-                play_state:
-                  - font-size: 10px
-                  - justify-self: start
-                  - align-self: start
-                  - color: var(--contrast14)
-                  - padding-left: 0
-                  - padding-top: 0
-            custom_fields:
-              button:
-                card:
-                  type: custom:button-card
-                  icon: mdi:play
-                  entity: '[[[ return entity.entity_id ]]]'
-                  show_name: false
-                  tap_action:
-                    action: call-service
-                    service: media_player.media_play_pause
-                    target:
-                      entity_id: '[[[ return entity.entity_id ]]]'
-                  styles:
-                    card:
-                      - overflow: visible
-                      - background: var(--contrast8)
-                      - border-radius: 16px
-                      - width: 50px
-                      - height: 40px
-                    icon:
-                      - width: 20px
-                      - color: var(--contrast18)
-                    img_cell:
-                      - padding: 10px
-                      - width: 20px
-                  state:
-                    - value: playing
-                      icon: mdi:pause
-              play_state: |-
-                [[[
-                  const s = states[entity.entity_id];
-                  const a = s?.attributes || {};
-                  const suffix = a.source || a.app_name || a.friendly_name || '';
-                  const stateMap = { playing: '재생 중', paused: '일시정지', idle: '대기', off: '꺼짐', standby: '대기' };
-                  const stateText = stateMap[s.state] || s.state;
-                  return suffix ? `${stateText} - ${suffix}` : stateText;
-                ]]]
+        - color: '[[[ return variables.color_on ?? "var(--contrast-0)" ]]]'
+  - operator: template
+    value: |-
+      [[[
+        const target = variables.target_entity || "binary_sensor.placeholder";
+        const offValue = variables.state_off ?? 'off';
+        const stateObj = states[target];
+        if (!stateObj) return true;
+        return stateObj.state === offValue;
+      ]]]
+    icon: '[[[ return variables.icon_off ?? "mdi:close-circle" ]]]'
+    styles:
+      card:
+        - background-color: '[[[ return variables.background_color_off ?? "var(--red)" ]]]'
+      name:
+        - color: '[[[ return variables.color_off ?? "var(--contrast-0)" ]]]'
+      label:
+        - color: '[[[ return variables.color_off ?? "var(--contrast-0)" ]]]'
+styles:
+  card:
+    - padding: 20px 20px 12px 14px
+    - height: 129px
+    - background: var(--contrast1)
+  grid:
+    - grid-template-areas: '"l" "n"'
+  label:
+    - justify-self: start
+    - font-size: 26px
+    - padding-top: 10px
+    - font-weight: 500
+    - color: var(--contrast20)
+    - margin-top: 10px
+  name:
+    - justify-self: start
+    - font-size: 11px
+    - color: var(--contrast15)
+    - padding-bottom: 7px
