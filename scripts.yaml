@@ -125,3 +125,60 @@ voice_timer_complete_notice:
           message: '{{ minutes }}분 {{ seconds }}초 타이머가 종료되었습니다.'
           preannounce: true
         action: assist_satellite.announce
+play_favorite_playlist_video:
+  alias: Play Favorite Playlist (Video)
+  sequence:
+  - target:
+      entity_id: input_text.music_playlist
+    data:
+      value: '{{ playlist }}'
+    action: input_text.set_value
+  - target:
+      entity_id: '{{ entity_id }}'
+    data:
+      media_content_id: '{{ playlist }}'
+      media_content_type: playlist
+    action: media_player.play_media
+  fields:
+    entity:
+      description: Entity to start playback on
+      example: media_player.living_room
+      selector:
+        entity:
+          domain: media_player
+    playlist:
+      description: Playlist media ID
+      example: spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
+      selector:
+        text:
+  description: ''
+set_playlist_and_play_video:
+  alias: Set Playlist and Play (Video)
+  sequence:
+  - target:
+      entity_id: input_text.music_playlist
+    data:
+      value: '{{ playlist }}'
+    action: input_text.set_value
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.music
+        state: playing
+      sequence:
+      - target:
+          entity_id: '{{ state_attr(''media_player.music'', ''active_child'') | replace(''media_player.'',
+            ''media_player.mass_'') }}
+
+            '
+        data:
+          media_content_id: '{{ states(''input_text.music_playlist'') }}'
+          media_content_type: playlist
+        action: media_player.play_media
+  fields:
+    playlist:
+      description: Playlist media ID
+      example: spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
+      selector:
+        text:
+  description: ''
