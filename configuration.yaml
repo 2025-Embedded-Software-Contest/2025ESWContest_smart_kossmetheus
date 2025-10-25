@@ -180,7 +180,7 @@ lovelace:
       title: cardian dashboard
       icon: mdi:view-dashboard-variant
       show_in_sidebar: true
-      filename: dashboard.yaml
+      url_path: caredian-dashboard
 
 homeassistant:
   # Gas meter (ESP32-CAM + OCR)
