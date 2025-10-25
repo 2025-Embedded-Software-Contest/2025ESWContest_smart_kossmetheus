@@ -1,85 +1,383 @@
-type: custom:button-card
-variables:
-  target_entity: binary_sensor.your_connection_sensor
-  card_title: Connection Monitor
-  icon_on: mdi:router-wireless
-  icon_off: mdi:router-wireless-off
-  state_on: 'on'
-  state_off: 'off'
-  text_on: Connected
-  text_off: Disconnected
-  text_unknown: Unknown
-  background_color_on: var(--green)
-  background_color_off: var(--red)
-  color_on: var(--black)
-  color_off: var(--black)
-entity: '[[[ return variables.target_entity || "binary_sensor.placeholder" ]]]'
-name: '[[[ return variables.card_title || "Connection" ]]]'
-show_label: true
-show_icon: false
-label: |-
-  [[[
-    const target = variables.target_entity || "binary_sensor.placeholder";
-    const stateObj = states[target];
-    const onValue = variables.state_on ?? 'on';
-    const textOn = variables.text_on ?? 'Connected';
-    const textOff = variables.text_off ?? 'Disconnected';
-    const textUnknown = variables.text_unknown ?? 'Unknown';
-    if (!stateObj) {
-      return `<span style="font-size:18px;">${textUnknown}</span>`;
-    }
-    const isOn = stateObj.state === onValue;
-    return `<span style="font-size:18px;">${isOn ? textOn : textOff}</span>`;
-  ]]]
-state:
-  - operator: template
-    value: |-
+type: horizontal-stack
+cards:
+  # Weather
+  - type: custom:button-card
+    entity: weather.wn_jib
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+    size: 24px
+    icon: |
       [[[
-        const target = variables.target_entity || "binary_sensor.placeholder";
-        const onValue = variables.state_on ?? 'on';
-        return states[target]?.state === onValue;
+        const m = {
+          sunny: 'mdi:weather-sunny',
+          'clear-night': 'mdi:weather-night',
+          cloudy: 'mdi:weather-cloudy',
+          partlycloudy: 'mdi:weather-partly-cloudy',
+          rainy: 'mdi:weather-pouring',
+          pouring: 'mdi:weather-pouring',
+          windy: 'mdi:weather-windy',
+          snowy: 'mdi:weather-snowy',
+          fog: 'mdi:weather-fog'
+        };
+        return m[states[entity.entity_id].state] || 'mdi:weather-partly-cloudy';
       ]]]
-    icon: '[[[ return variables.icon_on ?? "mdi:check-circle" ]]]'
+    label: "날씨"
+    name: |
+      [[[
+        const t = states[entity.entity_id].attributes.temperature;
+        return (t !== undefined) ? (Number(t).toFixed(1) + "°C") : "—";
+      ]]]
+    tap_action:
+      action: more-info
     styles:
       card:
-        - background-color: '[[[ return variables.background_color_on ?? "var(--green)" ]]]'
-      name:
-        - color: '[[[ return variables.color_on ?? "var(--contrast-0)" ]]]'
+        - padding: 0 16px 0 0
+        - background: none
+        - box-shadow: none
+        - border-radius: 0
+        - min-width: 120px
+      grid:
+        - grid-template-areas: '"i label" "i name"'
+        - grid-template-columns: min-content 1fr
+        - grid-template-rows: min-content min-content
+        - column-gap: 8px
+        - row-gap: 0px
+      icon:
+        - color: '#f5c842'
+        - width: 22px
+        - height: 22px
+        - align-self: center
       label:
-        - color: '[[[ return variables.color_on ?? "var(--contrast-0)" ]]]'
-  - operator: template
-    value: |-
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
+      name:
+        - grid-area: name
+        - font-size: 18px
+        - font-weight: 600
+        - color: var(--primary-text-color)
+        - justify-self: start
+        - align-self: start
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1.2
+
+  # Temperature
+  - type: custom:button-card
+    entity: sensor.average_indoor_temperature
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+    size: 24px
+    icon: mdi:thermometer
+    label: "온도"
+    name: |
       [[[
-        const target = variables.target_entity || "binary_sensor.placeholder";
-        const offValue = variables.state_off ?? 'off';
-        const stateObj = states[target];
-        if (!stateObj) return true;
-        return stateObj.state === offValue;
+        const v = Number(states[entity.entity_id].state);
+        return isNaN(v) ? states[entity.entity_id].state : v.toFixed(1) + "°C";
       ]]]
-    icon: '[[[ return variables.icon_off ?? "mdi:close-circle" ]]]'
+    tap_action:
+      action: more-info
     styles:
       card:
-        - background-color: '[[[ return variables.background_color_off ?? "var(--red)" ]]]'
-      name:
-        - color: '[[[ return variables.color_off ?? "var(--contrast-0)" ]]]'
+        - padding: 0 16px 0 0
+        - background: none
+        - box-shadow: none
+        - border-radius: 0
+        - min-width: 120px
+      grid:
+        - grid-template-areas: '"i label" "i name"'
+        - grid-template-columns: min-content 1fr
+        - grid-template-rows: min-content min-content
+        - column-gap: 8px
+        - row-gap: 0px
+      icon:
+        - color: '#a7e97b'
+        - width: 22px
+        - height: 22px
+        - align-self: center
       label:
-        - color: '[[[ return variables.color_off ?? "var(--contrast-0)" ]]]'
-styles:
-  card:
-    - padding: 20px 20px 12px 14px
-    - height: 129px
-    - background: var(--contrast1)
-  grid:
-    - grid-template-areas: '"l" "n"'
-  label:
-    - justify-self: start
-    - font-size: 26px
-    - padding-top: 10px
-    - font-weight: 500
-    - color: var(--contrast20)
-    - margin-top: 10px
-  name:
-    - justify-self: start
-    - font-size: 11px
-    - color: var(--contrast15)
-    - padding-bottom: 7px
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
+      name:
+        - grid-area: name
+        - font-size: 18px
+        - font-weight: 600
+        - color: var(--primary-text-color)
+        - justify-self: start
+        - align-self: start
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1.2
+
+  # Humidity
+  - type: custom:button-card
+    entity: sensor.average_indoor_humidity
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+    size: 24px
+    icon: mdi:water-percent
+    label: "습도"
+    name: |
+      [[[
+        const v = Number(states[entity.entity_id].state);
+        return isNaN(v) ? states[entity.entity_id].state : v.toFixed(1) + "%";
+      ]]]
+    tap_action:
+      action: more-info
+    styles:
+      card:
+        - padding: 0 16px 0 0
+        - background: none
+        - box-shadow: none
+        - border-radius: 0
+        - min-width: 120px
+      grid:
+        - grid-template-areas: '"i label" "i name"'
+        - grid-template-columns: min-content 1fr
+        - grid-template-rows: min-content min-content
+        - column-gap: 8px
+        - row-gap: 0px
+      icon:
+        - color: '#68b7ff'
+        - width: 22px
+        - height: 22px
+        - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
+      name:
+        - grid-area: name
+        - font-size: 18px
+        - font-weight: 600
+        - color: var(--primary-text-color)
+        - justify-self: start
+        - align-self: start
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1.2
+
+  # Energy
+  - type: custom:button-card
+    entity: sensor.sihas_energy_monitor_energy
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+    size: 24px
+    icon: mdi:lightning-bolt
+    label: "에너지"
+    name: |
+      [[[
+        const v = Number(states[entity.entity_id].state);
+        return isNaN(v) ? states[entity.entity_id].state : Math.round(v) + "kWh";
+      ]]]
+    tap_action:
+      action: more-info
+    styles:
+      card:
+        - padding: 0 16px 0 0
+        - background: none
+        - box-shadow: none
+        - border-radius: 0
+        - min-width: 120px
+      grid:
+        - grid-template-areas: '"i label" "i name"'
+        - grid-template-columns: min-content 1fr
+        - grid-template-rows: min-content min-content
+        - column-gap: 8px
+        - row-gap: 0px
+      icon:
+        - color: '#ffde82'
+        - width: 22px
+        - height: 22px
+        - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
+      name:
+        - grid-area: name
+        - font-size: 18px
+        - font-weight: 600
+        - color: var(--primary-text-color)
+        - justify-self: start
+        - align-self: start
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1.2
+
+  # Alarm
+  - type: custom:button-card
+    entity: sensor.paul_nest_alarms
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+    size: 24px
+    icon: mdi:alarm
+    label: "알람"
+    name: |
+      [[[
+        const v = states[entity.entity_id].state;
+        if (!v) return "—";
+        const d = new Date(v);
+        if (isNaN(d)) {
+          const m = (v || '').toString().match(/^(\d{2}):(\d{2})/);
+          return m ? `${m[1]}:${m[2]}` : v;
+        }
+        const hh = d.getHours().toString().padStart(2,'0');
+        const mm = d.getMinutes().toString().padStart(2,'0');
+        return `${hh}:${mm}`;
+      ]]]
+    tap_action:
+      action: more-info
+    styles:
+      card:
+        - padding: 0 16px 0 0
+        - background: none
+        - box-shadow: none
+        - border-radius: 0
+        - min-width: 120px
+      grid:
+        - grid-template-areas: '"i label" "i name"'
+        - grid-template-columns: min-content 1fr
+        - grid-template-rows: min-content min-content
+        - column-gap: 8px
+        - row-gap: 0px
+      icon:
+        - color: '#f5c977'
+        - width: 22px
+        - height: 22px
+        - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
+      name:
+        - grid-area: name
+        - font-size: 18px
+        - font-weight: 600
+        - color: var(--primary-text-color)
+        - justify-self: start
+        - align-self: start
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1.2
+
+  # Vacuum
+  - type: custom:button-card
+    entity: switch.robot_vacuum_switch
+    show_icon: true
+    show_name: true
+    show_label: true
+    show_state: false
+    size: 24px
+    icon: mdi:robot-vacuum
+    label: "도비"
+    name: |
+      [[[
+        const s = (states[entity.entity_id].state || '').toString();
+        return s ? s.charAt(0).toUpperCase() + s.slice(1) : "—";
+      ]]]
+    tap_action:
+      action: more-info
+    styles:
+      card:
+        - padding: 0 16px 0 0
+        - background: none
+        - box-shadow: none
+        - border-radius: 0
+        - min-width: 120px
+      grid:
+        - grid-template-areas: '"i label" "i name"'
+        - grid-template-columns: min-content 1fr
+        - grid-template-rows: min-content min-content
+        - column-gap: 8px
+        - row-gap: 0px
+      icon:
+        - color: '#c6c6c6'
+        - width: 22px
+        - height: 22px
+        - align-self: center
+      label:
+        - grid-area: label
+        - font-size: 10px
+        - font-weight: 400
+        - letter-spacing: 0px
+        - color: var(--secondary-text-color, #8c8c8c)
+        - opacity: 0.7
+        - justify-self: start
+        - align-self: end
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1
+      name:
+        - grid-area: name
+        - font-size: 18px
+        - font-weight: 600
+        - color: var(--primary-text-color)
+        - justify-self: start
+        - align-self: start
+        - text-align: left
+        - margin: 0
+        - padding: 0
+        - line-height: 1.2
