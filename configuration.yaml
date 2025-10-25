@@ -293,8 +293,8 @@ input_select:
       - media_player.uhyeonibang_2
       - media_player.uhyeonibang_3
     initial: media_player.uhyeonibang_2
-  server_tab:
-    name: 시스템 정보 탭
+  system_popup_tab:
+    name: System Popup Tab
     options:
       - Home Assistant
       - Unifi

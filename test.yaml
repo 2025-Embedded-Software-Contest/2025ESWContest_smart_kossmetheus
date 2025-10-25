@@ -1,9 +1,8 @@
 type: vertical-stack
 cards:
-  # 시스템 정보 팝업 카드
   - type: custom:bubble-card
     card_type: pop-up
-    hash: '#server'
+    hash: "#server"
     name: 시스템 정보
     icon: mdi:server
     state: null
@@ -25,246 +24,226 @@ cards:
       .bubble-icon {
         --mdc-icon-size: 22px !important;
       }
-    bg_blur: '5'
-    shadow_opacity: '20'
-    bg_opacity: '98'
+    bg_blur: "5"
+    shadow_opacity: "20"
+    bg_opacity: "98"
     margin_top_mobile: 50px
     margin_top_desktop: 50px
     card_layout: large
-  
-  - type: custom:gap-card
-    height: 0
-  
-  # 탭 버튼 행
   - type: horizontal-stack
     cards:
-      - type: custom:button-card
-        entity: input_select.server_tab
+      - type: button
         name: Home Assistant
         icon: mdi:home-assistant
         tap_action:
           action: call-service
           service: input_select.select_option
           service_data:
-            entity_id: input_select.server_tab
+            entity_id: input_select.system_popup_tab
             option: Home Assistant
-        styles:
-          card:
-            - background-color: |
-                [[[
-                  return states['input_select.server_tab'].state === 'Home Assistant' 
-                    ? 'var(--active-small)' 
-                    : 'rgba(128, 128, 128, 0.3)';
-                ]]]
-            - color: |
-                [[[
-                  return states['input_select.server_tab'].state === 'Home Assistant' 
-                    ? 'white' 
-                    : 'var(--gray800)';
-                ]]]
-          name:
-            - font-size: 12px
-            - padding: 8px 16px
-      
-      - type: custom:button-card
-        entity: input_select.server_tab
+      - type: button
         name: Unifi
-        icon: mdi:wifi-check
+        icon: mdi:lan
         tap_action:
           action: call-service
           service: input_select.select_option
           service_data:
-            entity_id: input_select.server_tab
+            entity_id: input_select.system_popup_tab
             option: Unifi
-        styles:
-          card:
-            - background-color: |
-                [[[
-                  return states['input_select.server_tab'].state === 'Unifi' 
-                    ? 'var(--active-small)' 
-                    : 'rgba(128, 128, 128, 0.3)';
-                ]]]
-            - color: |
-                [[[
-                  return states['input_select.server_tab'].state === 'Unifi' 
-                    ? 'white' 
-                    : 'var(--gray800)';
-                ]]]
-          name:
-            - font-size: 12px
-            - padding: 8px 16px
-      
-      - type: custom:button-card
-        entity: input_select.server_tab
+      - type: button
         name: InfluxDB
         icon: mdi:database
         tap_action:
           action: call-service
           service: input_select.select_option
           service_data:
-            entity_id: input_select.server_tab
+            entity_id: input_select.system_popup_tab
             option: InfluxDB
-        styles:
-          card:
-            - background-color: |
-                [[[
-                  return states['input_select.server_tab'].state === 'InfluxDB' 
-                    ? 'var(--active-small)' 
-                    : 'rgba(128, 128, 128, 0.3)';
-                ]]]
-            - color: |
-                [[[
-                  return states['input_select.server_tab'].state === 'InfluxDB' 
-                    ? 'white' 
-                    : 'var(--gray800)';
-                ]]]
-          name:
-            - font-size: 12px
-            - padding: 8px 16px
-  
-  # Home Assistant 탭
   - type: conditional
     conditions:
-      - entity: input_select.server_tab
+      - entity: input_select.system_popup_tab
         state: Home Assistant
     card:
       type: vertical-stack
       cards:
-        - type: custom:gap-card
-          height: 6
-        
-        # 가동 시간 (상단)
-        - type: custom:button-card
-          template: sensor_big
-          entity: sensor.uptime
-          variables:
-            name: 가동 시간
-            icon: mdi:clock-outline
-            label: |
-              [[[
-                const uptimeState = states['sensor.uptime'].state;
-                const uptimeDate = new Date(uptimeState);
-                const now = new Date();
-                const diffMs = now - uptimeDate;
-                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                return diffDays + '일 ' + diffHours + '시간';
-              ]]]
-            background: var(--popupBG)
-        
-        # 2x3 그리드 (CPU, 메모리, 디스크 / 온도, 팬속도, 로그크기)
-        - type: horizontal-stack
+        - square: false
+          columns: 2
+          type: grid
           cards:
-            # 왼쪽: CPU 온도 (큰 카드)
             - type: custom:button-card
               template: sensor_big
-              entity: sensor.pi5_cpu_temperature
               styles:
                 card:
                   - height: 144px
+                  - margin-bottom: 12px
               variables:
                 name: CPU 온도
                 label: |
-                  [[[ 
-                    return Math.round((states['sensor.pi5_cpu_temperature'].state) * 10)/10 + '°C'
+                  [[[
+                    const sensor = states['sensor.pi5_cpu_temperature'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${Math.round(value * 10) / 10}°C`;
                   ]]]
                 icon: mdi:thermometer
                 background: var(--popupBG)
-            
-            # 오른쪽: 3개 센서 (수직 배치)
-            - type: vertical-stack
+            - type: grid
+              square: false
+              columns: 1
               cards:
                 - type: custom:button-card
                   template: sensor_small
-                  entity: sensor.pi5_fan_speed
                   variables:
-                    name: 팬 속도
+                    label: |
+                      [[[
+                        const sensor = states['sensor.pi5_fan_speed'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return `${sensor.state} RPM`;
+                      ]]] 
                     icon: mdi:fan
-                    label: |
-                      [[[
-                        return (states['sensor.pi5_fan_speed'].state) + ' RPM'
-                      ]]]
+                    name: 팬 속도
                     background: var(--popupBG)
-                
                 - type: custom:button-card
                   template: sensor_small
-                  entity: sensor.pi5_cpu_usage
                   variables:
-                    name: CPU 사용량
-                    icon: mdi:cpu-64-bit
                     label: |
                       [[[
-                        return entity.state + "%"
-                      ]]]
+                        const uptimeSensor = states['sensor.uptime'];
+                        if (!uptimeSensor || !uptimeSensor.state || ['unknown', 'unavailable'].includes(uptimeSensor.state)) {
+                          return 'N/A';
+                        }
+                        const uptimeDate = new Date(uptimeSensor.state);
+                        if (Number.isNaN(uptimeDate.getTime())) {
+                          return 'N/A';
+                        }
+                        const now = new Date();
+                        const diffMs = now - uptimeDate;
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        return `${diffDays}일 ${diffHours}시간`;
+                      ]]] 
+                    icon: mdi:clock-outline
+                    name: 가동 시간
                     background: var(--popupBG)
-                
-                - type: custom:button-card
-                  template: sensor_small
-                  entity: sensor.pi5_memory_usage
-                  variables:
-                    name: 메모리 사용량
-                    icon: mdi:memory
-                    label: |
-                      [[[
-                        return entity.state + "%"
-                      ]]]
-                    background: var(--popupBG)
-        
-        # 디스크 사용량 (퍼센테이지 바)
-        - type: custom:button-card
-          template: sensor_big_percentage
-          entity: sensor.system_monitor_disk_usage
-          variables:
-            name: 디스크 사용량
-            icon: mdi:harddisk
-            background: var(--popupBG)
-            bar: >
-              [[[
-                var color;
-                var state = entity.state;
-                if (state >= 70) {
-                  color = "var(--red)";
-                } else if (state >= 50) {
-                  color = "var(--orange)";
-                } else if (state >= 30) {
-                  color = "var(--yellow)";
-                } else if (state >= 20) {
-                  color = "var(--blue)";
-                } else {
-                  color = "var(--green)";
-                }
-                return `<div><div style="background:${color}; height: 30px; width:${state}%;"></div></div>`
-              ]]]
-            label: |
-              [[[
-                return entity.state + '%'
-              ]]]
-        
-        # 로그 크기
-        - type: custom:button-card
-          template: sensor_small
-          entity: sensor.ha_log_size
-          variables:
-            name: 로그 크기
-            icon: mdi:file-chart
-            label: |
-              [[[
-                return entity.state + " MB"
-              ]]]
-            background: var(--popupBG)
-  
-  # Unifi 탭
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.pi5_cpu_usage
+              variables:
+                name: CPU 사용량
+                icon: mdi:cpu-64-bit
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.pi5_memory_usage
+              variables:
+                name: 메모리 사용량
+                icon: mdi:memory
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
+                  ]]]
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_big_percentage
+              variables:
+                name: 디스크 사용량
+                entity: sensor.system_monitor_disk_usage
+                icon: mdi:harddisk
+                background: var(--popupBG)
+                label: |
+                  [[[
+                    const sensor = states['sensor.system_monitor_disk_usage'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${Math.round(value)}<span style="font-size:14px"> %</span>`;
+                  ]]]
+                bar: |
+                  [[[
+                    const sensor = states['sensor.system_monitor_disk_usage'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return '<div style="height:30px;"></div>';
+                    }
+                    const raw = Number(sensor.state);
+                    if (Number.isNaN(raw)) {
+                      return '<div style="height:30px;"></div>';
+                    }
+                    const value = Math.max(0, Math.min(100, raw));
+                    let color = 'var(--green)';
+                    if (value >= 70) {
+                      color = 'var(--red)';
+                    } else if (value >= 50) {
+                      color = 'var(--orange)';
+                    } else if (value >= 30) {
+                      color = 'var(--yellow)';
+                    } else if (value >= 20) {
+                      color = 'var(--blue)';
+                    }
+                    const pattern = `repeating-linear-gradient(45deg,transparent,transparent 2px,${color} 3px,transparent 4px)`;
+                    return `<div style="background-image:${pattern}; height:30px; width:100%"><div style="background:${color}; height:30px; width:${value}%;"></div></div>`;
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.ha_log_size
+              variables:
+                name: 로그 크기
+                icon: mdi:file-chart
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value} MB`;   
+                  ]]]
   - type: conditional
     conditions:
-      - entity: input_select.server_tab
+      - entity: input_select.system_popup_tab
         state: Unifi
     card:
       type: vertical-stack
       cards:
-        - type: custom:gap-card
-          height: 6
-        
-        # UCG Fiber 섹션
         - type: markdown
           content: "### UCG Fiber"
           card_mod:
@@ -277,101 +256,104 @@ cards:
               ha-markdown {
                 color: var(--gray800);
               }
-        
-        # UCG Fiber: 2x3 그리드
-        - type: horizontal-stack
+        - square: false
+          columns: 2
+          type: grid
           cards:
-            # 왼쪽: CPU 온도 (큰 카드)
             - type: custom:button-card
               template: sensor_big
-              entity: sensor.ucg_fiber_ucg_fiber_cpu_temperature
               styles:
                 card:
                   - height: 144px
+                  - margin-bottom: 12px
               variables:
                 name: CPU 온도
                 label: |
-                  [[[ 
-                    return Math.round((states['sensor.ucg_fiber_ucg_fiber_cpu_temperature'].state) * 10)/10 + '°C'
-                  ]]]
+                  [[[
+                    const sensor = states['sensor.ucg_fiber_ucg_fiber_cpu_temperature'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${Math.round(value * 10) / 10}°C`;
+                  ]]]  
                 icon: mdi:thermometer
                 background: var(--popupBG)
-            
-            # 오른쪽: 3개 센서
-            - type: vertical-stack
+            - type: grid
+              square: false
+              columns: 1
               cards:
                 - type: custom:button-card
                   template: sensor_small
-                  entity: sensor.ucg_fiber_state
                   variables:
-                    name: 상태
+                    label: |
+                      [[[
+                        const sensor = states['sensor.ucg_fiber_state'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return sensor.state;
+                      ]]] 
                     icon: mdi:lan-check
-                    label: |
-                      [[[
-                        return states['sensor.ucg_fiber_state'].state
-                      ]]]
+                    name: 상태
                     background: var(--popupBG)
-                
                 - type: custom:button-card
                   template: sensor_small
-                  entity: sensor.ucg_fiber_cpu_utilization
                   variables:
-                    name: CPU 사용량
-                    icon: mdi:cpu-64-bit
                     label: |
                       [[[
-                        return entity.state + "%"
-                      ]]]
+                        const sensor = states['sensor.ucg_fiber_clients'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return `${sensor.state} 개`;
+                      ]]] 
+                    icon: mdi:devices
+                    name: 연결 기기
                     background: var(--popupBG)
-                
-                - type: custom:button-card
-                  template: sensor_small
-                  entity: sensor.ucg_fiber_memory_utilization
-                  variables:
-                    name: 메모리 사용량
-                    icon: mdi:memory
-                    label: |
-                      [[[
-                        return entity.state + "%"
-                      ]]]
-                    background: var(--popupBG)
-        
-        # UCG Fiber: 추가 정보
-        - type: horizontal-stack
+        - square: false
+          columns: 2
+          type: grid
           cards:
             - type: custom:button-card
               template: sensor_small
-              entity: sensor.ucg_fiber_clients
+              entity: sensor.ucg_fiber_cpu_utilization
               variables:
-                name: 연결 기기
-                icon: mdi:devices
+                name: CPU 사용량
+                icon: mdi:cpu-64-bit
+                background: var(--popupBG)
                 label: |
                   [[[
-                    return entity.state + ' 개'
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
                   ]]]
-                background: var(--popupBG)
-            
             - type: custom:button-card
               template: sensor_small
-              entity: sensor.ucg_fiber_uptime
+              entity: sensor.ucg_fiber_memory_utilization
               variables:
-                name: 가동 시간
-                icon: mdi:clock-outline
+                name: 메모리 사용량
+                icon: mdi:memory
+                background: var(--popupBG)
                 label: |
                   [[[
-                    const uptimeState = states['sensor.ucg_fiber_uptime'].state;
-                    const uptimeDate = new Date(uptimeState);
-                    const now = new Date();
-                    const diffMs = now - uptimeDate;
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    return diffDays + '일'
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const value = Number(entity.state);
+                      if (Number.isNaN(value)) {
+                        return 'N/A';
+                      }
+                      return `${value}%`;   
                   ]]]
-                background: var(--popupBG)
-        
-        - type: custom:gap-card
-          height: 12
-        
-        # U7 Pro XG 섹션
         - type: markdown
           content: "### U7 Pro XG"
           card_mod:
@@ -384,123 +366,145 @@ cards:
               ha-markdown {
                 color: var(--gray800);
               }
-        
-        # U7 Pro XG: 정보
-        - type: horizontal-stack
+        - square: false
+          columns: 2
+          type: grid
           cards:
             - type: custom:button-card
               template: sensor_small
-              entity: sensor.u7_pro_xg_state
               variables:
-                name: 상태
-                icon: mdi:access-point-check
                 label: |
                   [[[
-                    return states['sensor.u7_pro_xg_state'].state
-                  ]]]
+                    const sensor = states['sensor.u7_pro_xg_state'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    return sensor.state;
+                  ]]] 
+                icon: mdi:access-point-check
+                name: 상태
                 background: var(--popupBG)
-            
             - type: custom:button-card
               template: sensor_small
-              entity: sensor.u7_pro_xg_uptime
               variables:
-                name: 가동 시간
-                icon: mdi:clock-outline
                 label: |
                   [[[
-                    const uptimeState = states['sensor.u7_pro_xg_uptime'].state;
-                    const uptimeDate = new Date(uptimeState);
+                    const uptimeSensor = states['sensor.u7_pro_xg_uptime'];
+                    if (!uptimeSensor || !uptimeSensor.state || ['unknown', 'unavailable'].includes(uptimeSensor.state)) {
+                      return 'N/A';
+                    }
+                    const uptimeDate = new Date(uptimeSensor.state);
+                    if (Number.isNaN(uptimeDate.getTime())) {
+                      return 'N/A';
+                    }
                     const now = new Date();
                     const diffMs = now - uptimeDate;
                     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    return diffDays + '일'
-                  ]]]
+                    return `${diffDays}일`;
+                  ]]] 
+                icon: mdi:clock-outline
+                name: 가동 시간
                 background: var(--popupBG)
-  
-  # InfluxDB 탭
   - type: conditional
     conditions:
-      - entity: input_select.server_tab
+      - entity: input_select.system_popup_tab
         state: InfluxDB
     card:
       type: vertical-stack
       cards:
-        - type: custom:gap-card
-          height: 6
-        
-        # DB 크기 및 백업 상태
-        - type: horizontal-stack
+        - square: false
+          columns: 2
+          type: grid
           cards:
-            # 왼쪽: DB 크기 (큰 카드)
             - type: custom:button-card
               template: sensor_big
-              entity: sensor.influxdb_db_size
               styles:
                 card:
                   - height: 144px
+                  - margin-bottom: 12px
               variables:
                 name: DB 크기
                 label: |
-                  [[[ 
-                    return states['sensor.influxdb_db_size'].state + ' MB'
-                  ]]]
+                  [[[
+                    const sensor = states['sensor.influxdb_db_size'];
+                    if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                      return 'N/A';
+                    }
+                    const value = Number(sensor.state);
+                    if (Number.isNaN(value)) {
+                      return 'N/A';
+                    }
+                    return `${value} MB`;
+                  ]]]  
                 icon: mdi:database
                 background: var(--popupBG)
-            
-            # 오른쪽: 3개 센서
-            - type: vertical-stack
+            - type: grid
+              square: false
+              columns: 1
               cards:
                 - type: custom:button-card
                   template: sensor_small
-                  entity: sensor.influxdb_backup_status
                   variables:
-                    name: 백업 상태
+                    label: |
+                      [[[
+                        const sensor = states['sensor.influxdb_backup_status'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        const status = sensor.state;
+                        return status === 'failed' ? '실패' : status === 'success' ? '성공' : status;
+                      ]]] 
                     icon: mdi:backup-restore
-                    label: |
-                      [[[
-                        const status = states['sensor.influxdb_backup_status'].state;
-                        return status === 'failed' ? '실패' : status === 'success' ? '성공' : status
-                      ]]]
+                    name: 백업 상태
                     background: var(--popupBG)
-                
                 - type: custom:button-card
                   template: sensor_small
-                  entity: sensor.influxdb_backup_count
                   variables:
-                    name: 백업 개수
+                    label: |
+                      [[[
+                        const sensor = states['sensor.influxdb_backup_count'];
+                        if (!sensor || sensor.state === undefined || ['unknown', 'unavailable'].includes(sensor.state)) {
+                          return 'N/A';
+                        }
+                        return `${sensor.state} 개`;
+                      ]]] 
                     icon: mdi:counter
-                    label: |
-                      [[[
-                        return states['sensor.influxdb_backup_count'].state + ' 개'
-                      ]]]
+                    name: 백업 개수
                     background: var(--popupBG)
-                
-                - type: custom:button-card
-                  template: sensor_small
-                  entity: sensor.influxdb_backup_size
-                  variables:
-                    name: 백업 크기
-                    icon: mdi:folder-zip
-                    label: |
-                      [[[
-                        return states['sensor.influxdb_backup_size'].state
-                      ]]]
-                    background: var(--popupBG)
-        
-        # 최신 백업
-        - type: custom:button-card
-          template: sensor_small
-          entity: sensor.influxdb_latest_backup
-          variables:
-            name: 최신 백업
-            icon: mdi:calendar-clock
-            label: |
-              [[[
-                const backup = states['sensor.influxdb_latest_backup'].state;
-                const match = backup.match(/(\d{4})-(\d{2})-(\d{2})/);
-                if (match) {
-                  return match[2] + '/' + match[3];
-                }
-                return backup;
-              ]]]
-            background: var(--popupBG)
+        - square: false
+          columns: 2
+          type: grid
+          cards:
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.influxdb_backup_size
+              variables:
+                name: 백업 크기
+                icon: mdi:folder-zip
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      return entity.state;   
+                  ]]]
+            - type: custom:button-card
+              template: sensor_small
+              entity: sensor.influxdb_latest_backup
+              variables:
+                name: 최신 백업
+                icon: mdi:calendar-clock
+                background: var(--popupBG)
+                label: |
+                  [[[
+                      if (!entity || entity.state === undefined || ['unknown', 'unavailable'].includes(entity.state)) {
+                        return 'N/A';
+                      }
+                      const backup = entity.state;
+                      const match = backup.match(/(\d{4})-(\d{2})-(\d{2})/);
+                      if (match) {
+                        return match[2] + '/' + match[3];
+                      }
+                      return backup;
+                  ]]]
