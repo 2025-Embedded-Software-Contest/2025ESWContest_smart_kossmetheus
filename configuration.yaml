@@ -186,7 +186,7 @@ lovelace:
       title: 공기질 대시보드 2025
       icon: mdi:air-filter
       show_in_sidebar: true
-      filename: dashboard_2025.yaml
+      filename: dashboard.yaml
 
 homeassistant:
   # Gas meter (ESP32-CAM + OCR)
