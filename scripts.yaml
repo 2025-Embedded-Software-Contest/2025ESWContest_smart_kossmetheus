@@ -1,217 +1,135 @@
 turn_off_all_lights:
   alias: 일괄 소등
   sequence:
-    - action: homeassistant.turn_off
-      target:
-        entity_id:
-        - light.living_floor_light
-        - switch.geosil_jeondeung_top_left
-        - switch.geosil_jeondeung_top_right
-        - switch.geosil_jeondeung_center_left
-        - switch.geosil_jeondeung_bottom_left
-        - switch.geosil_jeondeung_bottom_right
-        - light.coupy_floor_light
-        - light.coupy_indirect_light
-        - light.coupy_reading_light
-        - switch.hyeogjinbang_jeondeung
-        - light.hagyeong_floor
-        - switch.hagyeongbang_jeondeung
-        - switch.jubang_jeondeung_top
-        - switch.jubang_jeondeung_center
-        - switch.jubang_jeondeung_bottom
-        - light.zigbee_dimmer
-        - light.smart_bulb
-        - light.deseukeutab_jeonweon
+  - action: homeassistant.turn_off
+    target:
+      entity_id:
+      - light.living_floor_light
+      - switch.geosil_jeondeung_top_left
+      - switch.geosil_jeondeung_top_right
+      - switch.geosil_jeondeung_center_left
+      - switch.geosil_jeondeung_bottom_left
+      - switch.geosil_jeondeung_bottom_right
+      - light.coupy_floor_light
+      - light.coupy_indirect_light
+      - light.coupy_reading_light
+      - switch.hyeogjinbang_jeondeung
+      - light.hagyeong_floor
+      - switch.hagyeongbang_jeondeung
+      - switch.jubang_jeondeung_top
+      - switch.jubang_jeondeung_center
+      - switch.jubang_jeondeung_bottom
+      - light.zigbee_dimmer
+      - light.smart_bulb
+      - light.deseukeutab_jeonweon
   mode: single
 test_gas_camera_snapshot:
   alias: 가스 카메라 스냅샷 테스트
   description: ESP32-CAM 플래시를 켜고 단일 스냅샷을 /config/www/tmp/gas/test_snapshot.jpg 로 저장합니다.
   mode: single
   sequence:
-    - action: light.turn_on
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-      data:
-        brightness_pct: 100
-    - delay: 00:00:02
-    - action: camera.snapshot
-      target:
-        entity_id: camera.esp32_cam_esp32_cam_gas_cam
-      data:
-        filename: /config/www/tmp/gas/test_snapshot.jpg
-    - action: light.turn_off
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-    - action: system_log.write
-      data:
-        level: info
-        message: "[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg"
+  - action: light.turn_on
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    data:
+      brightness_pct: 100
+  - delay: 00:00:02
+  - action: camera.snapshot
+    target:
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
+    data:
+      filename: /config/www/tmp/gas/test_snapshot.jpg
+  - action: light.turn_off
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+  - action: system_log.write
+    data:
+      level: info
+      message: '[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg'
 esp32_cam_flash_on:
   alias: ESP32-CAM 플래시 켜기
   mode: single
   sequence:
-    - action: light.turn_on
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-      data:
-        brightness_pct: 100
+  - action: light.turn_on
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    data:
+      brightness_pct: 100
 esp32_cam_flash_off:
   alias: ESP32-CAM 플래시 끄기
   mode: single
   sequence:
-    - action: light.turn_off
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
+  - action: light.turn_off
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
 announce_tts_message:
   alias: Announce TTS Message
   description: Says whatever text is in input helper
   mode: single
   sequence:
-    - variables:
-        target_player:
-          "{{ states('input_select.tts_target_speaker')\n   if states('input_select.tts_target_speaker')
-          not in ['unknown','unavailable','']\n   else 'media_player.uhyeonibang_2'
-          }}"
-    - action: tts.speak
-      target:
-        entity_id: tts.tts_pipeline_voxcpm
-      data:
-        media_player_entity_id: "{{ target_player }}"
-        cache: true
-        message: "{{ states('input_text.message_to_bedroom') }}"
-    - delay:
-        seconds: 15
-    - action: media_player.clear_playlist
-      target:
-        entity_id: "{{ target_player }}"
-voice_timer_complete_notice:
-  alias: Voice Timer Complete Notice
-  description: 타이머 종료 후 음성 안내만 출력합니다.
-  mode: parallel
-  fields:
-    minutes:
-      name: 분
-      selector:
-        number:
-          min: 0
-          max: 60
-          step: 1
-      required: true
-    seconds:
-      name: 초
-      selector:
-        number:
-          min: 0
-          max: 59
-          step: 1
-      required: true
-    voice_assistant:
-      name: 음성 어시스턴트
-      selector:
-        entity:
-          domain: assist_satellite
-  sequence:
-    - delay:
-        minutes: "{{ minutes | float(0) }}"
-        seconds: "{{ seconds | float(0) }}"
-    - variables:
-        assistants: >-
-          {{ states
-             | selectattr('entity_id', 'search', 'assist_satellite.voice_assistant')
-             | map(attribute='entity_id')
-             | list }}
-    - repeat:
-        for_each: "{{ assistants }}"
-        sequence:
-          - action: assist_satellite.announce
-            target:
-              entity_id: "{{ repeat.item }}"
-            data:
-              message: "{{ minutes }}분 {{ seconds }}초 타이머가 종료되었습니다."
-              preannounce: true
-play_favorite_playlist_video:
-  alias: Play Favorite Playlist (Video)
-  sequence:
-    - variables:
-        target_player: "{{ entity if entity is defined and entity not in [none, ''] else 'media_player.spotify_gimuhyeon' }}"
-    - action: input_text.set_value
-      target:
-        entity_id: input_text.music_playlist
-      data:
-        value: "{{ playlist }}"
-    - action: media_player.play_media
-      target:
-        entity_id: "{{ target_player }}"
-      data:
-        media_content_id: "{{ playlist }}"
-        media_content_type: playlist
-  fields:
-    entity:
-      name: 재생할 미디어 플레이어
-      description: 실제 재생을 시작할 미디어 플레이어
-      default: media_player.spotify_gimuhyeon
-      selector:
-        entity:
-          domain: media_player
-    playlist:
-      description: Playlist media ID
-      example: spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
-      selector:
-        text:
-  description: ""
+  - variables:
+      target_player: "{{ states('input_select.tts_target_speaker')\n   if states('input_select.tts_target_speaker')
+        not in ['unknown','unavailable','']\n   else 'media_player.uhyeonibang_2'
+        }}"
+  - action: tts.speak
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
+    data:
+      media_player_entity_id: '{{ target_player }}'
+      cache: true
+      message: '{{ states(''input_text.message_to_bedroom'') }}'
+  - delay:
+      seconds: 15
+  - action: media_player.clear_playlist
+    target:
+      entity_id: '{{ target_player }}'
 set_playlist_and_play_video:
   alias: Set Playlist and Play (Video)
   sequence:
-    - variables:
-        preferred_players:
-          - media_player.spotify_gimuhyeon
-          - media_player.gimuhyeonyi_macbook_pro
-          - media_player.uhyeonibang
-          - media_player.paul_nest
-          - media_player.vlc_telnet
-        active_player: >-
-          {% set playing_states = ['playing', 'buffering'] %}
-          {% for player in preferred_players %}
-            {% if states(player) in playing_states %}
-              {{ player }}
-              {% break %}
-            {% endif %}
-          {% endfor %}
-    - action: input_text.set_value
+  - variables:
+      preferred_players:
+      - media_player.spotify_gimuhyeon
+      - media_player.gimuhyeonyi_macbook_pro
+      - media_player.uhyeonibang
+      - media_player.paul_nest
+      - media_player.vlc_telnet
+      active_player: "{% set playing_states = ['playing', 'buffering'] %} {% for player
+        in preferred_players %}\n  {% if states(player) in playing_states %}\n    {{
+        player }}\n    {% break %}\n  {% endif %}\n{% endfor %}"
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.music_playlist
+    data:
+      value: '{{ playlist }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ active_player | default('''', true) | trim != '''' }}'
+      sequence:
+      - action: media_player.play_media
+        target:
+          entity_id: '{{ active_player | trim }}'
+        data:
+          media_content_id: '{{ states(''input_text.music_playlist'') }}'
+          media_content_type: playlist
+    default:
+    - action: media_player.play_media
       target:
-        entity_id: input_text.music_playlist
+        entity_id: media_player.spotify_gimuhyeon
       data:
-        value: "{{ playlist }}"
-    - choose:
-        - conditions:
-            - condition: template
-              value_template: "{{ active_player | default('', true) | trim != '' }}"
-          sequence:
-            - action: media_player.play_media
-              target:
-                entity_id: "{{ active_player | trim }}"
-              data:
-                media_content_id: "{{ states('input_text.music_playlist') }}"
-                media_content_type: playlist
-      default:
-        - action: media_player.play_media
-          target:
-            entity_id: media_player.spotify_gimuhyeon
-          data:
-            media_content_id: "{{ states('input_text.music_playlist') }}"
-            media_content_type: playlist
+        media_content_id: '{{ states(''input_text.music_playlist'') }}'
+        media_content_type: playlist
   fields:
     playlist:
       description: Playlist media ID
       example: spotify:playlist:37i9dQZF1DXcBWIGoYBM5M
       selector:
         text:
-  description: ""
-
+  description: ''
 clear_fall_alert:
   alias: 낙상 감지 해제
   mode: single
   sequence:
-    - action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.fall_alert_active
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.fall_alert_active
