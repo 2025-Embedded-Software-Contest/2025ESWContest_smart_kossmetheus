@@ -293,13 +293,6 @@ input_select:
       - media_player.uhyeonibang_2
       - media_player.uhyeonibang_3
     initial: media_player.uhyeonibang_2
-  system_popup_tab:
-    name: System Popup Tab
-    options:
-      - Home Assistant
-      - Unifi
-      - InfluxDB
-    initial: Home Assistant
 
 # 낙상 감지 시스템 (FastAPI 연동)
 input_boolean:

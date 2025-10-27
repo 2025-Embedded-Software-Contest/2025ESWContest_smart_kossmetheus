@@ -40,6 +40,118 @@ devices:
         on_state: ["on"]
         parent_entity_id: light.deseukeutab_jeonweon
 
+  # IONIQ9 EV 차량
+  - device_id: "f4c5d65a-5639-44af-bc5a-d42da215d8bc"
+    # 배터리 레벨 센서
+    sensor:
+      - name: "Paul IONIQ9 배터리"
+        entity_id_format: paul_ioniq9_battery
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: batteryLevel
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Paul IONIQ9 주행거리"
+        entity_id_format: paul_ioniq9_range
+        component: main
+        capability: vehicleRange
+        state:
+          attribute: estimatedRemainingRange
+        unit_of_measurement: "km"
+
+      - name: "Paul IONIQ9 오도미터"
+        entity_id_format: paul_ioniq9_odometer
+        component: main
+        capability: vehicleOdometer
+        state:
+          attribute: odometerReading
+        unit_of_measurement: "km"
+        icon: mdi:counter
+
+      - name: "Paul IONIQ9 충전 상태"
+        entity_id_format: paul_ioniq9_charging_state
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: chargingState
+
+    # 도어 잠금 상태
+    binary_sensor:
+      - name: "Paul IONIQ9 앞 왼쪽 문"
+        entity_id_format: paul_ioniq9_front_left_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: frontLeftDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      - name: "Paul IONIQ9 앞 오른쪽 문"
+        entity_id_format: paul_ioniq9_front_right_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: frontRightDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      - name: "Paul IONIQ9 뒤 왼쪽 문"
+        entity_id_format: paul_ioniq9_rear_left_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: rearLeftDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      - name: "Paul IONIQ9 뒤 오른쪽 문"
+        entity_id_format: paul_ioniq9_rear_right_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: rearRightDoor
+        on_state: ["locked"]
+        device_class: lock
+
+    # HVAC 스위치
+    switch:
+      - name: "Paul IONIQ9 에어컨"
+        entity_id_format: paul_ioniq9_hvac
+        component: main
+        capability: vehicleHvac
+        command:
+          "on": "setHvacState"
+          "off": "setHvacState"
+        argument:
+          "on": ["on"]
+          "off": ["off"]
+        state:
+          attribute: hvacState
+        on_state: ["on"]
+
+    # 차량 락/언락 (lock 엔티티)
+    lock:
+      - name: "Paul IONIQ9 도어락"
+        entity_id_format: paul_ioniq9_lock
+        component: main
+        capability: vehicleDoorState
+        command:
+          lock: "lock"
+          unlock: "unlock"
+        state:
+          attribute: lockState
+        locked_state: ["locked"]
+
+    # 새로고침 버튼
+    button:
+      - name: "Paul IONIQ9 새로고침"
+        entity_id_format: paul_ioniq9_refresh
+        component: main
+        capability: refresh
+        command: refresh
+
 # 사용하지 않는 플랫폼 무시 (성능 향상)
 ignore_platforms: []
 
