@@ -1,8 +1,9 @@
 turn_off_all_lights:
   alias: 일괄 소등
   sequence:
-    - service: homeassistant.turn_off
-      entity_id:
+    - action: homeassistant.turn_off
+      target:
+        entity_id:
         - light.living_floor_light
         - switch.geosil_jeondeung_top_left
         - switch.geosil_jeondeung_top_right
@@ -27,18 +28,21 @@ test_gas_camera_snapshot:
   description: ESP32-CAM 플래시를 켜고 단일 스냅샷을 /config/www/tmp/gas/test_snapshot.jpg 로 저장합니다.
   mode: single
   sequence:
-    - service: light.turn_on
-      entity_id: light.esp32_cam_esp32_cam_gas_light
+    - action: light.turn_on
+      target:
+        entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
     - delay: 00:00:02
-    - service: camera.snapshot
-      entity_id: camera.esp32_cam_esp32_cam_gas_cam
+    - action: camera.snapshot
+      target:
+        entity_id: camera.esp32_cam_esp32_cam_gas_cam
       data:
         filename: /config/www/tmp/gas/test_snapshot.jpg
-    - service: light.turn_off
-      entity_id: light.esp32_cam_esp32_cam_gas_light
-    - service: system_log.write
+    - action: light.turn_off
+      target:
+        entity_id: light.esp32_cam_esp32_cam_gas_light
+    - action: system_log.write
       data:
         level: info
         message: "[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg"
@@ -46,16 +50,18 @@ esp32_cam_flash_on:
   alias: ESP32-CAM 플래시 켜기
   mode: single
   sequence:
-    - service: light.turn_on
-      entity_id: light.esp32_cam_esp32_cam_gas_light
+    - action: light.turn_on
+      target:
+        entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
 esp32_cam_flash_off:
   alias: ESP32-CAM 플래시 끄기
   mode: single
   sequence:
-    - service: light.turn_off
-      entity_id: light.esp32_cam_esp32_cam_gas_light
+    - action: light.turn_off
+      target:
+        entity_id: light.esp32_cam_esp32_cam_gas_light
 announce_tts_message:
   alias: Announce TTS Message
   description: Says whatever text is in input helper
@@ -66,16 +72,18 @@ announce_tts_message:
           "{{ states('input_select.tts_target_speaker')\n   if states('input_select.tts_target_speaker')
           not in ['unknown','unavailable','']\n   else 'media_player.uhyeonibang_2'
           }}"
-    - service: tts.speak
-      entity_id: tts.tts_pipeline_voxcpm
+    - action: tts.speak
+      target:
+        entity_id: tts.tts_pipeline_voxcpm
       data:
         media_player_entity_id: "{{ target_player }}"
         cache: true
         message: "{{ states('input_text.message_to_bedroom') }}"
     - delay:
         seconds: 15
-    - service: media_player.clear_playlist
-      entity_id: "{{ target_player }}"
+    - action: media_player.clear_playlist
+      target:
+        entity_id: "{{ target_player }}"
 voice_timer_complete_notice:
   alias: Voice Timer Complete Notice
   description: 타이머 종료 후 음성 안내만 출력합니다.
@@ -115,8 +123,9 @@ voice_timer_complete_notice:
     - repeat:
         for_each: "{{ assistants }}"
         sequence:
-          - service: assist_satellite.announce
-            entity_id: "{{ repeat.item }}"
+          - action: assist_satellite.announce
+            target:
+              entity_id: "{{ repeat.item }}"
             data:
               message: "{{ minutes }}분 {{ seconds }}초 타이머가 종료되었습니다."
               preannounce: true
@@ -125,12 +134,14 @@ play_favorite_playlist_video:
   sequence:
     - variables:
         target_player: "{{ entity if entity is defined and entity not in [none, ''] else 'media_player.spotify_gimuhyeon' }}"
-    - service: input_text.set_value
-      entity_id: input_text.music_playlist
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.music_playlist
       data:
         value: "{{ playlist }}"
-    - service: media_player.play_media
-      entity_id: "{{ target_player }}"
+    - action: media_player.play_media
+      target:
+        entity_id: "{{ target_player }}"
       data:
         media_content_id: "{{ playlist }}"
         media_content_type: playlist
@@ -166,8 +177,9 @@ set_playlist_and_play_video:
               {% break %}
             {% endif %}
           {% endfor %}
-    - service: input_text.set_value
-      entity_id: input_text.music_playlist
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.music_playlist
       data:
         value: "{{ playlist }}"
     - choose:
@@ -175,14 +187,16 @@ set_playlist_and_play_video:
             - condition: template
               value_template: "{{ active_player | default('', true) | trim != '' }}"
           sequence:
-            - service: media_player.play_media
-              entity_id: "{{ active_player | trim }}"
+            - action: media_player.play_media
+              target:
+                entity_id: "{{ active_player | trim }}"
               data:
                 media_content_id: "{{ states('input_text.music_playlist') }}"
                 media_content_type: playlist
       default:
-        - service: media_player.play_media
-          entity_id: media_player.spotify_gimuhyeon
+        - action: media_player.play_media
+          target:
+            entity_id: media_player.spotify_gimuhyeon
           data:
             media_content_id: "{{ states('input_text.music_playlist') }}"
             media_content_type: playlist
@@ -198,5 +212,6 @@ clear_fall_alert:
   alias: 낙상 감지 해제
   mode: single
   sequence:
-    - service: input_boolean.turn_off
-      entity_id: input_boolean.fall_alert_active
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.fall_alert_active
