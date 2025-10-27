@@ -163,12 +163,10 @@
       notification_id: dishwasher_complete
 - id: rinse_aid_refill_reminder
   alias: 낙상 감지 시작 시 해제상태 초기화
-  description: ''
   triggers:
   - entity_id: binary_sensor.fall_detected
     to: 'on'
     trigger: state
-  conditions: []
   actions:
   - target:
       entity_id: input_boolean.fall_alert_cleared
@@ -651,4 +649,23 @@
   actions:
   - data: {}
     action: shell_command.influxdb_backup
+  mode: single
+- id: fall_alert_latch_on
+  alias: 낙상 감지 래치 ON
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.fall_detected
+    from: 'off'
+    to: 'on'
+    trigger: state
+  actions:
+  - target:
+      entity_id: input_boolean.fall_alert_active
+    action: input_boolean.turn_on
+  - target:
+      entity_id: input_datetime.fall_last_time
+    data:
+      date: '{{ now().strftime(''%Y-%m-%d'') }}'
+      time: '{{ now().strftime(''%H:%M:%S'') }}'
+    action: input_datetime.set_datetime
   mode: single

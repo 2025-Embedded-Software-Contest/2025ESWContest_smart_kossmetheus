@@ -304,6 +304,10 @@ input_boolean:
     name: 낙상 감지 해제됨
     icon: mdi:check-decagram
 
+  fall_alert_active:
+    name: Fall Alert Active
+    icon: mdi:alert-octagram
+
 binary_sensor:
   - platform: template
     sensors:
@@ -317,3 +321,10 @@ binary_sensor:
             mdi:check-circle
           {% endif %}
         device_class: safety
+
+# (선택) 마지막 감지 시각 저장
+input_datetime:
+  fall_last_time:
+    name: Fall Last Detected
+    has_date: true
+    has_time: true
