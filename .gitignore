@@ -1,12 +1,27 @@
+# Python/Cached files
 __pycache__/
-.env
+
+# OS/Editor files
 .DS_Store
-*h5
-fall_realtime_log.csv
+
+# 환경/자격증명/도구
+.env
+.caredian
+keys/
+
+# 로그/런타임 출력
 server.log
+fall_realtime_log.csv
+
+# 데이터 디렉토리
 /data
+
+# 데이터 파일(일반/직렬화)
 *.csv
-*.keras
-*.pkl
 *.json
+*.pkl
+
+# 머신러닝 모델/체크포인트
+*.keras
 *.tflite
+*h5
