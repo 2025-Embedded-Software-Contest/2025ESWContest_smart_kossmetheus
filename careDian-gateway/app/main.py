@@ -2,26 +2,36 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, PlainTextResponse
 import logging
+from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api import fall as fall_router
-# from app.api.secure_influx import router as secure_influx_router
 from app.api.influx_routes import router as influx_router
 from app.services import influx
-from app.api import ha  
+from app.api import ha
+from app.security.cc_jwt import router as cc_router
 
 
 def create_app() -> FastAPI:
     setup_logging(level=settings.log_level, json_mode=settings.log_json)
 
     app = FastAPI(
-    title=settings.app_name,
-    version="1.0.0",
-    docs_url="/docs",            # Swagger UI
-    redoc_url="/redoc",          # ReDoc 문서
-    openapi_url="/openapi.json"  # OpenAPI 스펙
-)
+        title=settings.app_name,
+        version="1.0.0",
+        docs_url="/docs",            # Swagger UI
+        redoc_url="/redoc",          # ReDoc 문서
+        openapi_url="/openapi.json"  # OpenAPI 스펙
+    )
+
+    if settings.session_secret:   # 값 있을 때만 활성화
+        app.add_middleware(
+            SessionMiddleware,
+            secret_key=settings.session_secret,
+            same_site="lax",
+            https_only=(settings.env != "dev"),
+            session_cookie=settings.session_cookie_name,
+        )
 
     if settings.allowed_origins:
         app.add_middleware(
@@ -32,11 +42,14 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
 
-    # app.include_router(secure_influx_router)
+    # 공개 라우터 등록
     app.include_router(fall_router.router)
     app.include_router(influx_router)
     app.include_router(ha.router)
 
+    # M2M 라우터 등록
+    app.include_router(cc_router)
+    
     @app.get("/", include_in_schema=False)
     def root():
         # 루트로 들어오면 /docs로 보내기
@@ -54,25 +67,25 @@ def create_app() -> FastAPI:
     def favicon():
         return PlainTextResponse(status_code=204)
 
-    @app.get("/diag/influx")
-    def diag_influx():
-        out = {
-            "url": settings.influx_url,
-            "verify_tls": settings.influx_verify_tls,
-        }
-        try:
-            influx._ensure_client().ping()
-            out["ping"] = "ok"
-        except Exception as e:
-            out["ping"] = "fail"
-            out["error"] = repr(e)
-        return out
+    # @app.get("/diag/influx")
+    # def diag_influx():
+    #     out = {
+    #         "url": settings.influx_url,
+    #         "verify_tls": settings.influx_verify_tls,
+    #     }
+    #     try:
+    #         influx._ensure_client().ping()
+    #         out["ping"] = "ok"
+    #     except Exception as e:
+    #         out["ping"] = "fail"
+    #         out["error"] = repr(e)
+    #     return out
 
-    @app.get("/debug/measurements")
-    def list_measurements(limit: int = 50):
-        # DB에 존재하는 측정값(Measurement)들 확인
-        q = f"SHOW MEASUREMENTS LIMIT {int(limit)}"
-        return influx.query_raw(q)
+    # @app.get("/debug/measurements")
+    # def list_measurements(limit: int = 50):
+    #     # DB에 존재하는 측정값(Measurement)들 확인
+    #     q = f"SHOW MEASUREMENTS LIMIT {int(limit)}"
+    #     return influx.query_raw(q)
     
     @app.on_event("startup")
     async def on_startup():
@@ -92,5 +105,4 @@ def create_app() -> FastAPI:
     return app
 
 setup_logging(settings.log_level)
-
 app = create_app()

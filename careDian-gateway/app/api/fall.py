@@ -1,7 +1,7 @@
 import httpx
 import asyncio
 from typing import Optional, Dict, Any
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from collections import defaultdict
 
@@ -10,7 +10,8 @@ from app.core.config import settings
 from app.services import influx_v1 as influx
 from app.services.ha_notify import send_fall_alert
 from app.services.influx_v1 import InfluxServiceV1
-from app.services.fall_runtime import FallRuntime  
+from app.services.fall_runtime import FallRuntime
+from app.security.cc_jwt import m2m_required
 
 
 influx = InfluxServiceV1(
@@ -59,7 +60,6 @@ async def get_notify_device() -> Optional[str]:
     except Exception as e:
         print(f"Error fetching HA devices: {e}")
         return None
-    
 
 class FallEvent(BaseModel):
     device_id: str = Field(..., description="ESP32 또는 센서 디바이스 ID")
@@ -153,10 +153,18 @@ async def record_fall_event(ev: FallEvent) -> bool:
         return False
     
 @router.post("/fall")
-async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
-    print("[RECEIVED] Fall event data:", ev.dict())  
+async def receive_fall(
+    ev: FallEvent,
+    sub: str = Depends(m2m_required(["events:fall:ingest"])),
+    ) -> Dict[str, Any]:
+    """
+    낙상 이벤트 수신 및 처리
+    M2M 인증 필요: JWT 토큰 with "events:fall:ingest" scope
+    """
+    print(f"[AUTH] sub={sub}")
+    print("[RECEIVED] Fall event data:", ev.dict())
 
-    # 추가: (센서 판단과 무관하게) 모델 추론은 먼저 수행해 확률 기록
+    # (센서 판단과 무관하게) 모델 추론은 먼저 수행해 확률 기록
     prob = None
     try:
         if INFERENCE_ENABLED:
@@ -173,10 +181,11 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         print(f"[WARN] model inference failed: {e}")
 
     success = await record_fall_event(ev)
-
+    
     notify_result = None
 
     if int(ev.fall_state) == 1 and should_alert(ev.device_id, cooldown_sec=300):
+        # 알림 발송 기기 목록 조회
         ha_device = await get_notify_device()
         if not ha_device:
             print("No HA mobile notify device found")
@@ -184,6 +193,7 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
 
         print(f"🚨 [ALERT] Sending fall alert to {ha_device}")
 
+        # 낙상 알림 발송
         notify_result = await send_fall_alert(
             device_id=ev.device_id,
             title="🚨 낙상 감지",
@@ -194,6 +204,7 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
             ts=ev.ts,
         )
 
+        # 낙상 알림 결과 로깅
         print("HA RESPONSE] =>", notify_result)
         try:
             headers = {"Authorization": f"Bearer {settings.ha_token}"}
@@ -207,7 +218,7 @@ async def receive_fall(ev: FallEvent) -> Dict[str, Any]:
         except Exception as e:
             print(f"[ENTITY ERROR] failed to update entity: {e}")
             
-        #낙상 후 일정 시간 지나면 태스크 실행
+        # 낙상 후 일정 시간 지나면 태스크 실행
         asyncio.create_task(check_post_fall_motion(ev))
     else:
         print(f"[INFO] No fall detected (fall_state={ev.fall_state})") 
