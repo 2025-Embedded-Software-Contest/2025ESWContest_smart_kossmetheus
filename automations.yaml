@@ -2,31 +2,31 @@
   alias: 낙상 감지 상태 자동 복구
   description: input_boolean.fall_triggered가 ON으로 바뀌면 일정 시간 후 자동으로 OFF로 복구
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: input_boolean.fall_triggered
       to: "on"
-      for: 00:0:30
+      for: 00:00:30
   condition:
     - condition: template
       value_template: "{{ not is_state('sensor.uptime', '0') }}"
   action:
-    - service: input_boolean.turn_off
+    - action: input_boolean.turn_off
       target:
         entity_id: input_boolean.fall_triggered
   mode: single
 - id: high_power_consumption_alert
   alias: 높은 전력 소비 알림
   description: 총 전력 소비가 임계값을 초과했을 때 알림
-  triggers:
+  trigger:
     - trigger: numeric_state
       entity_id: sensor.total_power_consumption
       above: 500
       for: 00:05:00
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: ⚡ 전력 소비 주의
@@ -39,13 +39,13 @@
 - id: energy_saving_mode
   alias: 에너지 절약 모드
   description: 집에 아무도 없을 때 에너지 절약
-  triggers:
+  trigger:
     - trigger: state
       entity_id: binary_sensor.someone_home
       from: "on"
       to: "off"
       for: 00:30:00
-  actions:
+  action:
     - action: light.turn_off
       target:
         entity_id:
@@ -57,12 +57,12 @@
         message: 부재 중이므로 조명을 자동으로 꺼두었습니다.
 - id: low_battery_device_alert
   alias: 저배터리 디바이스 알림
-  triggers:
+  trigger:
     - trigger: state
       entity_id: binary_sensor.low_battery_devices
       from: "off"
       to: "on"
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: "\U0001F50B 배터리 부족 주의"
@@ -75,7 +75,7 @@
         notification_id: low_battery_alert
 - id: critical_battery_alert
   alias: 극저배터리 알림
-  triggers:
+  trigger:
     - trigger: numeric_state
       entity_id:
         - sensor.gimuhyeonyi_apple_watch_battery
@@ -83,7 +83,7 @@
         - sensor.uhyeonyi_ipad_pro_battery
         - sensor.iphone_battery_level
       below: 10
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: "\U0001F6A8 배터리 위험 수준"
@@ -95,10 +95,10 @@
         notification_id: critical_battery_{{ trigger.entity_id.split('.')[1] }}
 - id: evening_brushing_reminder
   alias: 저녁 양치 알림
-  triggers:
+  trigger:
     - trigger: time
       at: "22:00:00"
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
@@ -108,7 +108,7 @@
         > 7200 }}
 
         "
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: "\U0001FAA5 양치 알림"
@@ -116,12 +116,12 @@
         notification_id: brushing_reminder
 - id: high_heart_rate_alert
   alias: 심박수 경고
-  triggers:
+  trigger:
     - trigger: numeric_state
       entity_id: sensor.ble_heart_rate_e0e33e6221b5
       above: 120
       for: 00:01:00
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: ❤️ 심박수 경고
@@ -129,18 +129,18 @@
         notification_id: heart_rate_alert
 - id: daily_steps_goal_achievement
   alias: 일일 걸음수 목표 달성
-  triggers:
+  trigger:
     - trigger: numeric_state
       entity_id: sensor.ble_steps_e0e33e6221b5
       above: 10000
-  conditions:
+  condition:
     - condition: template
       value_template:
         "{{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days
         == 0 }}
 
         "
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: "\U0001F389 걸음수 목표 달성!"
@@ -150,15 +150,15 @@
         notification_id: steps_goal_achieved
 - id: dishwasher_cycle_complete
   alias: 식기세척기 완료 알림
-  triggers:
+  trigger:
     - trigger: state
       entity_id: sensor.jubang_siggiseceoggi_remaining_time
       to: "0"
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: "\U0001F37D️ 식기세척기 완료"
@@ -170,7 +170,7 @@
         notification_id: dishwasher_complete
 - id: humidity_management_alert
   alias: 습도 관리 알림
-  triggers:
+  trigger:
     - trigger: numeric_state
       entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
       above: 70
@@ -179,7 +179,7 @@
       entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
       below: 30
       for: 00:30:00
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: "\U0001F4A7 습도 관리 필요"
@@ -190,18 +190,18 @@
         notification_id: humidity_alert
 - id: sunrise_gradual_lighting
   alias: 일출 조명 서서히 켜기
-  triggers:
+  trigger:
     - trigger: sun
       event: sunrise
       offset: -00:30:00
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "on"
-  actions:
+  action:
     - action: light.turn_on
       target:
         entity_id: light.zigbee_dimmer
@@ -217,15 +217,15 @@
         transition: 900
 - id: sunset_auto_lighting
   alias: 일몰 후 자동 조명
-  triggers:
+  trigger:
     - trigger: sun
       event: sunset
       offset: 00:30:00
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  actions:
+  action:
     - action: light.turn_on
       target:
         entity_id:
@@ -236,14 +236,14 @@
         color_temp_kelvin: 2500
 - id: bedtime_lights_off
   alias: 취침 시간 조명 끄기
-  triggers:
+  trigger:
     - trigger: time
       at: "23:30:00"
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  actions:
+  action:
     - action: light.turn_on
       target:
         entity_id:
@@ -265,17 +265,17 @@
         notification_id: bedtime_lights
 - id: workday_morning_briefing
   alias: 근무일 아침 브리핑
-  triggers:
+  trigger:
     - trigger: time
       at: 07:30:00
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "on"
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  actions:
+  action:
     - action: persistent_notification.create
       data:
         title: ☀️ 좋은 아침입니다!
@@ -288,18 +288,18 @@
         notification_id: morning_briefing
 - id: weekend_sleep_mode
   alias: 주말 늦잠 모드
-  triggers:
+  trigger:
     - trigger: sun
       event: sunrise
       offset: 02:00:00
-  conditions:
+  condition:
     - condition: state
       entity_id: binary_sensor.workday_sensor
       state: "off"
     - condition: state
       entity_id: binary_sensor.someone_home
       state: "on"
-  actions:
+  action:
     - action: light.turn_on
       target:
         entity_id: light.zigbee_dimmer
@@ -314,13 +314,13 @@
 - id: gas_send_monthly_telegram
   alias: 가스 검침 사진 보내기
   description: ""
-  triggers:
+  trigger:
     - at: 09:03:00
       trigger: time
-  conditions:
+  condition:
     - condition: template
       value_template: "{{now().day == 26}}"
-  actions:
+  action:
     - variables:
         nowdate: "{{ now().strftime('%Y-%m-%d') }}"
         nowtime: "{{ now().strftime('%Y-%m-%d_%H:%M:%S') }}"
@@ -349,15 +349,15 @@
 - id: "1755698295141"
   alias: 주변 밝기 자동 조명 제어
   description: 주변 밝기가 충분할 때 자동으로 조명을 끕니다.
-  triggers:
+  trigger:
     - type: illuminance
       device_id: e28ebb70ec49039d225e74b202fdd91e
       entity_id: 4ff6ecbace5417823e81b823fd5bd60e
       domain: sensor
       trigger: device
       below: 20
-  conditions: []
-  actions:
+  condition: []
+  action:
     - type: turn_off
       device_id: 16c454176737aa10fa53bf309f24d111
       entity_id: f88477c68d783968908c54499f788206
@@ -366,15 +366,15 @@
 - id: "1755744715659"
   alias: 낮은 임계값 조명 알림
   description: 특정 센서 값이 임계값 미만으로 떨어질 때 조명을 켜서 시각적으로 알립니다.
-  triggers:
+  trigger:
     - type: value
       device_id: 42940cb04959837ed39a637fed0f69e2
       entity_id: 64ba2d64e316df06c349b58054dcab48
       domain: sensor
       trigger: device
       below: 2
-  conditions: []
-  actions:
+  condition: []
+  action:
     - type: turn_on
       device_id: 16c454176737aa10fa53bf309f24d111
       entity_id: f88477c68d783968908c54499f788206
@@ -384,18 +384,18 @@
 - id: "1759067786798"
   alias: 이산화탄소 자동 환기 제어
   description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
-  triggers:
+  trigger:
     - trigger: state
       entity_id:
         - binary_sensor.ventilation_should_run
       attribute: 켜짐
-  conditions:
+  condition:
     - condition: device
       type: is_off
       device_id: 98bda3e8ced3d5a12ee685841e367c15
       entity_id: 99f72fc2d843060f243cb0f5979fe38d
       domain: switch
-  actions:
+  action:
     - type: turn_on
       device_id: 98bda3e8ced3d5a12ee685841e367c15
       entity_id: 99f72fc2d843060f243cb0f5979fe38d
@@ -417,18 +417,18 @@
 - id: "1759068039218"
   alias: 이산화탄소 자동 환기 하향
   description: 실내 이산화탄소 농도가 기준치 이하로 떨어지면 환기 시스템을 자동으로 끕니다.
-  triggers:
+  trigger:
     - trigger: state
       entity_id:
         - binary_sensor.ventilation_should_run
       attribute: 꺼짐
-  conditions:
+  condition:
     - condition: device
       type: is_on
       device_id: 98bda3e8ced3d5a12ee685841e367c15
       entity_id: 99f72fc2d843060f243cb0f5979fe38d
       domain: switch
-  actions:
+  action:
     - type: turn_off
       device_id: 98bda3e8ced3d5a12ee685841e367c15
       entity_id: 99f72fc2d843060f243cb0f5979fe38d
@@ -437,10 +437,10 @@
 - id: "1759395712039"
   alias: 녹음본 저장 시 로컬 맥으로 복사
   description: ""
-  triggers:
+  trigger:
     - event_type: voice_recorder_saved
       trigger: event
-  actions:
+  action:
     - data:
         url:
           "{{ 'https://caredian.gleeze.com' ~ (trigger.event.data.path | replace('/config/www','/local'))
@@ -451,11 +451,11 @@
 - id: "1759500010000"
   alias: 가스 검침 단일 프롬프트
   description: 하나의 크롭 이미지에서 프롬프트만으로 7자리(DDD.dddd) 판독
-  triggers:
+  trigger:
     - trigger: time_pattern
       hours: /1
-  conditions: []
-  actions:
+  condition: []
+  action:
     - metadata: {}
       data:
         rgb_color:
@@ -552,7 +552,7 @@
   alias: 전기 전전월 사용량 업데이트
   description: 전월 전기 사용량 변경 시 전전월 값을 업데이트
   trigger:
-    - platform: state
+    - trigger: state
       entity_id:
         - sensor.electricity_energy_prev_monthly
   condition:
@@ -561,7 +561,7 @@
         "{{ trigger.to_state.state|float(0) > 0 and trigger.from_state.state|float(0)
         > 0 }}"
   action:
-    - service: input_number.set_value
+    - action: input_number.set_value
       data:
         value: "{{ trigger.from_state.state }}"
       target:
@@ -572,11 +572,11 @@
   description:
     Home Assistant가 시작될 때 일부 통합구성요소가 올바르게 초기화되지 않는 문제를 해결하기 위해 관련 구성 항목을
     다시 로드합니다.
-  triggers:
+  trigger:
     - trigger: homeassistant
       event: start
-  conditions: []
-  actions:
+  condition: []
+  action:
     - action: homeassistant.reload_config_entry
       target:
         entity_id:
@@ -600,11 +600,11 @@
 - id: "1761400957421"
   alias: "\U0001F6A8 Fall Alert Fullscreen Popup"
   description: ""
-  triggers:
+  trigger:
     - entity_id: binary_sensor.fall_detected
       to: "on"
       trigger: state
-  actions:
+  action:
     - data:
         title: ""
         dismissable: true
@@ -641,32 +641,32 @@
 - id: "1761546151051"
   alias: InfluxDB 격주 백업 (일요일 03:00)
   description: 격주 일요일 새벽 3시에 InfluxDB 자동 백업 (짝수 주차)
-  triggers:
+  trigger:
     - at: 03:00:00
       trigger: time
-  conditions:
+  condition:
     - condition: time
       weekday:
         - sun
     - condition: template
       value_template: "{{ now().isocalendar()[1] % 2 == 0 }}"
-  actions:
+  action:
     - data: {}
       action: shell_command.influxdb_backup
   mode: single
 - id: fall_alert_latch_on
   alias: 낙상 감지 래치 ON
   trigger:
-    - platform: state
+    - trigger: state
       entity_id: binary_sensor.fall_detected
       from: "off"
       to: "on"
   action:
-    - service: input_boolean.turn_on
+    - action: input_boolean.turn_on
       target:
         entity_id: input_boolean.fall_alert_active
 
-    - service: input_datetime.set_datetime
+    - action: input_datetime.set_datetime
       target:
         entity_id: input_datetime.fall_last_time
       data:
