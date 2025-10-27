@@ -4,7 +4,7 @@ class VoiceRecorderCard extends HTMLElement {
         this.recorder = null;
         this.isRecording = false;
         this._hass = null;
-        this.MAX_DURATION = 300000; // Maximum record time (milliseconds)
+        this.MAX_DURATION = 400000; // Maximum record time (milliseconds)
         this.recordingTimeout = null;
         this.recorderInitialized = false;
     }
@@ -41,7 +41,7 @@ class VoiceRecorderCard extends HTMLElement {
             ha-card {
                 border-radius: 12px;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                background: var(--card-background-color);
+                background: var(—card-background-color);
                 padding: 0px;
                 align-items: center;
                 justify-content: center;
@@ -67,19 +67,19 @@ class VoiceRecorderCard extends HTMLElement {
                 text-overflow: ellipsis;
                 
                 /* 基本顏色設定 */
-                --mdc-select-fill-color: var(--card-background-color);
-                --mdc-select-ink-color: var(--primary-text-color);
-                --mdc-select-label-ink-color: var(--primary-color);
-                --mdc-select-dropdown-icon-color: var(--primary-color);
+                —mdc-select-fill-color: var(—card-background-color);
+                —mdc-select-ink-color: var(—primary-text-color);
+                —mdc-select-label-ink-color: var(—primary-color);
+                —mdc-select-dropdown-icon-color: var(—primary-color);
 
                 /* 邊框相關 */
-                --mdc-select-idle-line-color: var(--primary-color);
-                --mdc-select-outlined-idle-border-color: var(--primary-color);
-                --mdc-select-outlined-hover-border-color: var(--accent-color);
+                —mdc-select-idle-line-color: var(—primary-color);
+                —mdc-select-outlined-idle-border-color: var(—primary-color);
+                —mdc-select-outlined-hover-border-color: var(—accent-color);
 
-                --mdc-select-hover-line-color: var(--accent-color);
-                --mdc-theme-primary: var(--accent-color);  /* 選中項目顏色 */
-                --mdc-theme-surface: var(--card-background-color);  /* 下拉選單背景 */
+                —mdc-select-hover-line-color: var(—accent-color);
+                —mdc-theme-primary: var(—accent-color);  /* 選中項目顏色 */
+                —mdc-theme-surface: var(—card-background-color);  /* 下拉選單背景 */
 
                 --mdc-menu-surface-fill-color: var(--card-background-color);
                 --mdc-menu-text-color: var(--primary-text-color);

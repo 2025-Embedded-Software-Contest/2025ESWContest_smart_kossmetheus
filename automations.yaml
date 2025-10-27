@@ -2,698 +2,653 @@
   alias: 낙상 감지 상태 자동 복구
   description: input_boolean.fall_triggered가 ON으로 바뀌면 일정 시간 후 자동으로 OFF로 복구
   trigger:
-    - platform: state
-      entity_id: input_boolean.fall_triggered
-      to: "on"
-      for: "00:0:30"
+  - platform: state
+    entity_id: input_boolean.fall_triggered
+    to: 'on'
+    for: 00:0:30
   condition:
-    # Home Assistant 부팅 직후에는 실행하지 않음
-    - condition: template
-      value_template: "{{ not is_state('sensor.uptime', '0') }}"
+  - condition: template
+    value_template: '{{ not is_state(''sensor.uptime'', ''0'') }}'
   action:
-    - service: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.fall_triggered
+  - service: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.fall_triggered
   mode: single
-
 - id: high_power_consumption_alert
   alias: 높은 전력 소비 알림
   description: 총 전력 소비가 임계값을 초과했을 때 알림
   triggers:
-    - trigger: numeric_state
-      entity_id: sensor.total_power_consumption
-      above: 500
-      for: 00:05:00
+  - trigger: numeric_state
+    entity_id: sensor.total_power_consumption
+    above: 500
+    for: 00:05:00
   conditions:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   actions:
-    - action: persistent_notification.create
-      data:
-        title: ⚡ 전력 소비 주의
-        message:
-          "현재 전력 소비량이 {{ states('sensor.total_power_consumption') }}W입니다. 에너지
-          절약을 위해 불필요한 기기를 확인해보세요.
+  - action: persistent_notification.create
+    data:
+      title: ⚡ 전력 소비 주의
+      message: '현재 전력 소비량이 {{ states(''sensor.total_power_consumption'') }}W입니다. 에너지
+        절약을 위해 불필요한 기기를 확인해보세요.
 
-          "
-        notification_id: high_power_alert
+        '
+      notification_id: high_power_alert
 - id: energy_saving_mode
   alias: 에너지 절약 모드
   description: 집에 아무도 없을 때 에너지 절약
   triggers:
-    - trigger: state
-      entity_id: binary_sensor.someone_home
-      from: "on"
-      to: "off"
-      for: 00:30:00
+  - trigger: state
+    entity_id: binary_sensor.someone_home
+    from: 'on'
+    to: 'off'
+    for: 00:30:00
   actions:
-    - action: light.turn_off
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F3E0 에너지 절약 모드 활성화"
-        message: 부재 중이므로 조명을 자동으로 꺼두었습니다.
+  - action: light.turn_off
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F3E0 에너지 절약 모드 활성화"
+      message: 부재 중이므로 조명을 자동으로 꺼두었습니다.
 - id: low_battery_device_alert
   alias: 저배터리 디바이스 알림
   triggers:
-    - trigger: state
-      entity_id: binary_sensor.low_battery_devices
-      from: "off"
-      to: "on"
+  - trigger: state
+    entity_id: binary_sensor.low_battery_devices
+    from: 'off'
+    to: 'on'
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F50B 배터리 부족 주의"
-        message:
-          "배터리가 부족한 디바이스가 있습니다: {% set devices = [\n  ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),\n
-          \ ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),\n  ('iPad
-          Pro', states('sensor.uhyeonyi_ipad_pro_battery')),\n  ('iPhone 17 Pro', states('sensor.iphone_battery_level'))\n]
-          %} {% for device, battery in devices %} {% if battery|int < 20 %} - {{ device
-          }}: {{ battery }}% {% endif %} {% endfor %}\n"
-        notification_id: low_battery_alert
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F50B 배터리 부족 주의"
+      message: "배터리가 부족한 디바이스가 있습니다: {% set devices = [\n  ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),\n
+        \ ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),\n  ('iPad
+        Pro', states('sensor.uhyeonyi_ipad_pro_battery')),\n  ('iPhone 17 Pro', states('sensor.iphone_battery_level'))\n]
+        %} {% for device, battery in devices %} {% if battery|int < 20 %} - {{ device
+        }}: {{ battery }}% {% endif %} {% endfor %}\n"
+      notification_id: low_battery_alert
 - id: critical_battery_alert
   alias: 극저배터리 알림
   triggers:
-    - trigger: numeric_state
-      entity_id:
-        - sensor.gimuhyeonyi_apple_watch_battery
-        - sensor.gimuhyeonyi_macbook_pro_battery
-        - sensor.uhyeonyi_ipad_pro_battery
-        - sensor.iphone_battery_level
-      below: 10
+  - trigger: numeric_state
+    entity_id:
+    - sensor.gimuhyeonyi_apple_watch_battery
+    - sensor.gimuhyeonyi_macbook_pro_battery
+    - sensor.uhyeonyi_ipad_pro_battery
+    - sensor.iphone_battery_level
+    below: 10
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F6A8 배터리 위험 수준"
-        message:
-          "{{ trigger.to_state.attributes.friendly_name }}의 배터리가 {{ trigger.to_state.state
-          }}%입니다. 즉시 충전하세요!
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F6A8 배터리 위험 수준"
+      message: '{{ trigger.to_state.attributes.friendly_name }}의 배터리가 {{ trigger.to_state.state
+        }}%입니다. 즉시 충전하세요!
 
-          "
-        notification_id: critical_battery_{{ trigger.entity_id.split('.')[1] }}
+        '
+      notification_id: critical_battery_{{ trigger.entity_id.split('.')[1] }}
 - id: evening_brushing_reminder
   alias: 저녁 양치 알림
   triggers:
-    - trigger: time
-      at: "22:00:00"
+  - trigger: time
+    at: '22:00:00'
   conditions:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
-    - condition: template
-      value_template:
-        "{{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds()
-        > 7200 }}
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: template
+    value_template: '{{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds()
+      > 7200 }}
 
-        "
+      '
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001FAA5 양치 알림"
-        message: 최근 2시간 동안 양치 기록이 없습니다.
-        notification_id: brushing_reminder
+  - action: persistent_notification.create
+    data:
+      title: "\U0001FAA5 양치 알림"
+      message: 최근 2시간 동안 양치 기록이 없습니다.
+      notification_id: brushing_reminder
 - id: high_heart_rate_alert
   alias: 심박수 경고
   triggers:
-    - trigger: numeric_state
-      entity_id: sensor.ble_heart_rate_e0e33e6221b5
-      above: 120
-      for: 00:01:00
+  - trigger: numeric_state
+    entity_id: sensor.ble_heart_rate_e0e33e6221b5
+    above: 120
+    for: 00:01:00
   actions:
-    - action: persistent_notification.create
-      data:
-        title: ❤️ 심박수 경고
-        message: 심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요.
-        notification_id: heart_rate_alert
+  - action: persistent_notification.create
+    data:
+      title: ❤️ 심박수 경고
+      message: 심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요.
+      notification_id: heart_rate_alert
 - id: daily_steps_goal_achievement
   alias: 일일 걸음수 목표 달성
   triggers:
-    - trigger: numeric_state
-      entity_id: sensor.ble_steps_e0e33e6221b5
-      above: 10000
+  - trigger: numeric_state
+    entity_id: sensor.ble_steps_e0e33e6221b5
+    above: 10000
   conditions:
-    - condition: template
-      value_template:
-        "{{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days
-        == 0 }}
+  - condition: template
+    value_template: '{{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days
+      == 0 }}
 
-        "
+      '
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F389 걸음수 목표 달성!"
-        message:
-          "축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요. 건강한
-          하루를 보내고 계시는군요! \U0001F44F\n"
-        notification_id: steps_goal_achieved
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F389 걸음수 목표 달성!"
+      message: "축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요. 건강한
+        하루를 보내고 계시는군요! \U0001F44F\n"
+      notification_id: steps_goal_achieved
 - id: dishwasher_cycle_complete
   alias: 식기세척기 완료 알림
   triggers:
-    - trigger: state
-      entity_id: sensor.jubang_siggiseceoggi_remaining_time
-      to: "0"
+  - trigger: state
+    entity_id: sensor.jubang_siggiseceoggi_remaining_time
+    to: '0'
   conditions:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F37D️ 식기세척기 완료"
-        message:
-          "식기세척기 세척이 완료되었습니다!  식기를 꺼내주세요. 총 세척 시간: {{ states('sensor.jubang_siggiseceoggi_total_time')
-          }}
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F37D️ 식기세척기 완료"
+      message: '식기세척기 세척이 완료되었습니다!  식기를 꺼내주세요. 총 세척 시간: {{ states(''sensor.jubang_siggiseceoggi_total_time'')
+        }}
 
-          "
-        notification_id: dishwasher_complete
+        '
+      notification_id: dishwasher_complete
 - id: rinse_aid_refill_reminder
-  alias: 린스 보충 알림
+  alias: 낙상 감지 시작 시 해제상태 초기화
+  description: ''
   triggers:
-    - trigger: state
-      entity_id: binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
-      from: "off"
-      to: "on"
+  - entity_id: binary_sensor.fall_detected
+    to: 'on'
+    trigger: state
+  conditions: []
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F9F4 린스 보충 필요"
-        message:
-          "식기세척기 린스 보충이 필요합니다.  현재 잔여량: {{ states('sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level')
-          }}
-
-          "
-        notification_id: rinse_aid_reminder
+  - target:
+      entity_id: input_boolean.fall_alert_cleared
+    action: input_boolean.turn_off
+  mode: single
 - id: humidity_management_alert
   alias: 습도 관리 알림
   triggers:
-    - trigger: numeric_state
-      entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
-      above: 70
-      for: 00:30:00
-    - trigger: numeric_state
-      entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
-      below: 30
-      for: 00:30:00
+  - trigger: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+    above: 70
+    for: 00:30:00
+  - trigger: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+    below: 30
+    for: 00:30:00
   actions:
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F4A7 습도 관리 필요"
-        message:
-          "현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
-          {% if trigger.platform == 'numeric_state' and trigger.above is not none %}\n
-          \ 습도가 높습니다. 제습을 고려해보세요.\n{% else %}\n  습도가 낮습니다. 가습을 고려해보세요.\n{% endif %}\n"
-        notification_id: humidity_alert
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F4A7 습도 관리 필요"
+      message: "현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
+        {% if trigger.platform == 'numeric_state' and trigger.above is not none %}\n
+        \ 습도가 높습니다. 제습을 고려해보세요.\n{% else %}\n  습도가 낮습니다. 가습을 고려해보세요.\n{% endif %}\n"
+      notification_id: humidity_alert
 - id: sunrise_gradual_lighting
   alias: 일출 조명 서서히 켜기
   triggers:
-    - trigger: sun
-      event: sunrise
-      offset: -00:30:00
+  - trigger: sun
+    event: sunrise
+    offset: -00:30:00
   conditions:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
   actions:
-    - action: light.turn_on
-      target:
-        entity_id: light.zigbee_dimmer
-      data:
-        brightness_pct: 10
-        transition: 300
-    - delay: 00:15:00
-    - action: light.turn_on
-      target:
-        entity_id: light.zigbee_dimmer
-      data:
-        brightness_pct: 50
-        transition: 900
+  - action: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 10
+      transition: 300
+  - delay: 00:15:00
+  - action: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 50
+      transition: 900
 - id: sunset_auto_lighting
   alias: 일몰 후 자동 조명
   triggers:
-    - trigger: sun
-      event: sunset
-      offset: 00:30:00
+  - trigger: sun
+    event: sunset
+    offset: 00:30:00
   conditions:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   actions:
-    - action: light.turn_on
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-      data:
-        brightness_pct: 80
-        color_temp_kelvin: 2500
+  - action: light.turn_on
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+    data:
+      brightness_pct: 80
+      color_temp_kelvin: 2500
 - id: bedtime_lights_off
   alias: 취침 시간 조명 끄기
   triggers:
-    - trigger: time
-      at: "23:30:00"
+  - trigger: time
+    at: '23:30:00'
   conditions:
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   actions:
-    - action: light.turn_on
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-      data:
-        brightness_pct: 20
-        transition: 300
-    - delay: 00:05:00
-    - action: light.turn_off
-      target:
-        entity_id:
-          - light.zigbee_dimmer
-          - light.smart_bulb
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F319 좋은 꿈 되세요"
-        message: 취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!
-        notification_id: bedtime_lights
+  - action: light.turn_on
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+    data:
+      brightness_pct: 20
+      transition: 300
+  - delay: 00:05:00
+  - action: light.turn_off
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F319 좋은 꿈 되세요"
+      message: 취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!
+      notification_id: bedtime_lights
 - id: workday_morning_briefing
   alias: 근무일 아침 브리핑
   triggers:
-    - trigger: time
-      at: 07:30:00
+  - trigger: time
+    at: 07:30:00
   conditions:
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "on"
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   actions:
-    - action: persistent_notification.create
-      data:
-        title: ☀️ 좋은 아침입니다!
-        message:
-          "오늘의 정보를 확인해보세요:\n\U0001F4C5 {{ states('sensor.date') }} \U0001F321️
-          실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C \U0001F4A7
-          실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}% ⚡ 현재 전력:
-          {{ states('sensor.total_power_consumption') }}W \U0001F50B 평균 배터리: {{ states('sensor.average_device_battery')
-          }}%\n좋은 하루 되세요! \U0001F4AA\n"
-        notification_id: morning_briefing
+  - action: persistent_notification.create
+    data:
+      title: ☀️ 좋은 아침입니다!
+      message: "오늘의 정보를 확인해보세요:\n\U0001F4C5 {{ states('sensor.date') }} \U0001F321️
+        실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C \U0001F4A7
+        실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}% ⚡ 현재 전력:
+        {{ states('sensor.total_power_consumption') }}W \U0001F50B 평균 배터리: {{ states('sensor.average_device_battery')
+        }}%\n좋은 하루 되세요! \U0001F4AA\n"
+      notification_id: morning_briefing
 - id: weekend_sleep_mode
   alias: 주말 늦잠 모드
   triggers:
-    - trigger: sun
-      event: sunrise
-      offset: 02:00:00
+  - trigger: sun
+    event: sunrise
+    offset: 02:00:00
   conditions:
-    - condition: state
-      entity_id: binary_sensor.workday_sensor
-      state: "off"
-    - condition: state
-      entity_id: binary_sensor.someone_home
-      state: "on"
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'off'
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
   actions:
-    - action: light.turn_on
-      target:
-        entity_id: light.zigbee_dimmer
-      data:
-        brightness_pct: 30
-        transition: 600
-    - action: persistent_notification.create
-      data:
-        title: "\U0001F634 주말 모드"
-        message: 주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다.
-        notification_id: weekend_mode
+  - action: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 30
+      transition: 600
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F634 주말 모드"
+      message: 주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다.
+      notification_id: weekend_mode
 - id: gas_send_monthly_telegram
   alias: 가스 검침 사진 보내기
-  description: ""
+  description: ''
   triggers:
-    - at: 09:03:00
-      trigger: time
+  - at: 09:03:00
+    trigger: time
   conditions:
-    - condition: template
-      value_template: "{{now().day == 26}}"
+  - condition: template
+    value_template: '{{now().day == 26}}'
   actions:
-    - variables:
-        nowdate: "{{ now().strftime('%Y-%m-%d') }}"
-        nowtime: "{{ now().strftime('%Y-%m-%d_%H:%M:%S') }}"
-        nowtimefile: "{{ now().strftime('%Y%m%d_%H%M%S') }}"
-        nowtimestamp: "{{ now().timestamp() }}"
-    - action: pyscript.image_rotate
-      metadata: {}
+  - variables:
+      nowdate: '{{ now().strftime(''%Y-%m-%d'') }}'
+      nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
+      nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
+      nowtimestamp: '{{ now().timestamp() }}'
+  - action: pyscript.image_rotate
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      output_image: /config/www/tmp/gas/month/gas_{{nowtimefile}}.jpg
+      rotation_angle: 0
+  - action: notify.telegram_home
+    data:
+      title: 가스 검침 알림
+      message: '검침시간: {{nowdate}}'
       data:
-        input_image: /config/www/tmp/gas/gas_latest.jpg
-        output_image: /config/www/tmp/gas/month/gas_{{nowtimefile}}.jpg
-        rotation_angle: 0
-    - action: notify.telegram_home
-      data:
-        title: 가스 검침 알림
-        message: "검침시간: {{nowdate}}"
-        data:
-          photo:
-            - url: https://ha.aaaa.cc/local/tmp/gas/gas_latest.jpg
-              caption: "가스 검침일: {{nowdate}}
+        photo:
+        - url: https://ha.aaaa.cc/local/tmp/gas/gas_latest.jpg
+          caption: '가스 검침일: {{nowdate}}
 
-                가스 검침: {{states('sensor.gas_meter_2')}}
+            가스 검침: {{states(''sensor.gas_meter_2'')}}
 
-                월간 사용량: {{state_attr('sensor.gas_meter_monthly','last_period')}}"
-      enabled: false
+            월간 사용량: {{state_attr(''sensor.gas_meter_monthly'',''last_period'')}}'
+    enabled: false
   mode: single
-- id: "1755698295141"
+- id: '1755698295141'
   alias: 주변 밝기 자동 조명 제어
   description: 주변 밝기가 충분할 때 자동으로 조명을 끕니다.
   triggers:
-    - type: illuminance
-      device_id: e28ebb70ec49039d225e74b202fdd91e
-      entity_id: 4ff6ecbace5417823e81b823fd5bd60e
-      domain: sensor
-      trigger: device
-      below: 20
+  - type: illuminance
+    device_id: e28ebb70ec49039d225e74b202fdd91e
+    entity_id: 4ff6ecbace5417823e81b823fd5bd60e
+    domain: sensor
+    trigger: device
+    below: 20
   conditions: []
   actions:
-    - type: turn_off
-      device_id: 16c454176737aa10fa53bf309f24d111
-      entity_id: f88477c68d783968908c54499f788206
-      domain: light
+  - type: turn_off
+    device_id: 16c454176737aa10fa53bf309f24d111
+    entity_id: f88477c68d783968908c54499f788206
+    domain: light
   mode: single
-- id: "1755744715659"
+- id: '1755744715659'
   alias: 낮은 임계값 조명 알림
   description: 특정 센서 값이 임계값 미만으로 떨어질 때 조명을 켜서 시각적으로 알립니다.
   triggers:
-    - type: value
-      device_id: 42940cb04959837ed39a637fed0f69e2
-      entity_id: 64ba2d64e316df06c349b58054dcab48
-      domain: sensor
-      trigger: device
-      below: 2
+  - type: value
+    device_id: 42940cb04959837ed39a637fed0f69e2
+    entity_id: 64ba2d64e316df06c349b58054dcab48
+    domain: sensor
+    trigger: device
+    below: 2
   conditions: []
   actions:
-    - type: turn_on
-      device_id: 16c454176737aa10fa53bf309f24d111
-      entity_id: f88477c68d783968908c54499f788206
-      domain: light
-      brightness_pct: 100
+  - type: turn_on
+    device_id: 16c454176737aa10fa53bf309f24d111
+    entity_id: f88477c68d783968908c54499f788206
+    domain: light
+    brightness_pct: 100
   mode: single
-- id: "1759067786798"
+- id: '1759067786798'
   alias: 이산화탄소 자동 환기 제어
   description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
   triggers:
-    - trigger: state
-      entity_id:
-        - binary_sensor.ventilation_should_run
-      attribute: 켜짐
+  - trigger: state
+    entity_id:
+    - binary_sensor.ventilation_should_run
+    attribute: 켜짐
   conditions:
-    - condition: device
-      type: is_off
-      device_id: 98bda3e8ced3d5a12ee685841e367c15
-      entity_id: 99f72fc2d843060f243cb0f5979fe38d
-      domain: switch
+  - condition: device
+    type: is_off
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
   actions:
-    - type: turn_on
-      device_id: 98bda3e8ced3d5a12ee685841e367c15
-      entity_id: 99f72fc2d843060f243cb0f5979fe38d
-      domain: switch
-    - repeat:
-        count: 12
-        sequence:
-          - type: toggle
-            device_id: 98bda3e8ced3d5a12ee685841e367c15
-            entity_id: 08a45393493c019ceb1c55783651f7e1
-            domain: switch
-          - delay:
-              hours: 0
-              minutes: 0
-              seconds: 1
-              milliseconds: 0
-      enabled: false
+  - type: turn_on
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  - repeat:
+      count: 12
+      sequence:
+      - type: toggle
+        device_id: 98bda3e8ced3d5a12ee685841e367c15
+        entity_id: 08a45393493c019ceb1c55783651f7e1
+        domain: switch
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+    enabled: false
   mode: single
-- id: "1759068039218"
+- id: '1759068039218'
   alias: 이산화탄소 자동 환기 하향
   description: 실내 이산화탄소 농도가 기준치 이하로 떨어지면 환기 시스템을 자동으로 끕니다.
   triggers:
-    - trigger: state
-      entity_id:
-        - binary_sensor.ventilation_should_run
-      attribute: 꺼짐
+  - trigger: state
+    entity_id:
+    - binary_sensor.ventilation_should_run
+    attribute: 꺼짐
   conditions:
-    - condition: device
-      type: is_on
-      device_id: 98bda3e8ced3d5a12ee685841e367c15
-      entity_id: 99f72fc2d843060f243cb0f5979fe38d
-      domain: switch
+  - condition: device
+    type: is_on
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
   actions:
-    - type: turn_off
-      device_id: 98bda3e8ced3d5a12ee685841e367c15
-      entity_id: 99f72fc2d843060f243cb0f5979fe38d
-      domain: switch
+  - type: turn_off
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
   mode: single
-- id: "1759395712039"
+- id: '1759395712039'
   alias: 녹음본 저장 시 로컬 맥으로 복사
-  description: ""
+  description: ''
   triggers:
-    - event_type: voice_recorder_saved
-      trigger: event
+  - event_type: voice_recorder_saved
+    trigger: event
   actions:
-    - data:
-        url:
-          "{{ 'https://caredian.gleeze.com' ~ (trigger.event.data.path | replace('/config/www','/local'))
-          }}"
-        filename: "{{ trigger.event.data.filename }}"
-      action: rest_command.push_record_to_mac
+  - data:
+      url: '{{ ''https://caredian.gleeze.com'' ~ (trigger.event.data.path | replace(''/config/www'',''/local''))
+        }}'
+      filename: '{{ trigger.event.data.filename }}'
+    action: rest_command.push_record_to_mac
   mode: queued
-- id: "1759500010000"
+- id: '1759500010000'
   alias: 가스 검침 단일 프롬프트
   description: 하나의 크롭 이미지에서 프롬프트만으로 7자리(DDD.dddd) 판독
   triggers:
-    - trigger: time_pattern
-      hours: /1
+  - trigger: time_pattern
+    hours: /1
   conditions: []
   actions:
-    - metadata: {}
-      data:
-        rgb_color:
-          - 255
-          - 255
-          - 255
-        brightness_pct: 35
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-      action: light.turn_on
-    - delay:
-        hours: 0
-        minutes: 0
-        seconds: 6
-        milliseconds: 0
-    - metadata: {}
-      data:
-        filename: /config/www/tmp/gas/gas_latest.jpg
-      action: camera.snapshot
-      target:
-        entity_id: camera.esp32_cam_esp32_cam_gas_cam
-    - alias: 크롭만 수행(리사이즈 미사용)
-      action: pyscript.gas_ocr_prepare
-      data:
-        input_image: /config/www/tmp/gas/gas_latest.jpg
-        crop_output: /config/www/tmp/gas/gas_latest-crop.jpg
-        resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
-        int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
-        frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
-        crop_left: 420
-        crop_top: 720
-        crop_right: 1220
-        crop_bottom: 880
-        resize_width: 0
-        to_grayscale: true
-        denoise_median_size: 3
-        auto_vertical: true
-        vpad: 2
-        hpad: 2
-    - metadata: {}
-      data: {}
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
-      action: light.turn_off
-    - action: ai_task.generate_data
-      response_variable: res
-      data:
-        task_name: 가스 검침 단일 프롬프트
-        instructions:
-          이 이미지는 기계식 가스 계량기의 7자리 숫자 표시부입니다. 3자리 정수부와 4자리 소수부를 읽고, 숫자만으로
-          DDD.dddd 형식으로 반환하세요. 공백·단위·설명·줄바꿈 없이 결과만 출력하세요.
-        attachments:
-          media_content_id: media-source://media_source/gas/gas_latest.jpg
-          media_content_type: image/jpeg
-          metadata:
-            title: gas_latest.jpg
-            thumbnail:
-            media_class: image
-            children_media_class:
-            navigateIds:
-              - {}
-              - media_content_type: app
-                media_content_id: media-source://media_source
-              - media_content_type: ""
-                media_content_id: media-source://media_source/gas/.
-        entity_id: ai_task.qwen_qwen2_5_vl_72b_instruct_free
-    - variables:
-        res_text: "{{ res.data | default(' ') | string }}"
-        gas_value:
-          '{{ (res_text | regex_findall(''[0-9]+(?:\.[0-9]+)?'') | first |
-          default(''0'')) | float(0) | round(4) }}'
-        current_value: "{{ states('sensor.gas_meter_2') | float(0) }}"
-        delta: "{{ (gas_value - current_value) | round(4) }}"
-    - action: input_number.set_value
-      metadata: {}
-      data:
-        value: "{{ gas_value | float }}"
-      target:
-        entity_id: input_number.gas_meter_2
-    - action: homeassistant.update_entity
-      metadata: {}
-      target:
-        entity_id:
-          - sensor.gas_meter_2
-          - sensor.gas_meter_monthly
-    - action: persistent_notification.create
-      data:
-        title: ✅ 가스 검침(단일 프롬프트) 기록됨
-        message: '{{ now().strftime(''%H:%M:%S'') }} | 응답: "{{ res_text }}"
+  - metadata: {}
+    data:
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      brightness_pct: 35
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_on
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - metadata: {}
+    data:
+      filename: /config/www/tmp/gas/gas_latest.jpg
+    action: camera.snapshot
+    target:
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
+  - alias: 크롭만 수행(리사이즈 미사용)
+    action: pyscript.gas_ocr_prepare
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      crop_output: /config/www/tmp/gas/gas_latest-crop.jpg
+      resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
+      frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      crop_left: 420
+      crop_top: 720
+      crop_right: 1220
+      crop_bottom: 880
+      resize_width: 0
+      to_grayscale: true
+      denoise_median_size: 3
+      auto_vertical: true
+      vpad: 2
+      hpad: 2
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_off
+  - action: ai_task.generate_data
+    response_variable: res
+    data:
+      task_name: 가스 검침 단일 프롬프트
+      instructions: 이 이미지는 기계식 가스 계량기의 7자리 숫자 표시부입니다. 3자리 정수부와 4자리 소수부를 읽고, 숫자만으로
+        DDD.dddd 형식으로 반환하세요. 공백·단위·설명·줄바꿈 없이 결과만 출력하세요.
+      attachments:
+        media_content_id: media-source://media_source/gas/gas_latest.jpg
+        media_content_type: image/jpeg
+        metadata:
+          title: gas_latest.jpg
+          thumbnail:
+          media_class: image
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+          - media_content_type: ''
+            media_content_id: media-source://media_source/gas/.
+      entity_id: ai_task.qwen_qwen2_5_vl_72b_instruct_free
+  - variables:
+      res_text: '{{ res.data | default('' '') | string }}'
+      gas_value: '{{ (res_text | regex_findall(''[0-9]+(?:\.[0-9]+)?'') | first |
+        default(''0'')) | float(0) | round(4) }}'
+      current_value: '{{ states(''sensor.gas_meter_2'') | float(0) }}'
+      delta: '{{ (gas_value - current_value) | round(4) }}'
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ gas_value | float }}'
+    target:
+      entity_id: input_number.gas_meter_2
+  - action: homeassistant.update_entity
+    metadata: {}
+    target:
+      entity_id:
+      - sensor.gas_meter_2
+      - sensor.gas_meter_monthly
+  - action: persistent_notification.create
+    data:
+      title: ✅ 가스 검침(단일 프롬프트) 기록됨
+      message: '{{ now().strftime(''%H:%M:%S'') }} | 응답: "{{ res_text }}"
 
-          적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)'
-  mode: single
-- id: "1760617151502"
-  alias: InfluxDB Backup
-  triggers:
-    - at: 03:00:00
-      trigger: time
-  conditions:
-    - condition: template
-      value_template:
-        "{{ now().weekday() == 6 and \n   (now().isocalendar()[1] % 2
-        == 0) }}"
-  actions:
-    - action: shell_command.influxdb_backup
-    - delay: 00:02:00
-    - target:
-        entity_id: sensor.influxdb_backup_status
-      action: homeassistant.update_entity
-    - delay: 00:00:10
-    - choose:
-        - conditions:
-            - condition: state
-              entity_id: sensor.influxdb_backup_status
-              state: failed
-          sequence:
-            - data:
-                title: "\U0001F6A8 InfluxDB 백업 실패!"
-                message: 백업이 실패했습니다. 즉시 확인이 필요합니다!
-              action: notify.persistent_notification
-        - conditions:
-            - condition: state
-              entity_id: sensor.influxdb_backup_status
-              state: success
-          sequence:
-            - data:
-                title: ✅ InfluxDB 백업 완료
-                message: 백업이 정상적으로 완료되었습니다.
-              action: notify.persistent_notification
-      default:
-        - data:
-            title: ⚠️ InfluxDB 백업 상태 확인 필요
-            message: "백업 상태: {{ states('sensor.influxdb_backup_status') }}"
-          action: notify.persistent_notification
+        적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)'
   mode: single
 - id: electricity_energy_prev2_monthly_update
   alias: 전기 전전월 사용량 업데이트
   description: 전월 전기 사용량 변경 시 전전월 값을 업데이트
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.electricity_energy_prev_monthly
+  - platform: state
+    entity_id:
+    - sensor.electricity_energy_prev_monthly
   condition:
-    - condition: template
-      value_template:
-        "{{ trigger.to_state.state|float(0) > 0 and trigger.from_state.state|float(0)
-        > 0 }}"
+  - condition: template
+    value_template: '{{ trigger.to_state.state|float(0) > 0 and trigger.from_state.state|float(0)
+      > 0 }}'
   action:
-    - service: input_number.set_value
-      data:
-        value: "{{ trigger.from_state.state }}"
-      target:
-        entity_id: input_number.electricity_energy_prev2_monthly
+  - service: input_number.set_value
+    data:
+      value: '{{ trigger.from_state.state }}'
+    target:
+      entity_id: input_number.electricity_energy_prev2_monthly
   mode: single
-- id: "1761134823433"
+- id: '1761134823433'
   alias: 시작 시 통합구성요소 새로고침
-  description:
-    Home Assistant가 시작될 때 일부 통합구성요소가 올바르게 초기화되지 않는 문제를 해결하기 위해 관련 구성 항목을
+  description: Home Assistant가 시작될 때 일부 통합구성요소가 올바르게 초기화되지 않는 문제를 해결하기 위해 관련 구성 항목을
     다시 로드합니다.
   triggers:
-    - trigger: homeassistant
-      event: start
+  - trigger: homeassistant
+    event: start
   conditions: []
   actions:
-    - action: homeassistant.reload_config_entry
-      target:
-        entity_id:
-          - sensor.mart_l_goyangjeom
-          - sensor.mart_e_3047
-          - sensor.mart_e_1096
-          - sensor.mart_e_2012
-          - weather.wn_jib
-          - sensor.wn_jib_weather_briefing
-          - sensor.wn_jib_next_day_short_comment
-          - sensor.wn_jib_day_short_comment
-          - sensor.wn_jib_day_condition
-          - sensor.wn_jib_night_condition
-          - sensor.wn_jib_current_condition
-          - weather.forecast_jib
-          - image.windy_webcams_1701618298
-          - image.windy_webcams_1689176350
-          - sensor.sihas_energy_monitor_power
-      data: {}
+  - action: homeassistant.reload_config_entry
+    target:
+      entity_id:
+      - sensor.mart_l_goyangjeom
+      - sensor.mart_e_3047
+      - sensor.mart_e_1096
+      - sensor.mart_e_2012
+      - weather.wn_jib
+      - sensor.wn_jib_weather_briefing
+      - sensor.wn_jib_next_day_short_comment
+      - sensor.wn_jib_day_short_comment
+      - sensor.wn_jib_day_condition
+      - sensor.wn_jib_night_condition
+      - sensor.wn_jib_current_condition
+      - weather.forecast_jib
+      - image.windy_webcams_1701618298
+      - image.windy_webcams_1689176350
+      - sensor.sihas_energy_monitor_power
+    data: {}
   mode: single
-- id: "1761400957421"
+- id: '1761400957421'
   alias: "\U0001F6A8 Fall Alert Fullscreen Popup"
-  description: ""
+  description: ''
   triggers:
-    - entity_id: binary_sensor.fall_detected
-      to: "on"
-      trigger: state
+  - entity_id: binary_sensor.fall_detected
+    to: 'on'
+    trigger: state
   actions:
-    - data:
-        title: ""
-        dismissable: false
-        timeout: 30000
-        content:
-          type: markdown
-          content:
-            "<div class=\"overlay\">\n  <div class=\"center\">\U0001F6A8 낙상이
-            감지되었습니다.</div>\n</div>\n"
-        style:
-          .:
-            ":host {\n  --ha-card-background: transparent;\n}\n/* 다이얼로그를 화면 전체로 */\nha-dialog
-            {\n  --mdc-dialog-min-width: 100vw;\n  --mdc-dialog-max-width: 100vw;\n
-            \ --mdc-dialog-min-height: 100vh;\n  --mdc-dialog-max-height: 100vh;\n  --mdc-theme-surface:
-            transparent;\n}\nha-dialog > .mdc-dialog__container > .mdc-dialog__surface
-            {\n  box-shadow: none !important;\n  background: transparent !important;\n}\n/*
-            깜빡이는 빨간 오버레이 */\n.overlay {\n  position: fixed;\n  inset: 0;\n  background:
-            rgba(255, 0, 0, 0.7);\n  animation: flash 1s linear infinite;\n}\n.center
-            {\n  position: fixed;\n  inset: 0;\n  display: flex;\n  align-items: center;\n
-            \ justify-content: center;\n  font-size: 64px;\n  font-weight: 900;\n  color:
-            #fff;\n  text-shadow: 0 2px 8px rgba(0,0,0,.6);\n}\n@keyframes flash {\n
-            \ 0% { opacity: 0.85; }\n  50% { opacity: 0.25; }\n  100% { opacity: 0.85;
-            }\n}\n"
-      action: browser_mod.popup
-    - wait_for_trigger:
-        - entity_id: binary_sensor.fall_detected
-          to: "off"
-          trigger: state
-      timeout: 00:00:30
-    - action: browser_mod.close_popup
+  - data:
+      title: ''
+      dismissable: true
+      timeout: 30000
+      content:
+        type: custom:button-card
+        name: "\U0001F6A8 낙상이 감지되었습니다."
+        tap_action:
+          action: fire-dom-event
+          browser_mod:
+            command: close-popup
+      style:
+        .: ":host {\n  --ha-card-background: transparent;\n}\n/* 다이얼로그를 화면 전체로 */\nha-dialog
+          {\n  --mdc-dialog-min-width: 100vw;\n  --mdc-dialog-max-width: 100vw;\n
+          \ --mdc-dialog-min-height: 100vh;\n  --mdc-dialog-max-height: 100vh;\n  --mdc-theme-surface:
+          transparent;\n}\nha-dialog > .mdc-dialog__container > .mdc-dialog__surface
+          {\n  box-shadow: none !important;\n  background: transparent !important;\n}\n/*
+          깜빡이는 빨간 오버레이 */\n.overlay {\n  position: fixed;\n  inset: 0;\n  background:
+          rgba(255, 0, 0, 0.7);\n  animation: flash 1s linear infinite;\n}\n.center
+          {\n  position: fixed;\n  inset: 0;\n  display: flex;\n  align-items: center;\n
+          \ justify-content: center;\n  font-size: 64px;\n  font-weight: 900;\n  color:
+          #fff;\n  text-shadow: 0 2px 8px rgba(0,0,0,.6);\n}\n@keyframes flash {\n
+          \ 0% { opacity: 0.85; }\n  50% { opacity: 0.25; }\n  100% { opacity: 0.85;
+          }\n}\n"
+    action: browser_mod.popup
+  - wait_for_trigger:
+    - entity_id: binary_sensor.fall_detected
+      to: 'off'
+      trigger: state
+    timeout: 00:00:30
+  - action: browser_mod.close_popup
   mode: restart
+- id: '1761546151051'
+  alias: InfluxDB 격주 백업 (일요일 03:00)
+  description: 격주 일요일 새벽 3시에 InfluxDB 자동 백업 (짝수 주차)
+  triggers:
+  - at: 03:00:00
+    trigger: time
+  conditions:
+  - condition: time
+    weekday:
+    - sun
+  - condition: template
+    value_template: '{{ now().isocalendar()[1] % 2 == 0 }}'
+  actions:
+  - data: {}
+    action: shell_command.influxdb_backup
+  mode: single

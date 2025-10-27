@@ -307,6 +307,10 @@ input_boolean:
     name: 낙상 감지 트리거
     icon: mdi:alert-circle
 
+  fall_alert_cleared:
+    name: 낙상 감지 해제됨
+    icon: mdi:check-decagram
+
 binary_sensor:
   - platform: template
     sensors:
