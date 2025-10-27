@@ -1,0 +1,39 @@
+automation:
+  - id: fall_detected_popup_alert
+    alias: 낙상 감지 시 팝업 표시
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.fall_detected
+        to: "on"
+    action:
+      - service: browser_mod.popup
+        data:
+          title: ""
+          dismissable: false
+          large: true
+          card:
+            type: markdown
+            content: |
+              <style>
+                ha-dialog { --mdc-dialog-surface-color: rgba(255,0,0,0.92); --dialog-border-radius: 18px; }
+                .alert-box { text-align:center; color:white; padding:28px; }
+                .alert-title { font-size:1.9em; font-weight:bold; margin-bottom:1em; }
+                .confirm-button { background:white; color:red; border:none; border-radius:10px; font-size:1.1em; padding:10px 22px; font-weight:bold; cursor:pointer; }
+                .confirm-button:hover { background:#ffe5e5; }
+              </style>
+              <div class="alert-box">
+                <div class="alert-title">⚠️ 낙상이 감지되었습니다 ⚠️</div>
+                <button class="confirm-button"
+                  onclick="
+                    fetch('/api/services/input_boolean/turn_off', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ entity_id: 'input_boolean.fall_triggered' })
+                    });
+                    window.browser_mod.close_popup();
+                  ">
+                  낙상을 확인하였습니다
+                </button>
+              </div>
+          deviceID:
+            - this

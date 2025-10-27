@@ -206,7 +206,6 @@ set_playlist_and_play_video:
         text:
   description: ""
 
-
 clear_fall_alert:
   alias: 낙상 감지 해제
   mode: single
