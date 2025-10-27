@@ -2,26 +2,25 @@ turn_off_all_lights:
   alias: 일괄 소등
   sequence:
     - service: homeassistant.turn_off
-      target:
-        entity_id:
-          - light.living_floor_light
-          - switch.geosil_jeondeung_top_left
-          - switch.geosil_jeondeung_top_right
-          - switch.geosil_jeondeung_center_left
-          - switch.geosil_jeondeung_bottom_left
-          - switch.geosil_jeondeung_bottom_right
-          - light.coupy_floor_light
-          - light.coupy_indirect_light
-          - light.coupy_reading_light
-          - switch.hyeogjinbang_jeondeung
-          - light.hagyeong_floor
-          - switch.hagyeongbang_jeondeung
-          - switch.jubang_jeondeung_top
-          - switch.jubang_jeondeung_center
-          - switch.jubang_jeondeung_bottom
-          - light.zigbee_dimmer
-          - light.smart_bulb
-          - light.deseukeutab_jeonweon
+      entity_id:
+        - light.living_floor_light
+        - switch.geosil_jeondeung_top_left
+        - switch.geosil_jeondeung_top_right
+        - switch.geosil_jeondeung_center_left
+        - switch.geosil_jeondeung_bottom_left
+        - switch.geosil_jeondeung_bottom_right
+        - light.coupy_floor_light
+        - light.coupy_indirect_light
+        - light.coupy_reading_light
+        - switch.hyeogjinbang_jeondeung
+        - light.hagyeong_floor
+        - switch.hagyeongbang_jeondeung
+        - switch.jubang_jeondeung_top
+        - switch.jubang_jeondeung_center
+        - switch.jubang_jeondeung_bottom
+        - light.zigbee_dimmer
+        - light.smart_bulb
+        - light.deseukeutab_jeonweon
   mode: single
 test_gas_camera_snapshot:
   alias: 가스 카메라 스냅샷 테스트
@@ -29,19 +28,16 @@ test_gas_camera_snapshot:
   mode: single
   sequence:
     - service: light.turn_on
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
+      entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
     - delay: 00:00:02
     - service: camera.snapshot
-      target:
-        entity_id: camera.esp32_cam_esp32_cam_gas_cam
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
       data:
         filename: /config/www/tmp/gas/test_snapshot.jpg
     - service: light.turn_off
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
+      entity_id: light.esp32_cam_esp32_cam_gas_light
     - service: system_log.write
       data:
         level: info
@@ -51,8 +47,7 @@ esp32_cam_flash_on:
   mode: single
   sequence:
     - service: light.turn_on
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
+      entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
 esp32_cam_flash_off:
@@ -60,8 +55,7 @@ esp32_cam_flash_off:
   mode: single
   sequence:
     - service: light.turn_off
-      target:
-        entity_id: light.esp32_cam_esp32_cam_gas_light
+      entity_id: light.esp32_cam_esp32_cam_gas_light
 announce_tts_message:
   alias: Announce TTS Message
   description: Says whatever text is in input helper
@@ -73,8 +67,7 @@ announce_tts_message:
           not in ['unknown','unavailable','']\n   else 'media_player.uhyeonibang_2'
           }}"
     - service: tts.speak
-      target:
-        entity_id: tts.tts_pipeline_voxcpm
+      entity_id: tts.tts_pipeline_voxcpm
       data:
         media_player_entity_id: "{{ target_player }}"
         cache: true
@@ -82,8 +75,7 @@ announce_tts_message:
     - delay:
         seconds: 15
     - service: media_player.clear_playlist
-      data:
-        entity_id: "{{ target_player }}"
+      entity_id: "{{ target_player }}"
 voice_timer_complete_notice:
   alias: Voice Timer Complete Notice
   description: 타이머 종료 후 음성 안내만 출력합니다.
@@ -124,8 +116,7 @@ voice_timer_complete_notice:
         for_each: "{{ assistants }}"
         sequence:
           - service: assist_satellite.announce
-            target:
-              entity_id: "{{ repeat.item }}"
+            entity_id: "{{ repeat.item }}"
             data:
               message: "{{ minutes }}분 {{ seconds }}초 타이머가 종료되었습니다."
               preannounce: true
@@ -135,13 +126,11 @@ play_favorite_playlist_video:
     - variables:
         target_player: "{{ entity if entity is defined and entity not in [none, ''] else 'media_player.spotify_gimuhyeon' }}"
     - service: input_text.set_value
-      target:
-        entity_id: input_text.music_playlist
+      entity_id: input_text.music_playlist
       data:
         value: "{{ playlist }}"
     - service: media_player.play_media
-      target:
-        entity_id: "{{ target_player }}"
+      entity_id: "{{ target_player }}"
       data:
         media_content_id: "{{ playlist }}"
         media_content_type: playlist
@@ -178,8 +167,7 @@ set_playlist_and_play_video:
             {% endif %}
           {% endfor %}
     - service: input_text.set_value
-      target:
-        entity_id: input_text.music_playlist
+      entity_id: input_text.music_playlist
       data:
         value: "{{ playlist }}"
     - choose:
@@ -188,15 +176,13 @@ set_playlist_and_play_video:
               value_template: "{{ active_player | default('', true) | trim != '' }}"
           sequence:
             - service: media_player.play_media
-              target:
-                entity_id: "{{ active_player | trim }}"
+              entity_id: "{{ active_player | trim }}"
               data:
                 media_content_id: "{{ states('input_text.music_playlist') }}"
                 media_content_type: playlist
       default:
         - service: media_player.play_media
-          target:
-            entity_id: media_player.spotify_gimuhyeon
+          entity_id: media_player.spotify_gimuhyeon
           data:
             media_content_id: "{{ states('input_text.music_playlist') }}"
             media_content_type: playlist
@@ -213,5 +199,4 @@ clear_fall_alert:
   mode: single
   sequence:
     - service: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.fall_alert_active
+      entity_id: input_boolean.fall_alert_active
