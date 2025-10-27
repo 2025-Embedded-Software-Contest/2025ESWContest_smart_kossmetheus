@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from pydantic import Field, field_validator # 데이터 모델의 Field 정의
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional, List, Any, Literal
@@ -51,7 +50,7 @@ class Settings(BaseSettings):
     ha_notify_persist: str = Field("persistent_notification.create", alias="HA_NOTIFY_PERSIST")
     location_default: str = Field("home", alias="LOCATION_DEFAULT")
 
-    #fall lstm infernce
+    # fall lstm infernce
     fall_inference_enabled: bool = Field(True, alias="FALL_INFERENCE_ENABLED")
     fall_backend: Literal["keras", "tflite"] = Field("keras", alias="FALL_BACKEND")
     fall_model_path: str = Field(str(BASE_DIR / "models" / "fall_lstm_model_final_v2.keras"), alias="FALL_MODEL_PATH")

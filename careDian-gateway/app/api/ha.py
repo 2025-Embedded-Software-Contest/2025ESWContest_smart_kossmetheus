@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 import httpx
+
 from app.core.config import settings
+
 
 router = APIRouter(prefix="/ha", tags=["homeassistant"])
 

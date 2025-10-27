@@ -4,6 +4,7 @@ from collections import defaultdict, deque
 from dataclasses import dataclass
 from typing import Deque, Dict, Optional, Tuple
 
+
 @dataclass
 class RateConfig:
     limit: int = 60

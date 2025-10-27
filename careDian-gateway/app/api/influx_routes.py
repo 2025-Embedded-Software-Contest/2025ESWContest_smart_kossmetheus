@@ -1,6 +1,5 @@
-# app/api/influx_routes.py
 from __future__ import annotations
-from fastapi import APIRouter, Body, Query, HTTPException, Depends
+from fastapi import APIRouter, Query, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Union, Any
 
@@ -11,7 +10,7 @@ from app.security.ha_auth import require_ha_user
 
 router = APIRouter(prefix="/influx", tags=["influx"])
 
-# ---- 모델 ----
+# 모델
 class WritePoint(BaseModel):
     measurement: Optional[str] = None
     tags: Optional[Dict[str, str]] = None
@@ -22,12 +21,12 @@ class WriteBody(BaseModel):
     points: List[WritePoint]
     default_measurement: Optional[str] = Field(settings.influx_measurement)
 
-# ---- 헬스 ----
+# 헬스
 @router.get("/ping")
 def ping():
     return {"ok": influx.healthy()}
 
-# ---- READ: 낙상 목록 ----
+# READ: 낙상 목록
 @router.get("/falls", dependencies=[Depends(require_ha_user)])
 def list_falls(
     hours: int = Query(24, ge=1, le=720),
@@ -63,7 +62,7 @@ def list_falls(
     except Exception as e:
         raise HTTPException(status_code=500, detail=repr(e))
 
-# ---- READ: InfluxQL raw (관리용) ----
+# READ: InfluxQL raw (관리용)
 class RawQuery(BaseModel):
     q: str
 
@@ -71,7 +70,7 @@ class RawQuery(BaseModel):
 def query_raw(body: RawQuery):
     return influx.query_raw(body.q)
 
-# ---- WRITE: JSON points ----
+# WRITE: JSON points
 @router.post("/write/point", summary="Point")
 def write_point(body: WriteBody):
     default_m = body.default_measurement or settings.influx_measurement

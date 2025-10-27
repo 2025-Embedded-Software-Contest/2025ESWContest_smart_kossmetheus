@@ -5,6 +5,7 @@ import joblib
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 
+
 class FallRuntime:
     """
     - 디바이스별로 최근 seq_len 스텝 버퍼를 유지

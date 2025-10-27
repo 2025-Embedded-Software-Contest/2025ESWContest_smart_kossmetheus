@@ -1,8 +1,8 @@
 from __future__ import annotations
 from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional, Union, Mapping
-
 from influxdb import InfluxDBClient  # 1.x client
+
 from app.core.config import settings
 
 

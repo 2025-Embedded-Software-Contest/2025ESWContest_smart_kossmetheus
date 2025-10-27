@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, Query
-from app.security.ha_auth import require_ha_user, HAUser
-from app.services import influx
+
 from app.core.config import settings
+from app.services import influx
+from app.security.ha_auth import require_ha_user, HAUser
+
 
 router = APIRouter(prefix="/secure/influx", tags=["secure-influx"])
 

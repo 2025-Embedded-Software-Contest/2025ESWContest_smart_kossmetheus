@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import json, os, sys, logging
 from logging.handlers import RotatingFileHandler
 
