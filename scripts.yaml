@@ -1,7 +1,7 @@
 turn_off_all_lights:
   alias: 일괄 소등
   sequence:
-    - action: homeassistant.turn_off
+    - service: homeassistant.turn_off
       target:
         entity_id:
           - light.living_floor_light
@@ -28,21 +28,21 @@ test_gas_camera_snapshot:
   description: ESP32-CAM 플래시를 켜고 단일 스냅샷을 /config/www/tmp/gas/test_snapshot.jpg 로 저장합니다.
   mode: single
   sequence:
-    - action: light.turn_on
+    - service: light.turn_on
       target:
         entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
         brightness_pct: 100
     - delay: 00:00:02
-    - action: camera.snapshot
+    - service: camera.snapshot
       target:
         entity_id: camera.esp32_cam_esp32_cam_gas_cam
       data:
         filename: /config/www/tmp/gas/test_snapshot.jpg
-    - action: light.turn_off
+    - service: light.turn_off
       target:
         entity_id: light.esp32_cam_esp32_cam_gas_light
-    - action: system_log.write
+    - service: system_log.write
       data:
         level: info
         message: "[TEST] Snapshot attempted -> /local/tmp/gas/test_snapshot.jpg"
@@ -50,7 +50,7 @@ esp32_cam_flash_on:
   alias: ESP32-CAM 플래시 켜기
   mode: single
   sequence:
-    - action: light.turn_on
+    - service: light.turn_on
       target:
         entity_id: light.esp32_cam_esp32_cam_gas_light
       data:
@@ -59,7 +59,7 @@ esp32_cam_flash_off:
   alias: ESP32-CAM 플래시 끄기
   mode: single
   sequence:
-    - action: light.turn_off
+    - service: light.turn_off
       target:
         entity_id: light.esp32_cam_esp32_cam_gas_light
 announce_tts_message:
@@ -72,7 +72,7 @@ announce_tts_message:
           "{{ states('input_select.tts_target_speaker')\n   if states('input_select.tts_target_speaker')
           not in ['unknown','unavailable','']\n   else 'media_player.uhyeonibang_2'
           }}"
-    - action: tts.speak
+    - service: tts.speak
       target:
         entity_id: tts.tts_pipeline_voxcpm
       data:
@@ -81,7 +81,7 @@ announce_tts_message:
         message: "{{ states('input_text.message_to_bedroom') }}"
     - delay:
         seconds: 15
-    - action: media_player.clear_playlist
+    - service: media_player.clear_playlist
       data:
         entity_id: "{{ target_player }}"
 voice_timer_complete_notice:
@@ -115,34 +115,36 @@ voice_timer_complete_notice:
         minutes: "{{ minutes | float(0) }}"
         seconds: "{{ seconds | float(0) }}"
     - variables:
-        assistants:
-          "{{ states\n   | selectattr('entity_id', 'search', 'assist_satellite.voice_assistant')\n
-          \  | map(attribute='entity_id')\n   | list }}\n"
+        assistants: >-
+          {{ states
+             | selectattr('entity_id', 'search', 'assist_satellite.voice_assistant')
+             | map(attribute='entity_id')
+             | list }}
     - repeat:
         for_each: "{{ assistants }}"
         sequence:
-          - target:
+          - service: assist_satellite.announce
+            target:
               entity_id: "{{ repeat.item }}"
             data:
               message: "{{ minutes }}분 {{ seconds }}초 타이머가 종료되었습니다."
               preannounce: true
-            action: assist_satellite.announce
 play_favorite_playlist_video:
   alias: Play Favorite Playlist (Video)
   sequence:
     - variables:
         target_player: "{{ entity if entity is defined and entity not in [none, ''] else 'media_player.spotify_gimuhyeon' }}"
-    - target:
+    - service: input_text.set_value
+      target:
         entity_id: input_text.music_playlist
       data:
         value: "{{ playlist }}"
-      action: input_text.set_value
-    - target:
+    - service: media_player.play_media
+      target:
         entity_id: "{{ target_player }}"
       data:
         media_content_id: "{{ playlist }}"
         media_content_type: playlist
-      action: media_player.play_media
   fields:
     entity:
       name: 재생할 미디어 플레이어
@@ -175,29 +177,29 @@ set_playlist_and_play_video:
               {% break %}
             {% endif %}
           {% endfor %}
-    - target:
+    - service: input_text.set_value
+      target:
         entity_id: input_text.music_playlist
       data:
         value: "{{ playlist }}"
-      action: input_text.set_value
     - choose:
         - conditions:
             - condition: template
               value_template: "{{ active_player | default('', true) | trim != '' }}"
           sequence:
-            - target:
+            - service: media_player.play_media
+              target:
                 entity_id: "{{ active_player | trim }}"
               data:
                 media_content_id: "{{ states('input_text.music_playlist') }}"
                 media_content_type: playlist
-              action: media_player.play_media
       default:
-        - target:
+        - service: media_player.play_media
+          target:
             entity_id: media_player.spotify_gimuhyeon
           data:
             media_content_id: "{{ states('input_text.music_playlist') }}"
             media_content_type: playlist
-          action: media_player.play_media
   fields:
     playlist:
       description: Playlist media ID
