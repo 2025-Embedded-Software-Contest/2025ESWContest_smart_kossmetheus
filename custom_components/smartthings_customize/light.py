@@ -9,7 +9,7 @@ from .pysmartthings import Capability
 
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
+    ATTR_COLOR_TEMP_KELVIN,
     ATTR_HS_COLOR,
     ATTR_TRANSITION,
     ColorMode,
@@ -112,9 +112,11 @@ class SmartThingsLight(SmartThingsEntity, LightEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the light on."""
         tasks = []
-        # Color temperature
-        if ATTR_COLOR_TEMP in kwargs:
-            tasks.append(self.async_set_color_temp(kwargs[ATTR_COLOR_TEMP]))
+        # Color temperature (prefer Kelvin; support legacy mired key without importing deprecated constant)
+        if ATTR_COLOR_TEMP_KELVIN in kwargs:
+            tasks.append(self.async_set_color_temp_kelvin(kwargs[ATTR_COLOR_TEMP_KELVIN]))
+        elif "color_temp" in kwargs:
+            tasks.append(self.async_set_color_temp(kwargs["color_temp"]))
         # Color
         if ATTR_HS_COLOR in kwargs:
             tasks.append(self.async_set_color(kwargs[ATTR_HS_COLOR]))
@@ -172,10 +174,15 @@ class SmartThingsLight(SmartThingsEntity, LightEntity):
         saturation = max(min(float(hs_color[1]), 100.0), 0.0)
         await self._device.set_color(hue, saturation, set_status=True)
 
-    async def async_set_color_temp(self, value: float):
-        """Set the color temperature of the device."""
-        kelvin = color_util.color_temperature_mired_to_kelvin(value)
+    async def async_set_color_temp(self, value_mired: float):
+        """Set the color temperature of the device from mired value (legacy)."""
+        kelvin = color_util.color_temperature_mired_to_kelvin(value_mired)
         kelvin = max(min(kelvin, 30000), 1)
+        await self._device.set_color_temperature(kelvin, set_status=True)
+
+    async def async_set_color_temp_kelvin(self, kelvin: float):
+        """Set the color temperature of the device from Kelvin value."""
+        kelvin = max(min(int(kelvin), 30000), 1)
         await self._device.set_color_temperature(kelvin, set_status=True)
 
     async def async_set_level(self, brightness: int, transition: int):

@@ -17,9 +17,9 @@ _LOGGER = logging.getLogger(__name__)
 
 QUERY_IMAGE_SCHEMA = vol.Schema(
     {
-        vol.Required("kwh"): cv.positive_int,
+        vol.Required("kwh"): vol.All(vol.Coerce(float), vol.Range(min=0)),
         vol.Required("pressure"): cv.string,
-        vol.Required("checkDay", default=0): cv.positive_int,
+        vol.Required("checkDay", default=0): vol.All(vol.Coerce(int), vol.Range(min=0, max=31)),
         vol.Required("today"): cv.string,
         vol.Optional("bigfamDcCfg", default=0): cv.positive_int,
         vol.Optional("welfareDcCfg", default=0): cv.positive_int,
