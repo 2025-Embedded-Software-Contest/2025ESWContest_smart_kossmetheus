@@ -624,7 +624,7 @@
     entity_id: binary_sensor.fall_detected
     to: 'on'
   action:
-  - action: notify.group_fall_alert_devices
+  - action: notify.mobile_app_iilhwanyi_iphone
     data:
       title: "\U0001F6A8 낙상 감지"
       message: 즉시 상태를 확인해주세요.
@@ -693,7 +693,7 @@
       message: 약을 복용할 시간입니다.
       data:
         group: afternoon_med
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761656925616'
   alias: CareDian • SOS 호출
@@ -726,7 +726,7 @@
         priority: high
         color: '#DC2626'
         group: sos_alert
-    action: notify.mobile_app_caregiver_phone
+    action: notify.mobile_app_iilhwanyi_iphone
   - target:
       entity_id: group.path_lights
     data:
@@ -744,7 +744,7 @@
       - data:
           title: 도어락 해제
           message: SOS 설정에 따라 도어락을 해제했습니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
   - delay:
       minutes: 1
   - data:
@@ -754,7 +754,7 @@
         priority: high
         color: '#DC2626'
         group: sos_alert
-    action: notify.mobile_app_caregiver_phone
+    action: notify.mobile_app_iilhwanyi_iphone
   mode: single
 - id: '1761656973918'
   alias: CareDian • 야간 침입 경고
@@ -779,7 +779,7 @@
       data:
         priority: high
         color: '#F97316'
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   - target:
       entity_id: group.path_lights
     data:
@@ -822,7 +822,7 @@
       - data:
           title: 가스밸브 차단
           message: 야간 가스밸브를 차단했습니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
     - conditions:
       - condition: state
         entity_id: valve.sihas_gas_valve
@@ -834,7 +834,7 @@
           data:
             priority: high
             color: '#DC2626'
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
   mode: single
 - id: '1761657075871'
   alias: CareDian • 활동 부재 감지
@@ -875,7 +875,7 @@
       message: 일정 시간 동안 움직임이 없습니다.
       data:
         group: inactivity_alert
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   - delay:
       minutes: 10
   - condition: template
@@ -900,7 +900,7 @@
       data:
         priority: high
         color: '#F97316'
-    action: notify.mobile_app_caregiver_phone
+    action: notify.mobile_app_iilhwanyi_iphone
   mode: restart
 - id: '1761657110097'
   alias: CareDian • 활동 부재 감지 타이머 리셋
@@ -1003,7 +1003,7 @@
       - data:
           title: 도어락 확인
           message: 취침 전에 도어락을 잠궈 주세요.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
       - choose:
         - conditions:
           - condition: template
@@ -1036,7 +1036,7 @@
       - data:
           title: 공기질 개선
           message: 공기질이 좋지 않아 전열교환기를 30분간 가동합니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
   - choose:
     - conditions:
       - condition: template
@@ -1076,7 +1076,7 @@
       - data:
           title: 창문 열림
           message: 창문이 열려 있어 냉방을 시작할 수 없습니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
       - wait_for_trigger:
         - trigger: state
           entity_id: group.all_windows
@@ -1166,7 +1166,7 @@
       - data:
           title: 도어락 잠금 확인
           message: 로봇청소기는 도어락이 잠긴 후 시작합니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
       - wait_for_trigger:
         - trigger: state
           entity_id: lock.aqara_smart_lock_l100
@@ -1186,7 +1186,7 @@
   - data:
       title: 외출 절전 모드
       message: 로봇청소기를 시작하고 공용 조명 및 대기전력을 차단했습니다.
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761657524567'
   alias: CareDian • 외출 창문 열림 알림
@@ -1213,7 +1213,7 @@
       - data:
           title: 외출 전 창문 확인
           message: '열려 있는 창문: {{ open_windows | join('', '') }}'
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
       - choose:
         - conditions:
           - condition: template
@@ -1275,7 +1275,7 @@
   - data:
       title: 식기세척기 완료
       message: 식기세척기가 완료되었습니다. 식기를 정리하세요.
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761657612633'
   alias: CareDian • 식기세척기 작동중
@@ -1330,7 +1330,7 @@
   - data:
       title: 식기세척기 진행
       message: 현재 진행률 {{ progress_value }}%
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761657675310'
   alias: CareDian • 식기세척기 시작
@@ -1350,7 +1350,7 @@
   - data:
       title: 식기세척기 시작
       message: 식기세척기가 시작되었습니다.
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761657692626'
   alias: CareDian • 화재 감지 정상화
@@ -1370,7 +1370,7 @@
   - data:
       title: 화재 경보 해제
       message: 연기 감지가 해제되었습니다.
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761657938833'
   alias: CareDian • 화재감지 4분간 지속시
@@ -1386,23 +1386,14 @@
     entity_id: input_boolean.scn_fire
     state: 'on'
   actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ has_service(''script'', ''call_emergency_gateway'') }}'
-      sequence:
-      - data:
-          reason: fire_alert_persisted_4_minutes
-        action: script.call_emergency_gateway
-    default:
-    - data:
-        level: warning
-        message: fire_alert_gateway_not_available
-      action: system_log.write
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: 외부 연락 시도
+      message: 연기가 4분 이상 지속되어 보호자에게 알립니다.
   - data:
       title: 외부 연락 시도
       message: 연기가 계속되어 외부 연락을 시도했습니다.
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761657961283'
   alias: CareDian • 화재감지 2분간 지속시
@@ -1424,7 +1415,7 @@
       data:
         priority: high
         color: '#DC2626'
-    action: notify.mobile_app_caregiver_phone
+    action: notify.mobile_app_iilhwanyi_iphone
   mode: single
 - id: '1761657980933'
   alias: CareDian • 화재감지
@@ -1467,7 +1458,7 @@
       data:
         priority: high
         color: '#DC2626'
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   - target:
       entity_id: input_text.last_fire_event
     data:
@@ -1495,7 +1486,7 @@
   - data:
       title: 환기 종료
       message: 잔여 환기 시간을 마쳤습니다.
-    action: notify.mobile_app_elderly_phone
+    action: notify.mobile_app_iphone
   mode: single
 - id: '1761658449670'
   alias: CareDian • 요리 환기 시작
@@ -1528,7 +1519,7 @@
       - data:
           title: 조리 환기 시작
           message: 창문이 닫혀 있어 전열교환기를 함께 가동합니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
     - conditions:
       - condition: template
         value_template: '{{ windows_open }}'
@@ -1536,7 +1527,7 @@
       - data:
           title: 조리 환기 대기
           message: 창문이 열려 있어 전열교환기는 대기합니다.
-        action: notify.mobile_app_elderly_phone
+        action: notify.mobile_app_iphone
   - data:
       level: info
       message: cooking_ventilation_start
@@ -1744,7 +1735,7 @@
           entity_id: tts.tts_pipeline_voxcpm
         data:
           message: "{{ spoken_msg }}"
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: "{{ slot }} 약 복용"
       message: "{{ composed_msg }}"
@@ -1790,7 +1781,7 @@
       - action: switch.turn_on
         target:
           entity_id: switch.ventilator_power
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '조리 환기 시작'
           message: '창문이 닫혀 있어 전열교환기를 함께 가동합니다.'
@@ -1798,7 +1789,7 @@
       - condition: template
         value_template: "{{ windows_open }}"
       sequence:
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '조리 환기 대기'
           message: '창문이 열려 있어 전열교환기는 대기합니다.'
@@ -1822,7 +1813,7 @@
   - action: timer.start
     target:
       entity_id: timer.residual_ventilation
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '조리 종료'
       message: '환기를 10분 더 유지합니다.'
@@ -1841,7 +1832,7 @@
       entity_id:
       - switch.kitchen_hood
       - switch.ventilator_power
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '환기 종료'
       message: '잔여 환기 시간을 마쳤습니다.'
@@ -1884,7 +1875,7 @@
           entity_id: tts.tts_pipeline_voxcpm
         data:
           message: '연기가 감지되었습니다. 즉시 대피하세요.'
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '화재 경보'
       message: '연기가 감지되었습니다. 즉시 확인하세요.'
@@ -1911,7 +1902,7 @@
     entity_id: input_boolean.scn_fire
     state: 'on'
   action:
-  - action: notify.mobile_app_caregiver_phone
+  - action: notify.mobile_app_iilhwanyi_iphone
     data:
       title: '화재 경보 (2분)'
       message: '연기가 2분 이상 지속됩니다. 즉시 확인하세요.'
@@ -1933,20 +1924,11 @@
     entity_id: input_boolean.scn_fire
     state: 'on'
   action:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: "{{ has_service('script', 'call_emergency_gateway') }}"
-      sequence:
-      - action: script.call_emergency_gateway
-        data:
-          reason: 'fire_alert_persisted_4_minutes'
-    default:
-    - action: system_log.write
-      data:
-        level: warning
-        message: fire_alert_gateway_not_available
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: '외부 연락 시도'
+      message: '연기가 4분 이상 지속되어 보호자에게 알립니다.'
+  - action: notify.mobile_app_iphone
     data:
       title: '외부 연락 시도'
       message: '연기가 계속되어 외부 연락을 시도했습니다.'
@@ -1966,7 +1948,7 @@
   - action: input_boolean.turn_off
     target:
       entity_id: input_boolean.scn_fire
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '화재 경보 해제'
       message: '연기 감지가 해제되었습니다.'
@@ -2009,7 +1991,7 @@
   - action: counter.reset
     target:
       entity_id: counter.dishwasher_progress_count
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '식기세척기 시작'
       message: '식기세척기가 시작되었습니다.'
@@ -2064,7 +2046,7 @@
           entity_id: tts.tts_pipeline_voxcpm
         data:
           message: "식기세척기가 {{ progress_value }}% 진행 중입니다."
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '식기세척기 진행'
       message: "현재 진행률 {{ progress_value }}%"
@@ -2117,7 +2099,7 @@
       - condition: template
         value_template: "{{ open_windows | length > 0 }}"
       sequence:
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '외출 전 창문 확인'
           message: "열려 있는 창문: {{ open_windows | join(', ') }}"
@@ -2160,7 +2142,7 @@
       - condition: template
         value_template: "{{ not door_locked }}"
       sequence:
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '도어락 잠금 확인'
           message: '로봇청소기는 도어락이 잠긴 후 시작합니다.'
@@ -2179,7 +2161,7 @@
       - group.common_area_lights
       - group.standby_plugs
       - climate.seutaendeuhyeong_eeokeon
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '외출 절전 모드'
       message: '로봇청소기를 시작하고 공용 조명 및 대기전력을 차단했습니다.'
@@ -2293,7 +2275,7 @@
         target:
           entity_id: climate.seutaendeuhyeong_eeokeon
     default:
-    - action: notify.mobile_app_elderly_phone
+    - action: notify.mobile_app_iphone
       data:
         title: '창문 열림'
         message: '창문이 열려 있어 냉방을 시작할 수 없습니다.'
@@ -2352,7 +2334,7 @@
       - condition: template
         value_template: "{{ not door_locked }}"
       sequence:
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '도어락 확인'
           message: '취침 전에 도어락을 잠궈 주세요.'
@@ -2381,7 +2363,7 @@
           entity_id: timer.residual_ventilation
         data:
           duration: '00:30:00'
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '공기질 개선'
           message: '공기질이 좋지 않아 전열교환기를 30분간 가동합니다.'
@@ -2487,7 +2469,7 @@
           entity_id: tts.tts_pipeline_voxcpm
         data:
           message: '최근 활동이 감지되지 않았습니다. 괜찮으신가요?'
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '활동 부재 알림'
       message: '최근 활동이 없어 확인이 필요합니다.'
@@ -2503,7 +2485,7 @@
     - condition: state
       entity_id: input_boolean.scn_inactivity
       state: 'on'
-    - action: notify.mobile_app_caregiver_phone
+    - action: notify.mobile_app_iilhwanyi_iphone
       data:
         title: '활동 부재 보호자 알림'
         message: '최근 5분 이상 활동이 없어 보호자에게 알립니다.'
@@ -2570,7 +2552,7 @@
         entity_id: valve.sihas_gas_valve
         state: 'closed'
       sequence:
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '가스밸브 차단'
           message: '야간 가스밸브를 차단했습니다.'
@@ -2579,7 +2561,7 @@
         entity_id: valve.sihas_gas_valve
         state: 'open'
       sequence:
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '가스밸브 차단 실패'
           message: '가스밸브 차단에 실패했습니다. 수동 확인 바랍니다.'
@@ -2603,7 +2585,7 @@
   action:
   - variables:
       open_list: "{{ expand('group.all_windows') | selectattr('state', 'eq', 'on') | map(attribute='name') | list }}"
-  - action: notify.mobile_app_elderly_phone
+  - action: notify.mobile_app_iphone
     data:
       title: '야간 출입 감지'
       message: "열린 센서: {{ open_list | join(', ') if open_list else '확인 필요' }}"
@@ -2645,7 +2627,7 @@
           entity_id: tts.tts_pipeline_voxcpm
         data:
           message: '비상 호출이 접수되었습니다. 곧 도움이 도착합니다.'
-  - action: notify.mobile_app_caregiver_phone
+  - action: notify.mobile_app_iilhwanyi_iphone
     data:
       title: 'SOS 호출'
       message: '비상 버튼이 눌러졌습니다.'
@@ -2667,13 +2649,13 @@
       - action: lock.unlock
         target:
           entity_id: lock.aqara_smart_lock_l100
-      - action: notify.mobile_app_elderly_phone
+      - action: notify.mobile_app_iphone
         data:
           title: '도어락 해제'
           message: 'SOS 설정에 따라 도어락을 자동으로 해제했습니다.'
   - delay:
       minutes: 1
-  - action: notify.mobile_app_caregiver_phone
+  - action: notify.mobile_app_iilhwanyi_iphone
     data:
       title: 'SOS 재알림'
       message: 'SOS 호출이 아직 활성 상태입니다.'
