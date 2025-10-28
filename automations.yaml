@@ -1078,9 +1078,9 @@
           message: 창문이 열려 있어 냉방을 시작할 수 없습니다.
         action: notify.mobile_app_elderly_phone
       - wait_for_trigger:
-        - entity_id: group.all_windows
+        - platform: state
+          entity_id: group.all_windows
           to: 'off'
-          trigger: state
         timeout:
           minutes: 5
     default: []
@@ -1168,9 +1168,9 @@
           message: 로봇청소기는 도어락이 잠긴 후 시작합니다.
         action: notify.mobile_app_elderly_phone
       - wait_for_trigger:
-        - entity_id: lock.aqara_smart_lock_l100
+        - platform: state
+          entity_id: lock.aqara_smart_lock_l100
           to: locked
-          trigger: state
         timeout:
           minutes: 5
   - target:
@@ -1680,13 +1680,13 @@
 - id: caredian_schedule_medication
   alias: CareDian · 복약 스케줄 시나리오
   trigger:
-  - platform: time
+  - trigger: time
     at: '07:00:00'
     id: morning
-  - platform: time
+  - trigger: time
     at: '12:00:00'
     id: noon
-  - platform: time
+  - trigger: time
     at: '17:00:00'
     id: evening
   condition:
@@ -1705,7 +1705,7 @@
 - id: caredian_execute_medication
   alias: CareDian · 복약 시나리오 실행
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: input_boolean.scn_morning
     to: 'on'
   condition:
@@ -1763,7 +1763,7 @@
 - id: caredian_cooking_start
   alias: CareDian · 조리 시나리오 시작
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.cooking_status
     to: 'on'
   condition:
@@ -1811,7 +1811,7 @@
 - id: caredian_cooking_stop
   alias: CareDian · 조리 시나리오 종료 준비
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.cooking_status
     to: 'off'
   condition:
@@ -1831,7 +1831,7 @@
 - id: caredian_cooking_residual_finished
   alias: CareDian · 조리 잔여 환기 종료
   trigger:
-  - platform: event
+  - trigger: event
     event_type: timer.finished
     event_data:
       entity_id: timer.residual_ventilation
@@ -1853,7 +1853,7 @@
 - id: caredian_fire_detected
   alias: CareDian · 화재 감지
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.smoke_sensor
     to: 'on'
   action:
@@ -1901,7 +1901,7 @@
 - id: caredian_fire_escalation_2m
   alias: CareDian · 화재 2분 지속 알림
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.smoke_sensor
     to: 'on'
     for:
@@ -1923,7 +1923,7 @@
 - id: caredian_fire_escalation_4m
   alias: CareDian · 화재 4분 지속 알림
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.smoke_sensor
     to: 'on'
     for:
@@ -1955,7 +1955,7 @@
 - id: caredian_fire_clear
   alias: CareDian · 화재 종료
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.smoke_sensor
     to: 'off'
   condition:
@@ -1975,7 +1975,7 @@
 - id: caredian_emergency_priority
   alias: CareDian · 긴급 시나리오 우선 처리
   trigger:
-  - platform: state
+  - trigger: state
     entity_id:
     - input_boolean.scn_fire
     - input_boolean.scn_sos
@@ -1998,7 +1998,7 @@
 - id: caredian_dishwasher_start
   alias: CareDian · 식기세척기 시나리오 시작
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.dishwasher_running
     to: 'on'
   condition: []
@@ -2018,19 +2018,19 @@
 - id: caredian_dishwasher_progress
   alias: CareDian · 식기세척기 진행 알림
   trigger:
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dishwasher_progress_percent
     above: 24
     id: step1
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dishwasher_progress_percent
     above: 49
     id: step2
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dishwasher_progress_percent
     above: 74
     id: step3
-  - platform: numeric_state
+  - trigger: numeric_state
     entity_id: sensor.dishwasher_progress_percent
     above: 94
     id: step4
@@ -2073,7 +2073,7 @@
 - id: caredian_away_restore
   alias: CareDian · 재실 복귀 시 외출 해제
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.family_presence
     to: 'on'
   action:
@@ -2085,7 +2085,7 @@
 - id: caredian_away_toggle_on
   alias: CareDian · 외출 시나리오 자동 활성화
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.family_presence
     to: 'off'
     for:
@@ -2106,7 +2106,7 @@
 - id: caredian_away_window_check
   alias: CareDian · 외출 전 창문 확인
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: input_boolean.scn_away
     to: 'on'
   action:
@@ -2148,11 +2148,9 @@
 - id: caredian_away_execute
   alias: CareDian · 외출 에너지 절약 실행
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: input_boolean.scn_away
     to: 'on'
-    for:
-      minutes: 0
   condition: []
   action:
   - variables:
@@ -2190,10 +2188,10 @@
 - id: caredian_fall_detected
   alias: CareDian · 낙상 감지 시나리오
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: binary_sensor.fall_detected
     to: 'on'
-  - platform: event
+  - trigger: event
     event_type: fall_detected
   condition:
   - condition: template
@@ -2219,7 +2217,7 @@
 - id: caredian_fall_recovery
   alias: CareDian · 낙상 경보 해제
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.all_motion
     to: 'on'
   condition:
@@ -2238,7 +2236,7 @@
 - id: caredian_arrival_trigger
   alias: CareDian · 귀가 시나리오 시작
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.family_presence
     to: 'on'
   condition:
@@ -2260,7 +2258,7 @@
 - id: caredian_arrival_execute
   alias: CareDian · 귀가 환경 구성
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: input_boolean.scn_arrival
     to: 'on'
   action:
@@ -2307,7 +2305,7 @@
 - id: caredian_bedtime_schedule
   alias: CareDian · 취침 시나리오 스케줄
   trigger:
-  - platform: time
+  - trigger: time
     at: '23:00:00'
   condition:
   - condition: state
@@ -2328,7 +2326,7 @@
 - id: caredian_bedtime_execute
   alias: CareDian · 취침 루틴 실행
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: input_boolean.scn_bedtime
     to: 'on'
   action:
@@ -2407,7 +2405,7 @@
 - id: caredian_inactivity_monitor
   alias: CareDian · 활동 부재 타이머 시작
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.all_motion
     to: 'off'
     for:
@@ -2437,10 +2435,10 @@
 - id: caredian_inactivity_reset
   alias: CareDian · 활동 감지 시 타이머 리셋
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.all_motion
     to: 'on'
-  - platform: state
+  - trigger: state
     entity_id: group.all_windows
     to: 'on'
   action:
@@ -2455,7 +2453,7 @@
 - id: caredian_inactivity_alert
   alias: CareDian · 활동 부재 경보
   trigger:
-  - platform: event
+  - trigger: event
     event_type: timer.finished
     event_data:
       entity_id: timer.inactivity_detection_timer
@@ -2517,7 +2515,7 @@
 - id: caredian_night_start
   alias: CareDian · 야간 시나리오 시작
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: sensor.is_night_mode
     to: 'on'
   condition:
@@ -2536,7 +2534,7 @@
 - id: caredian_night_end
   alias: CareDian · 야간 시나리오 종료
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: sensor.is_night_mode
     to: 'off'
   action:
@@ -2548,7 +2546,7 @@
 - id: caredian_night_gas_valve
   alias: CareDian · 야간 가스밸브 차단
   trigger:
-  - platform: time
+  - trigger: time
     at: '23:00:00'
   condition:
   - condition: state
@@ -2593,7 +2591,7 @@
 - id: caredian_night_entry_alert
   alias: CareDian · 야간 출입 감지
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: group.all_windows
     to: 'on'
   condition:
@@ -2627,7 +2625,7 @@
 - id: caredian_sos_button
   alias: CareDian · SOS 버튼 대응
   trigger:
-  - platform: event
+  - trigger: event
     event_type: button_main
     event_data:
       click_type: long_press
@@ -2688,7 +2686,7 @@
 - id: caredian_sos_clear
   alias: CareDian · SOS 해제
   trigger:
-  - platform: state
+  - trigger: state
     entity_id: input_boolean.scn_sos
     to: 'off'
   action:
