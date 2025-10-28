@@ -634,7 +634,6 @@
         date: "{{ now().strftime('%Y-%m-%d') }}"
         time: "{{ now().strftime('%H:%M:%S') }}"
   mode: single
-
 - id: fall_detected_alert_full
   alias: "🚨 낙상 감지: 다중 푸시 + 다크테마 팝업"
   trigger:
@@ -651,10 +650,10 @@
         data:
           push:
             sound:
-              name: default # iOS 기본 알림음
-              critical: 1 # iOS용 크리티컬 사운드 (무음모드에서도 울림)
-              volume: 1.0 # 최대볼륨
-          channel: alarm_stream_max # Android용 최대볼륨 알림채널
+              name: default
+              critical: 1
+              volume: 1.0
+          channel: alarm_stream_max
           ttl: 0
           priority: high
           importance: high
@@ -664,40 +663,45 @@
             - action: ACK_FALL
               title: "확인"
 
+    # 💬 브라우저 팝업 (테두리 반짝임 버전)
     - action: browser_mod.popup
       data:
         title: "🚨 낙상 알림"
-        dismissable: true # ✅ X 버튼 활성화
+        dismissable: true
         large: true
         content: |
           <style>
+            /* 팝업 전체 다크테마 + 반짝이는 테두리 */
             ha-dialog {
               --mdc-dialog-surface-color: rgba(25, 25, 25, 0.95);
-              border: 3px solid rgba(255, 0, 0, 0.8);
+              border: 3px solid rgba(255, 0, 0, 0.85);
               border-radius: 18px;
-              animation: border-flash 1.3s infinite;
-              box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+              animation: border-flash 1.5s infinite;
+              box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
             }
 
+            /* 붉은 테두리 반짝임 */
             @keyframes border-flash {
-              0%, 100% { box-shadow: 0 0 10px 3px rgba(255, 0, 0, 0.8); }
-              50% { box-shadow: 0 0 25px 8px rgba(255, 0, 0, 1); }
+              0%, 100% {
+                border-color: rgba(255, 0, 0, 0.6);
+                box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+              }
+              50% {
+                border-color: rgba(255, 50, 50, 1);
+                box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);
+              }
             }
 
+            /* 제목 텍스트 */
             h1 {
               text-align: center;
               color: #ffffff;
               font-size: 2em;
               margin: 0 0 14px 0;
               text-shadow: 0 0 8px rgba(255, 80, 80, 0.9);
-              animation: pulse 1.5s infinite;
             }
 
-            @keyframes pulse {
-              0%, 100% { transform: scale(1); color: #ffffff; }
-              50% { transform: scale(1.05); color: #ff5c5c; }
-            }
-
+            /* 부가 문구 */
             p {
               text-align: center;
               color: #cccccc;
