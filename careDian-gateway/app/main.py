@@ -72,11 +72,7 @@ def create_app() -> FastAPI:
 
     # 5) 라우터 등록 — 기능별 모듈 분리
     app.include_router(fall_router.router)  # /events/* (낙상 처리)
-    app.include_router(influx_router)       # /influx/* (관리/진단)
-    app.include_router(ha.router)           # /ha/* (HA 연동)
-
-    # M2M 인증 라우터 — /auth/cc/* (토큰 발급)
-    app.include_router(cc_router)
+    app.include_router(cc_router) # /auth/cc/* (토큰 발급)
     
     # 6) 루트 경로: 문서로 리다이렉트(스키마에는 숨김)
     @app.get("/", include_in_schema=False)
