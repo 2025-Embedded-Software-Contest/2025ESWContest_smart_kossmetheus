@@ -47,9 +47,6 @@ class Settings(BaseSettings):
 
     # InfluxDB 1.x
     influx_url: str = Field(..., alias="INFLUX_URL")
-    influx_proto: str = Field("http", alias="INFLUX_PROTO")
-    influx_host: str = Field("", alias="INFLUX_HOST")
-    influx_port: int = Field(8086, alias="INFLUX_PORT")
     influx_db: str = Field(..., alias="INFLUX_DB")
     influx_rp: str | None = Field(None, alias="INFLUX_RP")
     influx_username: str = Field(..., alias="INFLUX_USERNAME")
