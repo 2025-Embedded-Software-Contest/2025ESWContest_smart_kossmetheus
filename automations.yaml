@@ -2620,11 +2620,9 @@
         priority: high
         color: '#DC2626'
         group: sos_alert
-  - action: light.turn_on
+  - action: switch.turn_on
     target:
       entity_id: group.path_lights
-    data:
-      brightness_pct: 100
   - choose:
     - conditions:
       - condition: state
