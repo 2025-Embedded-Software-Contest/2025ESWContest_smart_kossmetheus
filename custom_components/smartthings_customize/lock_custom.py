@@ -53,11 +53,31 @@ class SmartThingsLock_custom(SmartThingsEntity_custom, LockEntity):
         await self.send_command(Platform.LOCK, self.get_command(Platform.LOCK, {ST_CMD_UNLOCK: ST_CMD_UNLOCK}).get(ST_CMD_UNLOCK), self.get_argument(Platform.LOCK, {ST_CMD_UNLOCK: []}).get(ST_CMD_UNLOCK, []))
 
     @property
-    def is_locked(self) -> bool:
+    def is_locked(self) -> bool | None:
         """Return true if lock is locked."""
+        # Current lock status value from device (e.g., "locked"/"unlocked")
         value = self.get_attr_value(Platform.LOCK, CONF_STATE)
-        lock_state = self.get_attr_value(Platform.LOCK, "lock_state")
-        return value in lock_state
+        # Expected values that represent the locked state from YAML config.
+        # Support both keys: "locked_state" (new) and "lock_state" (legacy/example).
+        locked_state = self.get_attr_value(Platform.LOCK, "locked_state")
+        if locked_state is None:
+            locked_state = self.get_attr_value(Platform.LOCK, "lock_state")
+
+        # If we don't have a current value yet, report unknown
+        if value is None:
+            return None
+
+        # Handle misconfiguration or missing setting defensively
+        if locked_state is None:
+            # Fallback to common defaults if not configured
+            return value in ("locked", True, "on")
+
+        # If configured as a list (recommended), do membership check
+        if isinstance(locked_state, list):
+            return value in locked_state
+
+        # If configured as a single value, compare directly
+        return value == locked_state
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -72,4 +92,3 @@ class SmartThingsLock_custom(SmartThingsEntity_custom, LockEntity):
                 if (data_val := status.data.get(st_attr)) is not None:
                     self._extra_state_attributes[ha_attr] = data_val
         return self._extra_state_attributes
-
