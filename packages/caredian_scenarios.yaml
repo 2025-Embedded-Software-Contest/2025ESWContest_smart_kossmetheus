@@ -129,24 +129,14 @@ group:
     name: "가족 재실"
     entities:
       - person.mrpc2003
-      - person.gimyeji
-      - person.gimseonghyeog
-      - person.jeonyecan
-      - person.iilhwan
   common_area_lights:
     name: "공용 공간 조명"
     entities:
-      - light.smart_bulb
-      - light.smart_bulb_2
-      - light.smart_bulb_3
-      - light.sihas_switch_2
-      - light.sihas_switch_3
+      - switch.sihas_switch_3
   path_lights:
     name: "경로 조명"
     entities:
-      - light.deureseurum_deung
-      - light.hwajangdae_deung
-      - light.anbang_hwajangsil_deung
+      - switch.geosil_jomyeong_3beon
 
 template:
   - binary_sensor:
