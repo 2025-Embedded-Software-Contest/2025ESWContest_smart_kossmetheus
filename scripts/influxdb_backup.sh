@@ -36,15 +36,31 @@ BACKUP_PATH="/usr/share/hassio/share/influxdb_backups/backup_${BACKUP_TIMESTAMP}
 docker exec addon_a0d7b954_influxdb influxd backup -portable /data/influxdb/backup_temp
 
 if [ $? -ne 0 ]; then
-    echo "FAILED:${BACKUP_TIMESTAMP}:docker_backup_failed"
+    echo "FAILED:${BACKUP_TIMESTAMP}:docker_backup_failed"
+    exit 1
+fi
+
+# backup_temp에 파일이 실제로 생길 때까지 최대 15초간 대기
+for i in {1..15}; do
+    FILE_COUNT=$(docker exec addon_a0d7b954_influxdb ls -1 /data/influxdb/backup_temp 2>/dev/null | wc -l)
+    if [ "$FILE_COUNT" -gt 0 ]; then
+        break
+    fi
+    sleep 1
+done
+
+if [ "$FILE_COUNT" -eq 0 ]; then
+    echo "FAILED:${BACKUP_TIMESTAMP}:no_backup_files"
     exit 1
 fi
+
 
 # Host OS에 백업 폴더 생성
 mkdir -p "${BACKUP_PATH}"
 
 # 컨테이너에서 Host OS로 백업 파일 복사
 docker cp addon_a0d7b954_influxdb:/data/influxdb/backup_temp/. "${BACKUP_PATH}/"
+
 
 if [ $? -ne 0 ]; then
     echo "FAILED:${BACKUP_TIMESTAMP}:docker_cp_failed"
@@ -92,6 +108,10 @@ fi
 # 60일 이상 된 백업 자동 삭제
 find /usr/share/hassio/share/influxdb_backups/ -type d -name "backup_*" -mtime +60 -exec rm -rf {} + 2>/dev/null
 find /usr/share/hassio/share/influxdb_backups/ -type f -name "backup_*.tar.gz.enc" -mtime +60 -delete 2>/dev/null
+
+echo "백업 ENCRYPT 파일 리스트(실행 직후):"
+ls -lh /usr/share/hassio/share/influxdb_backups/*.tar.gz.enc
+ls -lh /share/influxdb_backups/*.tar.gz.enc
 
 EOF
 )

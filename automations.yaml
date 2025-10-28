@@ -598,33 +598,6 @@
       data: {}
   mode: single
 
-- id: fall_detected_popup_alert
-  alias: 낙상 감지 시 팝업 표시
-  trigger:
-    - platform: state
-      entity_id: binary_sensor.fall_detected
-      to: "on"
-  action:
-    - service: browser_mod.popup
-      data:
-        title: "🚨 낙상 알림"
-        content: |
-          <style>
-            ha-dialog {
-              --mdc-dialog-surface-color: rgba(255, 0, 0, 0.85);
-            }
-            h1 {
-              text-align: center;
-              color: white;
-              font-size: 2em;
-            }
-          </style>
-          <h1>낙상이 감지되었습니다!</h1>
-          <p> 
-        deviceID:
-          - this
-        large: true
-
 - id: "1761546151051"
   alias: InfluxDB 격주 백업 (일요일 03:00)
   description: 격주 일요일 새벽 3시에 InfluxDB 자동 백업 (짝수 주차)
@@ -641,6 +614,7 @@
     - data: {}
       action: shell_command.influxdb_backup
   mode: single
+
 - id: fall_alert_latch_on
   alias: 낙상 감지 래치 ON
   trigger:
@@ -660,3 +634,80 @@
         date: "{{ now().strftime('%Y-%m-%d') }}"
         time: "{{ now().strftime('%H:%M:%S') }}"
   mode: single
+
+- id: fall_detected_alert_full
+  alias: "🚨 낙상 감지: 다중 푸시 + 다크테마 팝업"
+  trigger:
+    - trigger: state
+      entity_id: binary_sensor.fall_detected
+      to: "on"
+
+  action:
+    # 📱 다중 기기로 크리티컬 푸시 전송 (🔊 소리 알림 포함)
+    - action: notify.group_fall_alert_devices
+      data:
+        title: "🚨 낙상 감지"
+        message: "즉시 상태를 확인해주세요."
+        data:
+          push:
+            sound:
+              name: default # iOS 기본 알림음
+              critical: 1 # iOS용 크리티컬 사운드 (무음모드에서도 울림)
+              volume: 1.0 # 최대볼륨
+          channel: alarm_stream_max # Android용 최대볼륨 알림채널
+          ttl: 0
+          priority: high
+          importance: high
+          persistent: true
+          url: /lovelace/home
+          actions:
+            - action: ACK_FALL
+              title: "확인"
+
+    - action: browser_mod.popup
+      data:
+        title: "🚨 낙상 알림"
+        dismissable: true # ✅ X 버튼 활성화
+        large: true
+        content: |
+          <style>
+            ha-dialog {
+              --mdc-dialog-surface-color: rgba(25, 25, 25, 0.95);
+              border: 3px solid rgba(255, 0, 0, 0.8);
+              border-radius: 18px;
+              animation: border-flash 1.3s infinite;
+              box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            }
+
+            @keyframes border-flash {
+              0%, 100% { box-shadow: 0 0 10px 3px rgba(255, 0, 0, 0.8); }
+              50% { box-shadow: 0 0 25px 8px rgba(255, 0, 0, 1); }
+            }
+
+            h1 {
+              text-align: center;
+              color: #ffffff;
+              font-size: 2em;
+              margin: 0 0 14px 0;
+              text-shadow: 0 0 8px rgba(255, 80, 80, 0.9);
+              animation: pulse 1.5s infinite;
+            }
+
+            @keyframes pulse {
+              0%, 100% { transform: scale(1); color: #ffffff; }
+              50% { transform: scale(1.05); color: #ff5c5c; }
+            }
+
+            p {
+              text-align: center;
+              color: #cccccc;
+              font-size: 1.1em;
+              margin: 0;
+            }
+          </style>
+
+          <h1>🚨 낙상이 감지되었습니다!</h1>
+          <p>즉시 상태를 확인해주세요.</p>
+        deviceID:
+          - this
+  mode: restart
