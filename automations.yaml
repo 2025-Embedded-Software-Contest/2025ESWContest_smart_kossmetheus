@@ -597,47 +597,34 @@
           - sensor.sihas_energy_monitor_power
       data: {}
   mode: single
-- id: "1761400957421"
-  alias: "\U0001F6A8 Fall Alert Fullscreen Popup"
-  description: ""
+
+- id: fall_detected_popup_alert
+  alias: 낙상 감지 시 팝업 표시
   trigger:
-    - entity_id: binary_sensor.fall_detected
+    - platform: state
+      entity_id: binary_sensor.fall_detected
       to: "on"
-      trigger: state
   action:
-    - data:
-        title: ""
-        dismissable: true
-        timeout: 30000
-        content:
-          type: custom:button-card
-          name: "\U0001F6A8 낙상이 감지되었습니다."
-          tap_action:
-            action: fire-dom-event
-            browser_mod:
-              command: close-popup
-        style:
-          .:
-            ":host {\n  --ha-card-background: transparent;\n}\n/* 다이얼로그를 화면 전체로 */\nha-dialog
-            {\n  --mdc-dialog-min-width: 100vw;\n  --mdc-dialog-max-width: 100vw;\n
-            \ --mdc-dialog-min-height: 100vh;\n  --mdc-dialog-max-height: 100vh;\n  --mdc-theme-surface:
-            transparent;\n}\nha-dialog > .mdc-dialog__container > .mdc-dialog__surface
-            {\n  box-shadow: none !important;\n  background: transparent !important;\n}\n/*
-            깜빡이는 빨간 오버레이 */\n.overlay {\n  position: fixed;\n  inset: 0;\n  background:
-            rgba(255, 0, 0, 0.7);\n  animation: flash 1s linear infinite;\n}\n.center
-            {\n  position: fixed;\n  inset: 0;\n  display: flex;\n  align-items: center;\n
-            \ justify-content: center;\n  font-size: 64px;\n  font-weight: 900;\n  color:
-            #fff;\n  text-shadow: 0 2px 8px rgba(0,0,0,.6);\n}\n@keyframes flash {\n
-            \ 0% { opacity: 0.85; }\n  50% { opacity: 0.25; }\n  100% { opacity: 0.85;
-            }\n}\n"
-      action: browser_mod.popup
-    - wait_for_trigger:
-        - entity_id: binary_sensor.fall_detected
-          to: "off"
-          trigger: state
-      timeout: 00:00:30
-    - action: browser_mod.close_popup
-  mode: restart
+    - service: browser_mod.popup
+      data:
+        title: "🚨 낙상 알림"
+        content: |
+          <style>
+            ha-dialog {
+              --mdc-dialog-surface-color: rgba(255, 0, 0, 0.85);
+            }
+            h1 {
+              text-align: center;
+              color: white;
+              font-size: 2em;
+            }
+          </style>
+          <h1>낙상이 감지되었습니다!</h1>
+          <p> 
+        deviceID:
+          - this
+        large: true
+
 - id: "1761546151051"
   alias: InfluxDB 격주 백업 (일요일 03:00)
   description: 격주 일요일 새벽 3시에 InfluxDB 자동 백업 (짝수 주차)
