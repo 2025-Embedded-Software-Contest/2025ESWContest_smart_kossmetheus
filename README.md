@@ -20,7 +20,6 @@ CareDian은 Home Assistant를 기반으로 한 스마트 홈 케어 시스템입
 ### 📊 모니터링 및 분석
 - **실시간 대시보드**: Lovelace UI를 통한 직관적인 모니터링
 - **데이터 시각화**: ApexCharts를 활용한 그래프 및 차트
-- **알림 시스템**: 텔레그램, 슬랙을 통한 실시간 알림
 
 ## 프로젝트 구조
 
@@ -180,30 +179,11 @@ automation:
 2. **자동화 작동 안함**: 트리거 조건, 엔티티 상태 확인
 3. **센서 데이터 없음**: 통합 설정, 네트워크 연결 확인
 
-### 지원 및 문의
-- 이슈 리포트: GitHub Issues
-- 문서: [Home Assistant 공식 문서](https://www.home-assistant.io/docs/)
-- 커뮤니티: [한국 Home Assistant 커뮤니티](https://cafe.naver.com/koreassistant)
-
-## 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다.
-
-## 기여하기
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## 팀 정보
 
 - **프로젝트명**: CareDian
 - **대회**: 2025 임베디드 소프트웨어 경진대회
-- **팀**: 스마트 코스메테우스
+- **팀**: 코스메테우스
 - **개발기간**: 2025년
 
 ---
-
-**주의**: 이 설정은 Home Assistant 2024.8+ 버전을 기준으로 작성되었습니다. 이전 버전에서는 일부 기능이 작동하지 않을 수 있습니다.
