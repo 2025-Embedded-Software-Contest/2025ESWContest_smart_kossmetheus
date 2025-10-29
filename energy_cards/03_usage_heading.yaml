@@ -1,8 +1,0 @@
-# Energy Usage Heading Card
-type: grid
-cards:
-  - type: heading
-    icon: mdi:power
-    heading: Energy Usage
-    heading_style: title
-

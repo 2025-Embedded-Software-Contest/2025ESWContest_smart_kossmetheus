@@ -1,8 +1,0 @@
-# Energy Overview Heading Card
-type: grid
-cards:
-  - type: heading
-    icon: mdi:lightning-bolt
-    heading: Overview
-    heading_style: title
-
