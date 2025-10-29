@@ -1,0 +1,127 @@
+template:
+  - sensor:
+    - name: "AirQuality 1528"
+      unique_id: "airquality_1528"
+      state: >
+        {% set co2_value = states('sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide') | float(default=4500) %}
+        {% set pm25_value = states('sensor.gonggijil_ceugjeonggi_1528_pm2_5') | float(default=225.4) %}
+        {% set temp_value = states('sensor.gonggijil_ceugjeonggi_1528_temperature') | float(default=21) %}
+        {% set humidity_value = states('sensor.gonggijil_ceugjeonggi_1528_humidity') | float(default=45) %}
+        {% set voc_value = states('sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts') | float(default=500) %}
+
+        {# CO2 Score calculation #}
+        {% if co2_value >= 4500 %}
+          {% set co2_score = 0 %}
+        {% elif co2_value <= 400 %}
+          {% set co2_score = 100 %}
+        {% else %}
+          {% set co2_score = ((4500 - co2_value) / (4500 - 400)) * 100 %}
+        {% endif %}
+
+        {# PM2.5 Score calculation #}
+        {% if pm25_value >= 225.4 %}
+          {% set pm25_score = 0 %}
+        {% elif pm25_value <= 10 %}
+          {% set pm25_score = 100 %}
+        {% else %}
+          {% set pm25_score = ((225.4 - pm25_value) / (225.4 - 10)) * 100 %}
+        {% endif %}
+
+        {# VOC Score calculation - VOC is in ppm, converting to index scale #}
+        {# Assuming 0.001-10 ppm range, scaling to 0-500 index #}
+        {% set voc_index = (voc_value * 50) | int %}
+        {% if voc_index >= 500 %}
+          {% set voc_score = 0 %}
+        {% elif voc_index <= 1 %}
+          {% set voc_score = 100 %}
+        {% else %}
+          {% set voc_score = ((500 - voc_index) / (500 - 1)) * 100 %}
+        {% endif %}
+
+        {# Temperature scoring #}
+        {% set ideal_temp = 21 %}
+        {% set temp_deviation = (temp_value - ideal_temp) | abs %}
+        {% if temp_deviation >= 10 %}
+          {% set temp_score = 0 %}
+        {% else %}
+          {% set temp_score = 100 - (temp_deviation * 10) %}
+        {% endif %}
+
+        {# Humidity scoring #}
+        {% if humidity_value < 30 %}
+          {% set humidity_score = (humidity_value / 30) * 100 %}
+        {% elif humidity_value > 60 %}
+          {% set humidity_score = ((100 - humidity_value) / 40) * 100 %}
+        {% else %}
+          {% set humidity_score = 100 %}
+        {% endif %}
+
+        {# Final weighted score - adjusted weights to include VOC #}
+        {{ ((co2_score * 0.25 + pm25_score * 0.25 + voc_score * 0.25 + temp_score * 0.125 + humidity_score * 0.125) | round(1)) }}
+
+  - sensor:
+    - name: "AirQuality 1528 Alt"
+      unique_id: "airquality_1528_alt"
+      state: >
+        {% set co2 = states('sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide') | float %}
+        {% set voc = states('sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts') | float %}
+        {% set pm25 = states('sensor.gonggijil_ceugjeonggi_1528_pm2_5') | float %}
+        {% set pm10 = states('sensor.gonggijil_ceugjeonggi_1528_pm10') | float %}
+        
+        {% set scores = [] %}
+        
+        {# CO2 Score #}
+        {% if co2 <= 599 %}
+          {% set scores = scores + [90] %}
+        {% elif co2 <= 999 %}
+          {% set scores = scores + [70] %}
+        {% elif co2 <= 1499 %}
+          {% set scores = scores + [50] %}
+        {% elif co2 <= 2499 %}
+          {% set scores = scores + [30] %}
+        {% else %}
+          {% set scores = scores + [10] %}
+        {% endif %}
+        
+        {# VOC Score - converting ppm to index scale #}
+        {% set voc_index = (voc * 50) | int %}
+        {% if voc_index <= 199 %}
+          {% set scores = scores + [90] %}
+        {% elif voc_index <= 249 %}
+          {% set scores = scores + [70] %}
+        {% elif voc_index <= 349 %}
+          {% set scores = scores + [50] %}
+        {% elif voc_index <= 399 %}
+          {% set scores = scores + [30] %}
+        {% else %}
+          {% set scores = scores + [10] %}
+        {% endif %}
+        
+        {# PM2.5 Score #}
+        {% if pm25 <= 20 %}
+          {% set scores = scores + [90] %}
+        {% elif pm25 <= 50 %}
+          {% set scores = scores + [70] %}
+        {% elif pm25 <= 90 %}
+          {% set scores = scores + [50] %}
+        {% elif pm25 <= 140 %}
+          {% set scores = scores + [30] %}
+        {% else %}
+          {% set scores = scores + [10] %}
+        {% endif %}
+        
+        {# PM10 Score #}
+        {% if pm10 <= 30 %}
+          {% set scores = scores + [90] %}
+        {% elif pm10 <= 75 %}
+          {% set scores = scores + [70] %}
+        {% elif pm10 <= 125 %}
+          {% set scores = scores + [50] %}
+        {% elif pm10 <= 200 %}
+          {% set scores = scores + [30] %}
+        {% else %}
+          {% set scores = scores + [10] %}
+        {% endif %}
+        
+        {{ (scores | sum / scores | length) | round(1) }}
+

@@ -1,0 +1,24 @@
+card_generic:
+  template: ["ulm_language_variables"]
+  show_icon: true
+  show_name: true
+  show_label: true
+  show_state: true
+  tap_action:
+    action: more-info
+  styles:
+    card:
+      - padding: 12px
+    grid:
+      - grid-template-areas: '"i n" "s s" "l l"'
+      - grid-template-columns: 40px 1fr
+      - grid-template-rows: min-content min-content min-content
+    icon:
+      - width: 34px
+      - height: 34px
+    name:
+      - font-weight: 600
+    state:
+      - color: var(--primary-text-color)
+    label:
+      - color: var(--secondary-text-color)

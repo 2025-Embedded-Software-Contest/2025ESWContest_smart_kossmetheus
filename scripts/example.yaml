@@ -1,0 +1,13 @@
+turn_on_aircon:
+  alias: 에어컨 26도로 켜기
+  sequence:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.seutaendeuhyeong_eeokeon
+      data:
+        temperature: 26
+    - service: climate.set_hvac_mode
+      target:
+        entity_id: climate.seutaendeuhyeong_eeokeon
+      data:
+        hvac_mode: cool

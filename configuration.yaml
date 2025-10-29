@@ -1,0 +1,358 @@
+# 디폴트 환경 설정
+default_config:
+
+#influxdb 백업 서버 추가 2025-10-16
+shell_command:
+  influxdb_backup: bash /config/scripts/influxdb_backup.sh
+
+# 프론트엔드 테마 설정
+frontend:
+  extra_module_url:
+    - /hacsfiles/Bubble-Card/bubble-pop-up-fix.js
+    - /hacsfiles/kiosk-mode/kiosk-mode.js
+  themes: !include_dir_merge_named themes
+
+# Import
+scene: !include_dir_merge_list scenes
+automation: !include automations.yaml
+script: !include scripts.yaml
+sensor: !include_dir_merge_list sensors
+template: !include templates.yaml
+influxdb: !include influxdb.yaml
+group: !include groups.yaml
+light: !include lights.yaml
+
+media_player:
+  - platform: universal
+    name: Music
+    unique_id: musicuniversal
+    children:
+      - media_player.paul_nest
+      - media_player.paul_nest_airplay
+      - media_player.uhyeonibang
+      - media_player.uhyeonibang_airplay
+      - media_player.gimuhyeonyi_macbook_pro
+      - media_player.spotify_gimuhyeon
+      - media_player.music_player_daemon
+
+command_line:
+  - sensor:
+      name: Pi5 Fan Speed
+      unique_id: pi5_fan_rpm
+      scan_interval: 15
+      command: "cat /sys/devices/platform/cooling_fan/hwmon/*/fan1_input"
+      unit_of_measurement: "RPM"
+      value_template: "{{ value }}"
+  - sensor:
+      name: Pi5 CPU Temperature
+      unique_id: pi5_cpu_temp
+      scan_interval: 10
+      command: "cat /sys/class/thermal/thermal_zone0/temp"
+      unit_of_measurement: "°C"
+      value_template: "{{ (value | float / 1000) | round(1) }}"
+      device_class: temperature
+  - sensor:
+      name: Pi5 CPU Usage
+      unique_id: pi5_cpu_usage
+      scan_interval: 30
+      command: 'ps -A -o %cpu | awk ''{s+=$1} END {printf "%.1f", s}'''
+      unit_of_measurement: "%"
+      value_template: "{{ value | float(default=0) | round(1) }}"
+  - sensor:
+      name: Pi5 Memory Usage
+      unique_id: pi5_memory_usage
+      scan_interval: 30
+      command: 'free | grep Mem | awk ''{printf "%.1f", $3/$2 * 100.0}'''
+      unit_of_measurement: "%"
+      value_template: "{{ value | float(default=0) | round(1) }}"
+  - sensor:
+      name: HA Log Size
+      unique_id: ha_log_size_mb
+      scan_interval: 60
+      command: "wc -c < /config/home-assistant.log || echo 0"
+      unit_of_measurement: "MB"
+      value_template: "{{ (value | int(0) / 1024 / 1024) | round(2) }}"
+      icon: mdi:file-chart
+
+  #influxdb 백업 모니터링 센서 추가
+  - sensor:
+      name: "InfluxDB Latest Backup"
+      unique_id: influxdb_latest_backup
+      command: "ls -td /share/influxdb_backups/backup_* 2>/dev/null | head -1 | xargs basename"
+      scan_interval: 3600
+  - sensor:
+      name: "InfluxDB Backup Count"
+      unique_id: influxdb_backup_count
+      command: "ls -1 /share/influxdb_backups/ | grep -c backup_"
+      scan_interval: 3600
+      unit_of_measurement: "개"
+  - sensor:
+      name: "InfluxDB Backup Size"
+      unique_id: influxdb_backup_size
+      command: "du -sh /share/influxdb_backups/ 2>/dev/null | awk '{print $1}' || echo '0M'"
+      scan_interval: 3600
+  - sensor:
+      name: "InfluxDB Backup Status"
+      unique_id: influxdb_backup_status
+      command: "cat /share/influxdb_backups/last_backup_status.txt 2>/dev/null || echo 'unknown'"
+      scan_interval: 60
+
+# Enable Pyscript custom integration for image pipeline
+pyscript:
+  # 외부 패키지(Pillow 등) 임포트를 허용해 pyscript 스크립트가 정상 로드되도록 함
+  allow_all_imports: true
+
+# Reverse Proxy 설정
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 172.30.33.0/24 # Supervisor 애드온 네트워크
+    - 192.168.0.0/24 # NPM이 속한 내부 네트워크 대역
+    - 100.64.0.0/10 # Tailscale IP 범위
+    - 127.0.0.1 # 로컬 루프백
+
+# Google OAuth
+openid:
+  client_id: !secret oidc_client_id
+  client_secret: !secret oidc_client_secret
+  configure_url: "https://accounts.google.com/.well-known/openid-configuration"
+  # username_field: "preferred_username"
+  username_field: "email"
+  scope: "openid profile email"
+  block_login: false
+  openid_text: "Login with Google (OIDC)"
+
+# 재연결 및 타임아웃 설정
+recorder:
+  commit_interval: 5
+  purge_keep_days: 7
+
+# Lovelace 설정
+lovelace:
+  mode: storage
+  resources:
+    - url: /hacsfiles/button-card/button-card.js
+      type: module
+    - url: /hacsfiles/lovelace-card-mod/card-mod.js
+      type: module
+    - url: /hacsfiles/Bubble-Card/bubble-card.js
+      type: module
+    - url: /hacsfiles/Bubble-Card/bubble-pop-up-fix.js
+      type: module
+    - url: /hacsfiles/lovelace-mushroom/mushroom.js
+      type: module
+    - url: /hacsfiles/lovelace-state-switch/state-switch.js
+      type: module
+    - url: /hacsfiles/stack-in-card/stack-in-card.js
+      type: module
+    - url: /hacsfiles/vertical-stack-in-card/vertical-stack-in-card.js
+      type: module
+    - url: /hacsfiles/apexcharts-card/apexcharts-card.js
+      type: module
+    - url: /hacsfiles/mini-graph-card/mini-graph-card-bundle.js
+      type: module
+    - url: /hacsfiles/lovelace-multiple-entity-row/multiple-entity-row.js
+      type: module
+    - url: /hacsfiles/mini-media-player/mini-media-player-bundle.js
+      type: module
+    - url: /hacsfiles/battery-state-card/battery-state-card.js
+      type: module
+    - url: /hacsfiles/timer-bar-card/timer-bar-card.js
+      type: module
+    - url: /hacsfiles/lovelace-navbar-card/navbar-card.js
+      type: module
+    - url: /hacsfiles/decluttering-card/decluttering-card.js
+      type: module
+    - url: /hacsfiles/lovelace-auto-entities/auto-entities.js
+      type: module
+    - url: /hacsfiles/lovelace-expander-card/expander-card.js
+      type: module
+    - url: /hacsfiles/css-swipe-card/css-swipe-card.js
+      type: module
+    - url: /hacsfiles/lovelace-notify-card/notify-card.js
+      type: module
+    - url: /hacsfiles/my-cards/my-slider-v2.js
+      type: module
+    - url: /hacsfiles/lovelace-layout-card/layout-card.js
+      type: module
+
+# Manual Alarm Control Panel - 보안 시스템
+alarm_control_panel:
+  - platform: manual
+    name: Security System
+    code: "1234"
+    code_arm_required: false
+    arming_time: 30
+    delay_time: 30
+    trigger_time: 600
+    disarmed:
+      trigger_time: 0
+    armed_home:
+      arming_time: 0
+      delay_time: 0
+    armed_night:
+      arming_time: 0
+      delay_time: 0
+
+homeassistant:
+  # Gas meter (ESP32-CAM + OCR)
+  media_dirs:
+    local: /config/www
+    gas: /config/www/tmp/gas
+
+  auth_providers:
+    - type: homeassistant
+
+  packages: !include_dir_named packages
+
+input_number:
+  gas_meter_2:
+    name: box
+    min: 0
+    max: 99999
+    # 소수부 4자리(예: 133.5638) 저장을 위해 스텝을 0.0001로 조정
+    step: 0.0001
+    unit_of_measurement: m³ #여기 step: ~하고 탭으로 되어있었는데 두 줄로 변경함.
+  co2_min_ppm:
+    name: CO₂ 최소 허용(ppm)
+    min: 0
+    max: 2000
+    step: 50
+    unit_of_measurement: ppm
+    icon: mdi:molecule-co2
+  co2_max_ppm:
+    name: CO₂ 최대 허용(ppm)
+    min: 400
+    max: 5000
+    step: 50
+    unit_of_measurement: ppm
+    icon: mdi:molecule-co2
+    initial: 1000
+  aqi_max:
+    name: AQI 최대 허용
+    min: 0
+    max: 500
+    step: 5
+    icon: mdi:weather-hazy
+    initial: 100
+  pm25_max:
+    name: PM2.5 최대 허용(µg/m³)
+    min: 0
+    max: 250
+    step: 1
+    unit_of_measurement: µg/m³
+    icon: mdi:blur
+    initial: 35
+  pm10_max:
+    name: PM10 최대 허용(µg/m³)
+    min: 0
+    max: 300
+    step: 1
+    unit_of_measurement: µg/m³
+    icon: mdi:blur
+    initial: 50
+
+  # kwh_to_won 통합을 위한 전기 요금 센서
+  electricity_energy_prev_monthly:
+    name: "전기 전월 사용량"
+    unit_of_measurement: "kWh"
+    icon: mdi:lightning-bolt
+    min: 0
+    max: 9999
+    step: 0.01
+    mode: box
+
+  electricity_energy_prev2_monthly:
+    name: "전기 전전월 사용량"
+    unit_of_measurement: "kWh"
+    icon: mdi:lightning-bolt
+    min: 0
+    max: 9999
+    step: 0.01
+    mode: box
+
+input_text:
+  gas_message_2:
+    name: gas message 2
+    max: 255
+
+  message_to_bedroom:
+    name: What You Got to Say?
+    initial: ""
+    max: 255
+
+utility_meter:
+  gas_meter_monthly:
+    source: sensor.gas_meter_2
+    cycle: monthly
+  # kwh_to_won 통합을 위한 전기 사용량 월간 누적 센서
+  # 검침일에 맞춘 월간 누적 사용량 (매달 30일 0시 0분에 리셋)
+  electricity_energy_monthly:
+    source: sensor.sihas_energy_monitor_energy
+    cycle: monthly
+    offset:
+      days: 10
+
+# HA -> FastAPI Webhook
+# rest_command: !include webhook.yaml
+
+rest_command:
+  push_record_to_mac:
+    url: "https://overgifted-joline-nonstrategically.ngrok-free.dev/pull"
+    method: POST
+    content_type: "application/json"
+    payload: >
+      { "url": "{{ url }}", "filename": "{{ filename }}" }
+
+input_select:
+  tts_target_speaker:
+    name: TTS Target Speaker
+    options:
+      - media_player.uhyeonibang
+      - media_player.uhyeonibang_2
+      - media_player.uhyeonibang_3
+    initial: media_player.uhyeonibang_2
+
+# 낙상 감지 시스템 (FastAPI 연동)
+input_boolean:
+  fall_triggered:
+    name: 낙상 감지 트리거
+    icon: mdi:alert-circle
+
+  fall_alert_cleared:
+    name: 낙상 감지 해제됨
+    icon: mdi:check-decagram
+
+  fall_alert_active:
+    name: Fall Alert Active
+    icon: mdi:alert-octagram
+
+binary_sensor:
+  - platform: template
+    sensors:
+      fall_detected:
+        friendly_name: "낙상 감지 센서"
+        value_template: "{{ is_state('input_boolean.fall_triggered', 'on') }}"
+        icon_template: >-
+          {% if is_state('input_boolean.fall_triggered', 'on') %}
+            mdi:alert-circle
+          {% else %}
+            mdi:check-circle
+          {% endif %}
+        device_class: safety
+
+# (선택) 마지막 감지 시각 저장
+input_datetime:
+  fall_last_time:
+    name: Fall Last Detected
+    has_date: true
+    has_time: true
+
+notify:
+  - name: group_fall_alert_devices
+    platform: group
+    services:
+      - service: mobile_app_mejiphone
+      - service: mobile_app_yechan_s24
+      - service: mobile_app_uhyeonyi_ipad_pro
+      - service: mobile_app_iilhwanyi_iphone

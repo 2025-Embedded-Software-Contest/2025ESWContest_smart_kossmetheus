@@ -1,0 +1,36 @@
+# ===========================
+# 추가 센서 통합
+# ===========================
+
+# 시간 및 날짜
+- platform: time_date
+  display_options:
+    - "time"
+    - "date"
+    - "date_time"
+    - "date_time_utc"
+    - "date_time_iso"
+    - "time_date"
+    - "time_utc"
+
+# InfluxDB DB 크기 (MB) - _internal.shard diskBytes 합계
+- platform: rest
+  name: InfluxDB DB Size
+  resource: "http://192.168.1.175:8086/query"
+  params:
+    db: "_internal"
+    q: "SELECT sum(\"diskBytes\") FROM \"shard\" WHERE time > now() - 5m AND \"database\"='home_assistant'"
+  authentication: basic
+  username: !secret influxdb_username
+  password: !secret influxdb_password
+  scan_interval: 300
+  value_template: >-
+    {% set results = value_json.get('results', []) %}
+    {% if results and results[0].get('series') %}
+      {% set v = results[0]['series'][0]['values'][0][1] | float(0) %}
+      {{ (v / 1024 / 1024) | round(2) }}
+    {% else %}
+      0
+    {% endif %}
+  unit_of_measurement: "MB"
+  timeout: 10

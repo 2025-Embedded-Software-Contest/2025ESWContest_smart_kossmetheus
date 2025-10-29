@@ -1,0 +1,10 @@
+card_welcome_scenes:
+  template: ["ulm_language_variables"]
+  variables:
+    ulm_weather: ""
+  show_icon: false
+  show_name: false
+  show_label: false
+  styles:
+    card:
+      - padding: 0

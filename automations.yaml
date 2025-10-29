@@ -1,0 +1,3073 @@
+- id: fall_trigger_auto_reset
+  alias: 낙상 감지 상태 자동 복구
+  description: input_boolean.fall_triggered가 ON으로 바뀌면 일정 시간 후 자동으로 OFF로 복구
+  trigger:
+  - trigger: state
+    entity_id: input_boolean.fall_triggered
+    to: 'on'
+    for: 00:00:30
+  condition:
+  - condition: template
+    value_template: '{{ not is_state(''sensor.uptime'', ''0'') }}'
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.fall_triggered
+  mode: single
+- id: high_power_consumption_alert
+  alias: 높은 전력 소비 알림
+  description: 총 전력 소비가 임계값을 초과했을 때 알림
+  trigger:
+  - trigger: numeric_state
+    entity_id: sensor.total_power_consumption
+    above: 500
+    for: 00:05:00
+  condition:
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  action:
+  - action: persistent_notification.create
+    data:
+      title: ⚡ 전력 소비 주의
+      message: '현재 전력 소비량이 {{ states(''sensor.total_power_consumption'') }}W입니다. 에너지
+        절약을 위해 불필요한 기기를 확인해보세요.
+
+        '
+      notification_id: high_power_alert
+- id: energy_saving_mode
+  alias: 에너지 절약 모드
+  description: 집에 아무도 없을 때 에너지 절약
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.someone_home
+    from: 'on'
+    to: 'off'
+    for: 00:30:00
+  action:
+  - action: light.turn_off
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F3E0 에너지 절약 모드 활성화"
+      message: 부재 중이므로 조명을 자동으로 꺼두었습니다.
+- id: low_battery_device_alert
+  alias: 저배터리 디바이스 알림
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.low_battery_devices
+    from: 'off'
+    to: 'on'
+  action:
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F50B 배터리 부족 주의"
+      message: "배터리가 부족한 디바이스가 있습니다: {% set devices = [\n  ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),\n
+        \ ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),\n  ('iPad
+        Pro', states('sensor.uhyeonyi_ipad_pro_battery')),\n  ('iPhone 17 Pro', states('sensor.iphone_battery_level'))\n]
+        %} {% for device, battery in devices %} {% if battery|int < 20 %} - {{ device
+        }}: {{ battery }}% {% endif %} {% endfor %}\n"
+      notification_id: low_battery_alert
+- id: critical_battery_alert
+  alias: 극저배터리 알림
+  trigger:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.gimuhyeonyi_apple_watch_battery
+    - sensor.gimuhyeonyi_macbook_pro_battery
+    - sensor.uhyeonyi_ipad_pro_battery
+    - sensor.iphone_battery_level
+    below: 10
+  action:
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F6A8 배터리 위험 수준"
+      message: '{{ trigger.to_state.attributes.friendly_name }}의 배터리가 {{ trigger.to_state.state
+        }}%입니다. 즉시 충전하세요!
+
+        '
+      notification_id: critical_battery_{{ trigger.entity_id.split('.')[1] }}
+- id: evening_brushing_reminder
+  alias: 저녁 양치 알림
+  trigger:
+  - trigger: time
+    at: '22:00:00'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: template
+    value_template: '{{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds()
+      > 7200 }}
+
+      '
+  action:
+  - action: persistent_notification.create
+    data:
+      title: "\U0001FAA5 양치 알림"
+      message: 최근 2시간 동안 양치 기록이 없습니다.
+      notification_id: brushing_reminder
+- id: high_heart_rate_alert
+  alias: 심박수 경고
+  trigger:
+  - trigger: numeric_state
+    entity_id: sensor.ble_heart_rate_e0e33e6221b5
+    above: 120
+    for: 00:01:00
+  action:
+  - action: persistent_notification.create
+    data:
+      title: ❤️ 심박수 경고
+      message: 심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요.
+      notification_id: heart_rate_alert
+- id: daily_steps_goal_achievement
+  alias: 일일 걸음수 목표 달성
+  trigger:
+  - trigger: numeric_state
+    entity_id: sensor.ble_steps_e0e33e6221b5
+    above: 10000
+  condition:
+  - condition: template
+    value_template: '{{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days
+      == 0 }}
+
+      '
+  action:
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F389 걸음수 목표 달성!"
+      message: "축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요. 건강한
+        하루를 보내고 계시는군요! \U0001F44F\n"
+      notification_id: steps_goal_achieved
+- id: humidity_management_alert
+  alias: 습도 관리 알림
+  trigger:
+  - trigger: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+    above: 70
+    for: 00:30:00
+  - trigger: numeric_state
+    entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+    below: 30
+    for: 00:30:00
+  action:
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F4A7 습도 관리 필요"
+      message: "현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
+        {% if trigger.platform == 'numeric_state' and trigger.above is not none %}\n
+        \ 습도가 높습니다. 제습을 고려해보세요.\n{% else %}\n  습도가 낮습니다. 가습을 고려해보세요.\n{% endif %}\n"
+      notification_id: humidity_alert
+- id: sunrise_gradual_lighting
+  alias: 일출 조명 서서히 켜기
+  trigger:
+  - trigger: sun
+    event: sunrise
+    offset: -00:30:00
+  condition:
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
+  action:
+  - action: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 10
+      transition: 300
+  - delay: 00:15:00
+  - action: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 50
+      transition: 900
+- id: sunset_auto_lighting
+  alias: 일몰 후 자동 조명
+  trigger:
+  - trigger: sun
+    event: sunset
+    offset: 00:30:00
+  condition:
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  action:
+  - action: light.turn_on
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+    data:
+      brightness_pct: 80
+      color_temp_kelvin: 2500
+- id: bedtime_lights_off
+  alias: 취침 시간 조명 끄기
+  trigger:
+  - trigger: time
+    at: '23:30:00'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  action:
+  - action: light.turn_on
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+    data:
+      brightness_pct: 20
+      transition: 300
+  - delay: 00:05:00
+  - action: light.turn_off
+    target:
+      entity_id:
+      - light.zigbee_dimmer
+      - light.smart_bulb
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F319 좋은 꿈 되세요"
+      message: 취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!
+      notification_id: bedtime_lights
+- id: workday_morning_briefing
+  alias: 근무일 아침 브리핑
+  trigger:
+  - trigger: time
+    at: 07:30:00
+  condition:
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  action:
+  - action: persistent_notification.create
+    data:
+      title: ☀️ 좋은 아침입니다!
+      message: "오늘의 정보를 확인해보세요:\n\U0001F4C5 {{ states('sensor.date') }} \U0001F321️
+        실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C \U0001F4A7
+        실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}% ⚡ 현재 전력:
+        {{ states('sensor.total_power_consumption') }}W \U0001F50B 평균 배터리: {{ states('sensor.average_device_battery')
+        }}%\n좋은 하루 되세요! \U0001F4AA\n"
+      notification_id: morning_briefing
+- id: weekend_sleep_mode
+  alias: 주말 늦잠 모드
+  trigger:
+  - trigger: sun
+    event: sunrise
+    offset: 02:00:00
+  condition:
+  - condition: state
+    entity_id: binary_sensor.workday_sensor
+    state: 'off'
+  - condition: state
+    entity_id: binary_sensor.someone_home
+    state: 'on'
+  action:
+  - action: light.turn_on
+    target:
+      entity_id: light.zigbee_dimmer
+    data:
+      brightness_pct: 30
+      transition: 600
+  - action: persistent_notification.create
+    data:
+      title: "\U0001F634 주말 모드"
+      message: 주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다.
+      notification_id: weekend_mode
+- id: gas_send_monthly_telegram
+  alias: 가스 검침 사진 보내기
+  description: ''
+  trigger:
+  - at: 09:03:00
+    trigger: time
+  condition:
+  - condition: template
+    value_template: '{{now().day == 26}}'
+  action:
+  - variables:
+      nowdate: '{{ now().strftime(''%Y-%m-%d'') }}'
+      nowtime: '{{ now().strftime(''%Y-%m-%d_%H:%M:%S'') }}'
+      nowtimefile: '{{ now().strftime(''%Y%m%d_%H%M%S'') }}'
+      nowtimestamp: '{{ now().timestamp() }}'
+  - action: pyscript.image_rotate
+    metadata: {}
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      output_image: /config/www/tmp/gas/month/gas_{{nowtimefile}}.jpg
+      rotation_angle: 0
+  - action: notify.telegram_home
+    data:
+      title: 가스 검침 알림
+      message: '검침시간: {{nowdate}}'
+      data:
+        photo:
+        - url: https://ha.aaaa.cc/local/tmp/gas/gas_latest.jpg
+          caption: '가스 검침일: {{nowdate}}
+
+            가스 검침: {{states(''sensor.gas_meter_2'')}}
+
+            월간 사용량: {{state_attr(''sensor.gas_meter_monthly'',''last_period'')}}'
+    enabled: false
+  mode: single
+- id: '1755698295141'
+  alias: 주변 밝기 자동 조명 제어
+  description: 주변 밝기가 충분할 때 자동으로 조명을 끕니다.
+  trigger:
+  - type: illuminance
+    device_id: e28ebb70ec49039d225e74b202fdd91e
+    entity_id: 4ff6ecbace5417823e81b823fd5bd60e
+    domain: sensor
+    trigger: device
+    below: 20
+  condition: []
+  action:
+  - type: turn_off
+    device_id: 16c454176737aa10fa53bf309f24d111
+    entity_id: f88477c68d783968908c54499f788206
+    domain: light
+  mode: single
+- id: '1755744715659'
+  alias: 낮은 임계값 조명 알림
+  description: 특정 센서 값이 임계값 미만으로 떨어질 때 조명을 켜서 시각적으로 알립니다.
+  trigger:
+  - type: value
+    device_id: 42940cb04959837ed39a637fed0f69e2
+    entity_id: 64ba2d64e316df06c349b58054dcab48
+    domain: sensor
+    trigger: device
+    below: 2
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 16c454176737aa10fa53bf309f24d111
+    entity_id: f88477c68d783968908c54499f788206
+    domain: light
+    brightness_pct: 100
+  mode: single
+- id: '1759067786798'
+  alias: 이산화탄소 자동 환기 제어
+  description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.ventilation_should_run
+    attribute: 켜짐
+  conditions:
+  - condition: device
+    type: is_off
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  actions:
+  - action: tts.speak
+    metadata: {}
+    data:
+      cache: false
+      media_player_entity_id: media_player.uhyeonibang_2
+      message: 공기질이 나빠 전열교환기를 가동합니다
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
+  - type: turn_on
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  - repeat:
+      count: 12
+      sequence:
+      - type: toggle
+        device_id: 98bda3e8ced3d5a12ee685841e367c15
+        entity_id: 08a45393493c019ceb1c55783651f7e1
+        domain: switch
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+    enabled: false
+  mode: single
+- id: '1759068039218'
+  alias: 이산화탄소 자동 환기 하향
+  description: 실내 이산화탄소 농도가 기준치 이하로 떨어지면 환기 시스템을 자동으로 끕니다.
+  trigger:
+  - trigger: state
+    entity_id:
+    - binary_sensor.ventilation_should_run
+    attribute: 꺼짐
+  condition:
+  - condition: device
+    type: is_on
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  action:
+  - type: turn_off
+    device_id: 98bda3e8ced3d5a12ee685841e367c15
+    entity_id: 99f72fc2d843060f243cb0f5979fe38d
+    domain: switch
+  mode: single
+- id: '1759395712039'
+  alias: 녹음본 저장 시 로컬 맥으로 복사
+  description: ''
+  trigger:
+  - event_type: voice_recorder_saved
+    trigger: event
+  action:
+  - data:
+      url: '{{ ''https://caredian.gleeze.com'' ~ (trigger.event.data.path | replace(''/config/www'',''/local''))
+        }}'
+      filename: '{{ trigger.event.data.filename }}'
+    action: rest_command.push_record_to_mac
+  mode: queued
+- id: '1759500010000'
+  alias: 가스 검침 단일 프롬프트
+  description: 하나의 크롭 이미지에서 프롬프트만으로 7자리(DDD.dddd) 판독
+  trigger:
+  - trigger: time_pattern
+    hours: /1
+  condition: []
+  action:
+  - metadata: {}
+    data:
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      brightness_pct: 35
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_on
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 6
+      milliseconds: 0
+  - metadata: {}
+    data:
+      filename: /config/www/tmp/gas/gas_latest.jpg
+    action: camera.snapshot
+    target:
+      entity_id: camera.esp32_cam_esp32_cam_gas_cam
+  - alias: 크롭만 수행(리사이즈 미사용)
+    action: pyscript.gas_ocr_prepare
+    data:
+      input_image: /config/www/tmp/gas/gas_latest.jpg
+      crop_output: /config/www/tmp/gas/gas_latest-crop.jpg
+      resize_output: /config/www/tmp/gas/gas_latest-crop-resize.jpg
+      int_output: /config/www/tmp/gas/gas_latest-crop-resize1.jpg
+      frac_output: /config/www/tmp/gas/gas_latest-crop-resize2.jpg
+      crop_left: 420
+      crop_top: 720
+      crop_right: 1220
+      crop_bottom: 880
+      resize_width: 0
+      to_grayscale: true
+      denoise_median_size: 3
+      auto_vertical: true
+      vpad: 2
+      hpad: 2
+  - metadata: {}
+    data: {}
+    target:
+      entity_id: light.esp32_cam_esp32_cam_gas_light
+    action: light.turn_off
+  - action: ai_task.generate_data
+    response_variable: res
+    data:
+      task_name: 가스 검침 단일 프롬프트
+      instructions: 이 이미지는 기계식 가스 계량기의 7자리 숫자 표시부입니다. 3자리 정수부와 4자리 소수부를 읽고, 숫자만으로
+        DDD.dddd 형식으로 반환하세요. 공백·단위·설명·줄바꿈 없이 결과만 출력하세요.
+      attachments:
+        media_content_id: media-source://media_source/gas/gas_latest.jpg
+        media_content_type: image/jpeg
+        metadata:
+          title: gas_latest.jpg
+          thumbnail:
+          media_class: image
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: app
+            media_content_id: media-source://media_source
+          - media_content_type: ''
+            media_content_id: media-source://media_source/gas/.
+      entity_id: ai_task.qwen_qwen2_5_vl_72b_instruct_free
+  - variables:
+      res_text: '{{ res.data | default('' '') | string }}'
+      gas_value: '{{ (res_text | regex_findall(''[0-9]+(?:\.[0-9]+)?'') | first |
+        default(''0'')) | float(0) | round(4) }}'
+      current_value: '{{ states(''sensor.gas_meter_2'') | float(0) }}'
+      delta: '{{ (gas_value - current_value) | round(4) }}'
+  - action: input_number.set_value
+    metadata: {}
+    data:
+      value: '{{ gas_value | float }}'
+    target:
+      entity_id: input_number.gas_meter_2
+  - action: homeassistant.update_entity
+    metadata: {}
+    target:
+      entity_id:
+      - sensor.gas_meter_2
+      - sensor.gas_meter_monthly
+  - action: persistent_notification.create
+    data:
+      title: ✅ 가스 검침(단일 프롬프트) 기록됨
+      message: '{{ now().strftime(''%H:%M:%S'') }} | 응답: "{{ res_text }}"
+
+        적용값: {{ gas_value }} m³ (Δ={{ delta }} m³, 검증 생략)'
+  mode: single
+- id: electricity_energy_prev2_monthly_update
+  alias: 전기 전전월 사용량 업데이트
+  description: 전월 전기 사용량 변경 시 전전월 값을 업데이트
+  trigger:
+  - trigger: state
+    entity_id:
+    - sensor.electricity_energy_prev_monthly
+  condition:
+  - condition: template
+    value_template: '{{ trigger.to_state.state|float(0) > 0 and trigger.from_state.state|float(0)
+      > 0 }}'
+  action:
+  - action: input_number.set_value
+    data:
+      value: '{{ trigger.from_state.state }}'
+    target:
+      entity_id: input_number.electricity_energy_prev2_monthly
+  mode: single
+- id: '1761134823433'
+  alias: 시작 시 통합구성요소 새로고침
+  description: Home Assistant가 시작될 때 일부 통합구성요소가 올바르게 초기화되지 않는 문제를 해결하기 위해 관련 구성 항목을
+    다시 로드합니다.
+  trigger:
+  - trigger: homeassistant
+    event: start
+  condition: []
+  action:
+  - action: homeassistant.reload_config_entry
+    target:
+      entity_id:
+      - sensor.mart_l_goyangjeom
+      - sensor.mart_e_3047
+      - sensor.mart_e_1096
+      - sensor.mart_e_2012
+      - weather.wn_jib
+      - sensor.wn_jib_weather_briefing
+      - sensor.wn_jib_next_day_short_comment
+      - sensor.wn_jib_day_short_comment
+      - sensor.wn_jib_day_condition
+      - sensor.wn_jib_night_condition
+      - sensor.wn_jib_current_condition
+      - weather.forecast_jib
+      - image.windy_webcams_1701618298
+      - image.windy_webcams_1689176350
+      - sensor.sihas_energy_monitor_power
+    data: {}
+  mode: single
+- id: '1761546151051'
+  alias: InfluxDB 격주 백업 (일요일 03:00)
+  description: 격주 일요일 새벽 3시에 InfluxDB 자동 백업 (짝수 주차)
+  trigger:
+  - at: 03:00:00
+    trigger: time
+  condition:
+  - condition: time
+    weekday:
+    - sun
+  - condition: template
+    value_template: '{{ now().isocalendar()[1] % 2 == 0 }}'
+  action:
+  - data: {}
+    action: shell_command.influxdb_backup
+  mode: single
+- id: fall_alert_latch_on
+  alias: 낙상 감지 래치 ON
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.fall_detected
+    from: 'off'
+    to: 'on'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.fall_alert_active
+  - action: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.fall_last_time
+    data:
+      date: '{{ now().strftime(''%Y-%m-%d'') }}'
+      time: '{{ now().strftime(''%H:%M:%S'') }}'
+  mode: single
+- id: '1761656505397'
+  alias: CareDian • 아침/약 복용 안내
+  description: ''
+  triggers:
+  - at: input_datetime.afternoon_med_time
+    trigger: time
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_morning
+    state: 'on'
+  actions:
+  - data:
+      message: 좋은 아침입니다. 오늘 서울의 최고기온은 24도, 강수확률은 40%입니다. 우산을 챙기세요. 아침 약 복용 시간이에요.
+      media_player_entity_id: media_player.uhyeonibang_2
+      cache: false
+    action: tts.speak
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
+  - data:
+      title: 오후 약 복용
+      message: 약을 복용할 시간입니다.
+      data:
+        group: afternoon_med
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761656925616'
+  alias: CareDian • SOS 호출
+  description: ''
+  triggers:
+  - event_type: button_main
+    event_data:
+      click_type: long_press
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 비상 호출이 접수되었습니다. 곧 도움이 도착합니다.
+          media_player_entity_id: media_player.uhyeonibang_2
+          cache: false
+        action: tts.speak
+    default: []
+  - data:
+      title: SOS 호출
+      message: 비상 버튼이 눌러졌습니다.
+      data:
+        priority: high
+        color: '#DC2626'
+        group: sos_alert
+    action: notify.mobile_app_iilhwanyi_iphone
+  - target:
+      entity_id: group.path_lights
+    data:
+      brightness_pct: 100
+    action: light.turn_on
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.sos_unlock_allowed
+        state: 'on'
+      sequence:
+      - target:
+          entity_id: lock.aqara_smart_lock_l100
+        action: lock.unlock
+      - data:
+          title: 도어락 해제
+          message: SOS 설정에 따라 도어락을 해제했습니다.
+        action: notify.mobile_app_iphone
+  - delay:
+      minutes: 1
+  - data:
+      title: SOS 재알림
+      message: SOS 호출이 아직 활성 상태입니다.
+      data:
+        priority: high
+        color: '#DC2626'
+        group: sos_alert
+    action: notify.mobile_app_iilhwanyi_iphone
+  mode: single
+- id: '1761656973918'
+  alias: CareDian • 야간 침입 경고
+  description: ''
+  triggers:
+  - entity_id: group.all_windows
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_night
+    state: 'on'
+  - condition: template
+    value_template: '{{ states(''sensor.is_night_mode'') == ''on'' }}'
+  actions:
+  - variables:
+      open_list: '{{ expand(''group.all_windows'') | selectattr(''state'', ''eq'',
+        ''on'') | map(attribute=''name'') | list }}'
+  - data:
+      title: 야간 출입 감지
+      message: '열린 센서: {{ open_list | join('', '') if open_list else ''확인 필요'' }}'
+      data:
+        priority: high
+        color: '#F97316'
+    action: notify.mobile_app_iphone
+  - target:
+      entity_id: group.path_lights
+    data:
+      brightness_pct: 30
+    action: light.turn_on
+  - delay:
+      minutes: 3
+  - target:
+      entity_id: group.path_lights
+    action: light.turn_off
+  mode: single
+- id: '1761657000452'
+  alias: CareDian • 야간 가스벨브 잠금
+  description: ''
+  triggers:
+  - at: input_datetime.night_start_time
+    trigger: time
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_night
+    state: 'on'
+  - condition: state
+    entity_id: valve.sihas_gas_valve
+    state: closed
+  actions:
+  - repeat:
+      count: 2
+      sequence:
+      - target:
+          entity_id: valve.sihas_gas_valve
+        action: valve.close
+      - delay:
+          seconds: 3
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: valve.sihas_gas_valve
+        state: closed
+      sequence:
+      - data:
+          title: 가스밸브 차단
+          message: 야간 가스밸브를 차단했습니다.
+        action: notify.mobile_app_iphone
+    - conditions:
+      - condition: state
+        entity_id: valve.sihas_gas_valve
+        state: open
+      sequence:
+      - data:
+          title: 가스밸브 차단 실패
+          message: 가스밸브 차단에 실패했습니다. 수동 확인 바랍니다.
+          data:
+            priority: high
+            color: '#DC2626'
+        action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657075871'
+  alias: CareDian • 활동 부재 감지
+  description: ''
+  triggers:
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.inactivity_detection
+    trigger: event
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_inactivity
+    state: 'on'
+  - condition: state
+    entity_id: group.family_presence
+    state: 'on'
+  actions:
+  - variables:
+      is_night: '{{ states(''sensor.is_night_mode'') == ''on'' }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_night }}'
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 최근 활동이 감지되지 않았습니다. 괜찮으신가요?
+        action: tts.speak
+    default: []
+  - data:
+      title: 활동 부재 알림
+      message: 일정 시간 동안 움직임이 없습니다.
+      data:
+        group: inactivity_alert
+    action: notify.mobile_app_iphone
+  - delay:
+      minutes: 10
+  - condition: template
+    value_template: '{{ is_state(''group.all_motion'', ''off'') and is_state(''group.family_presence'',
+      ''on'') }}'
+  - data:
+      title: 활동 부재 지속
+      message: 최근 10분 동안도 활동이 없습니다.
+      notification_id: inactivity_alert
+    action: persistent_notification.create
+  - delay:
+      minutes: 20
+  - condition: template
+    value_template: '{{ is_state(''group.all_motion'', ''off'') and is_state(''group.family_presence'',
+      ''on'') }}'
+  - condition: state
+    entity_id: input_boolean.inactivity_push_escalation
+    state: 'on'
+  - data:
+      title: 활동 부재 보호자 알림
+      message: 30분 이상 활동이 없어 보호자에게 알립니다.
+      data:
+        priority: high
+        color: '#F97316'
+    action: notify.mobile_app_iilhwanyi_iphone
+  mode: restart
+- id: '1761657110097'
+  alias: CareDian • 활동 부재 감지 타이머 리셋
+  description: ''
+  triggers:
+  - entity_id: group.all_motion
+    to: 'on'
+    trigger: state
+  - entity_id: group.all_windows
+    to: 'on'
+    trigger: state
+  - event_type: button_main
+    trigger: event
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_inactivity
+    state: 'on'
+  - condition: state
+    entity_id: timer.inactivity_detection
+    state: active
+  actions:
+  - target:
+      entity_id: timer.inactivity_detection
+    action: timer.cancel
+  - variables:
+      minutes: '{{ states(''input_number.inactivity_minutes'') | int(120) }}'
+      hours: '{{ (minutes // 60) | int }}'
+      mins: '{{ (minutes % 60) | int }}'
+      duration: '{{ ''%02d:%02d:00'' % (hours, mins) }}'
+  - target:
+      entity_id: timer.inactivity_detection
+    data:
+      duration: '{{ duration }}'
+    action: timer.start
+  mode: single
+- id: '1761657160794'
+  alias: CareDian • 활동 부재 타이머 시작
+  description: ''
+  triggers:
+  - entity_id: group.all_motion
+    to: 'off'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: group.family_presence
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.scn_inactivity
+    state: 'on'
+  actions:
+  - target:
+      entity_id: timer.inactivity_detection
+    action: timer.cancel
+  - variables:
+      minutes: '{{ states(''input_number.inactivity_minutes'') | int(120) }}'
+      hours: '{{ (minutes // 60) | int }}'
+      mins: '{{ (minutes % 60) | int }}'
+      duration: '{{ ''%02d:%02d:00'' % (hours, mins) }}'
+  - target:
+      entity_id: timer.inactivity_detection
+    data:
+      duration: '{{ duration }}'
+    action: timer.start
+  mode: single
+- id: '1761657197978'
+  alias: CareDian • 취침 루틴
+  description: ''
+  triggers:
+  - at: input_datetime.bedtime_time
+    trigger: time
+  conditions:
+  - condition: state
+    entity_id: group.family_presence
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.scn_bedtime
+    state: 'on'
+  actions:
+  - target:
+      entity_id:
+      - media_player.music
+      - media_player.spotify_gimuhyeon
+      - media_player.paul_nest
+      - media_player.uhyeonibang
+      - media_player.gimuhyeonyi_macbook_pro
+    action: media_player.media_pause
+  - target:
+      entity_id: switch.kitchen_hood
+    action: switch.turn_off
+  - target:
+      entity_id: climate.seutaendeuhyeong_eeokeon
+    action: climate.turn_off
+  - variables:
+      door_locked: '{{ is_state(''lock.aqara_smart_lock_l100'', ''locked'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not door_locked }}'
+      sequence:
+      - data:
+          title: 도어락 확인
+          message: 취침 전에 도어락을 잠궈 주세요.
+        action: notify.mobile_app_iphone
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ has_service(''tts'', ''speak'') }}'
+          - condition: template
+            value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+              ''unavailable'', ''''] }}'
+          sequence:
+          - target:
+              entity_id: tts.tts_pipeline_voxcpm
+            data:
+              message: 도어락이 잠겨 있지 않습니다. 잠금을 확인해 주세요.
+            action: tts.speak
+        default: []
+  - variables:
+      air_quality_bad: '{{ is_state(''binary_sensor.air_quality_alarm'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ air_quality_bad }}'
+      sequence:
+      - target:
+          entity_id: switch.ventilator_power
+        action: switch.turn_on
+      - target:
+          entity_id: timer.residual_ventilation
+        data:
+          duration: 00:30:00
+        action: timer.start
+      - data:
+          title: 공기질 개선
+          message: 공기질이 좋지 않아 전열교환기를 30분간 가동합니다.
+        action: notify.mobile_app_iphone
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 편안한 밤 되세요. 취침 모드를 시작합니다.
+        action: tts.speak
+    default: []
+  mode: single
+- id: '1761657355267'
+  alias: CareDian • 귀가 환영/환경 조성
+  description: ''
+  triggers:
+  - entity_id: group.family_presence
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_arrival
+    state: 'on'
+  actions:
+  - variables:
+      windows_open: '{{ is_state(''group.all_windows'', ''on'') }}'
+      target_temp: '{{ states(''input_number.arrival_target_temp'') | float(24) }}'
+      ac_blocked: '{{ not is_state(''timer.ac_reenable_block'', ''idle'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ windows_open }}'
+      sequence:
+      - data:
+          title: 창문 열림
+          message: 창문이 열려 있어 냉방을 시작할 수 없습니다.
+        action: notify.mobile_app_iphone
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: group.all_windows
+          to: 'off'
+        timeout:
+          minutes: 5
+    default: []
+  - condition: template
+    value_template: '{{ is_state(''group.all_windows'', ''off'') }}'
+  - condition: template
+    value_template: '{{ not ac_blocked }}'
+  - target:
+      entity_id: climate.seutaendeuhyeong_eeokeon
+    data:
+      temperature: '{{ target_temp }}'
+    action: climate.set_temperature
+  - target:
+      entity_id: climate.seutaendeuhyeong_eeokeon
+    action: climate.turn_on
+  mode: single
+- id: '1761657436648'
+  alias: CareDian • 귀가 환영 조명
+  description: ''
+  triggers:
+  - entity_id: group.family_presence
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_arrival
+    state: 'on'
+  actions:
+  - variables:
+      is_dark: '{{ is_state(''sun.sun'', ''below_horizon'') }}'
+      brightness: '{{ 70 if is_dark else 80 }}'
+      kelvin: '{{ 3000 if is_dark else 4000 }}'
+  - target:
+      entity_id: group.path_lights
+    data:
+      brightness_pct: 100
+    action: light.turn_on
+  - target:
+      entity_id: group.common_area_lights
+    data:
+      brightness_pct: '{{ brightness }}'
+      color_temp_kelvin: '{{ kelvin }}'
+    action: light.turn_on
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 환영합니다. 조명과 환경을 준비했습니다.
+        action: tts.speak
+    default: []
+  mode: single
+- id: '1761657497400'
+  alias: CareDian • 외출 절전
+  description: ''
+  triggers:
+  - entity_id: group.family_presence
+    to: 'off'
+    for:
+      minutes: 30
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_away
+    state: 'on'
+  actions:
+  - target:
+      entity_id: automation.eneoji_jeolyag_modeu
+    action: automation.trigger
+  - variables:
+      door_locked: '{{ is_state(''lock.aqara_smart_lock_l100'', ''locked'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not door_locked }}'
+      sequence:
+      - data:
+          title: 도어락 잠금 확인
+          message: 로봇청소기는 도어락이 잠긴 후 시작합니다.
+        action: notify.mobile_app_iphone
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: lock.aqara_smart_lock_l100
+          to: locked
+        timeout:
+          minutes: 5
+  - target:
+      entity_id: switch.robot_vacuum_switch
+    action: switch.turn_on
+  - target:
+      entity_id:
+      - group.common_area_lights
+      - group.standby_plugs
+      - climate.seutaendeuhyeong_eeokeon
+    action: homeassistant.turn_off
+    data: {}
+  - data:
+      title: 외출 절전 모드
+      message: 로봇청소기를 시작하고 공용 조명 및 대기전력을 차단했습니다.
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657524567'
+  alias: CareDian • 외출 창문 열림 알림
+  description: ''
+  triggers:
+  - entity_id: group.family_presence
+    to: 'off'
+    for:
+      minutes: 1
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_away
+    state: 'on'
+  actions:
+  - variables:
+      open_windows: '{{ expand(''group.all_windows'') | selectattr(''state'', ''eq'',
+        ''on'') | map(attribute=''name'') | list }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ open_windows | length > 0 }}'
+      sequence:
+      - data:
+          title: 외출 전 창문 확인
+          message: '열려 있는 창문: {{ open_windows | join('', '') }}'
+        action: notify.mobile_app_iphone
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ has_service(''tts'', ''speak'') }}'
+          - condition: template
+            value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
+              ''unknown'', ''''] }}'
+          sequence:
+          - target:
+              entity_id: tts.tts_pipeline_voxcpm
+            data:
+              message: 외출 전에 창문을 모두 닫아 주세요.
+            action: tts.speak
+        default: []
+      - target:
+          entity_id: climate.seutaendeuhyeong_eeokeon
+        action: climate.turn_off
+      - target:
+          entity_id: timer.ac_reenable_block
+        action: timer.start
+      - data:
+          message: ac_block_due_to_open_windows
+          level: warning
+        action: system_log.write
+  mode: single
+- id: '1761657589757'
+  alias: CareDian • 식기세척기 완료
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.dishwasher_running
+    to: 'off'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_dishwasher
+    state: 'on'
+  actions:
+  - target:
+      entity_id: automation.siggiseceoggi_wanryo_alrim
+    action: automation.trigger
+    data:
+      skip_condition: true
+  - variables:
+      is_night: '{{ states(''sensor.is_night_mode'') == ''on'' }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_night }}'
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
+          ''unknown'', ''''] }}'
+      sequence: []
+    default: []
+    enabled: false
+  - target:
+      entity_id: tts.tts_pipeline_voxcpm
+    data:
+      message: 식기세척기가 완료되었습니다. 식기를 정리하세요.
+      media_player_entity_id: media_player.uhyeonibang_2
+    action: tts.speak
+  - data:
+      title: 식기세척기 완료
+      message: 식기세척기가 완료되었습니다. 식기를 정리하세요.
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657612633'
+  alias: CareDian • 식기세척기 작동중
+  description: ''
+  triggers:
+  - entity_id: sensor.dishwasher_progress_percent
+    above: 24
+    trigger: numeric_state
+  - entity_id: sensor.dishwasher_progress_percent
+    above: 49
+    trigger: numeric_state
+  - entity_id: sensor.dishwasher_progress_percent
+    above: 74
+    trigger: numeric_state
+  - entity_id: sensor.dishwasher_progress_percent
+    above: 94
+    trigger: numeric_state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_dishwasher
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.dishwasher_running
+    state: 'on'
+  - condition: template
+    value_template: '{{ states(''counter.dishwasher_progress_count'') | int(0) < 4
+      }}'
+  actions:
+  - variables:
+      progress_value: '{{ states(''sensor.dishwasher_progress_percent'') | int(0)
+        }}'
+      is_night: '{{ states(''sensor.is_night_mode'') == ''on'' }}'
+  - target:
+      entity_id: counter.dishwasher_progress_count
+    action: counter.increment
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_night }}'
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
+          ''unknown'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 식기세척기가 {{ progress_value }}% 진행 중입니다.
+        action: tts.speak
+    default: []
+  - data:
+      title: 식기세척기 진행
+      message: 현재 진행률 {{ progress_value }}%
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657675310'
+  alias: CareDian • 식기세척기 시작
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.dishwasher_running
+    to: 'on'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_dishwasher
+    state: 'on'
+  actions:
+  - target:
+      entity_id: counter.dishwasher_progress_count
+    action: counter.reset
+  - data:
+      title: 식기세척기 시작
+      message: 식기세척기가 시작되었습니다.
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657692626'
+  alias: CareDian • 화재 감지 정상화
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.smoke_sensor
+    to: 'off'
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'on'
+  actions:
+  - target:
+      entity_id: input_boolean.scn_fire
+    action: input_boolean.turn_off
+  - data:
+      title: 화재 경보 해제
+      message: 연기 감지가 해제되었습니다.
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657938833'
+  alias: CareDian • 화재감지 4분간 지속시
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.smoke_sensor
+    to: 'on'
+    for:
+      minutes: 4
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'on'
+  actions:
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: 외부 연락 시도
+      message: 연기가 4분 이상 지속되어 보호자에게 알립니다.
+  - data:
+      title: 외부 연락 시도
+      message: 연기가 계속되어 외부 연락을 시도했습니다.
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761657961283'
+  alias: CareDian • 화재감지 2분간 지속시
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.smoke_sensor
+    to: 'on'
+    for:
+      minutes: 2
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'on'
+  actions:
+  - data:
+      title: 화재 경보 (2분)
+      message: 연기가 2분 이상 지속됩니다. 즉시 확인하세요.
+      data:
+        priority: high
+        color: '#DC2626'
+    action: notify.mobile_app_iilhwanyi_iphone
+  mode: single
+- id: '1761657980933'
+  alias: CareDian • 화재감지
+  description: ''
+  triggers:
+  - entity_id: binary_sensor.smoke_sensor
+    to: 'on'
+    trigger: state
+  conditions: []
+  actions:
+  - repeat:
+      count: 3
+      sequence:
+      - target:
+          entity_id: valve.sihas_gas_valve
+        action: valve.close
+      - data:
+          level: warning
+          message: gas_valve_close_attempt_{{ repeat.index }}
+        action: system_log.write
+      - delay:
+          seconds: 5
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
+          ''unknown'', ''''] }}'
+      sequence:
+      - target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 연기가 감지되었습니다. 즉시 대피하세요.
+        action: tts.speak
+    default: []
+  - data:
+      title: 화재 경보
+      message: 연기가 감지되었습니다. 즉시 확인하세요.
+      data:
+        priority: high
+        color: '#DC2626'
+    action: notify.mobile_app_iphone
+  - target:
+      entity_id: input_text.last_fire_event
+    data:
+      value: '{{ now().isoformat() }}'
+    action: input_text.set_value
+  - target:
+      entity_id: input_boolean.scn_fire
+    action: input_boolean.turn_on
+  mode: single
+- id: '1761658025191'
+  alias: CareDian • 요리 환기 완료
+  description: ''
+  triggers:
+  - event_type: timer.finished
+    event_data:
+      entity_id: timer.residual_ventilation
+    trigger: event
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - switch.kitchen_hood
+      - switch.ventilator_power
+    action: switch.turn_off
+  - data:
+      title: 환기 종료
+      message: 잔여 환기 시간을 마쳤습니다.
+    action: notify.mobile_app_iphone
+  mode: single
+- id: '1761658449670'
+  alias: CareDian • 요리 환기 시작
+  description: ''
+  triggers:
+  - entity_id: valve.sihas_gas_valve
+    to: open
+    trigger: state
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_cooking
+    state: 'on'
+  - condition: state
+    entity_id: binary_sensor.smoke_sensor
+    state: 'off'
+  actions:
+  - target:
+      entity_id: switch.kitchen_hood
+    action: switch.turn_on
+  - variables:
+      windows_open: '{{ is_state(''group.all_windows'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not windows_open }}'
+      sequence:
+      - target:
+          entity_id: switch.ventilator_power
+        action: switch.turn_on
+      - data:
+          title: 조리 환기 시작
+          message: 창문이 닫혀 있어 전열교환기를 함께 가동합니다.
+        action: notify.mobile_app_iphone
+    - conditions:
+      - condition: template
+        value_template: '{{ windows_open }}'
+      sequence:
+      - data:
+          title: 조리 환기 대기
+          message: 창문이 열려 있어 전열교환기는 대기합니다.
+        action: notify.mobile_app_iphone
+  - data:
+      level: info
+      message: cooking_ventilation_start
+    action: system_log.write
+  mode: single
+- id: '1761658546787'
+  alias: CareDian • 환기 자동화 동기화
+  description: ''
+  triggers:
+  - entity_id: input_boolean.scn_night
+    trigger: state
+  - event_type: homeassistant_started
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.scn_night
+        state: 'on'
+      sequence:
+      - target:
+          entity_id:
+          - automation.isanhwatanso_jadong_hwangi_jeeo
+          - automation.isanhwatanso_jadong_hwangi_hahyang
+        action: automation.turn_on
+    default:
+    - target:
+        entity_id:
+        - automation.isanhwatanso_jadong_hwangi_jeeo
+        - automation.isanhwatanso_jadong_hwangi_hahyang
+      action: automation.turn_off
+  mode: single
+- id: '1761658574245'
+  alias: CareDian • 취침 전등 자동화 동기화
+  description: ''
+  triggers:
+  - entity_id: input_boolean.scn_bedtime
+    trigger: state
+  - event_type: homeassistant_started
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.scn_bedtime
+        state: 'on'
+      sequence:
+      - target:
+          entity_id:
+          - automation.cwicim_sigan_jomyeong_ggeugi
+        action: automation.turn_on
+    default:
+    - target:
+        entity_id:
+        - automation.cwicim_sigan_jomyeong_ggeugi
+      action: automation.turn_off
+  mode: single
+- id: '1761658617695'
+  alias: CareDian • 외출 절약 자동화 동기화
+  description: ''
+  triggers:
+  - entity_id: input_boolean.scn_away
+    trigger: state
+  - event_type: homeassistant_started
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.scn_away
+        state: 'on'
+      sequence:
+      - target:
+          entity_id:
+          - automation.eneoji_jeolyag_modeu
+        action: automation.turn_on
+    default:
+    - target:
+        entity_id:
+        - automation.eneoji_jeolyag_modeu
+      action: automation.turn_off
+  mode: single
+- id: '1761658638111'
+  alias: CareDian • 식기세척기 완료 자동화 동기화
+  description: ''
+  triggers:
+  - entity_id: input_boolean.scn_dishwasher
+    trigger: state
+  - event_type: homeassistant_started
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.scn_dishwasher
+        state: 'on'
+      sequence:
+      - target:
+          entity_id:
+          - automation.siggiseceoggi_wanryo_alrim
+        action: automation.turn_on
+    default:
+    - target:
+        entity_id:
+        - automation.siggiseceoggi_wanryo_alrim
+      action: automation.turn_off
+  mode: single
+- id: '1761658676895'
+  alias: CareDian • 아침 브리핑 자동화 동기화
+  description: ''
+  triggers:
+  - entity_id: input_boolean.scn_morning
+    trigger: state
+  - event_type: homeassistant_started
+    trigger: event
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.scn_morning
+        state: 'on'
+      sequence:
+      - target:
+          entity_id:
+          - automation.geunmuil_acim_beuriping
+        action: automation.turn_on
+    default:
+    - target:
+        entity_id:
+        - automation.geunmuil_acim_beuriping
+      action: automation.turn_off
+  mode: single
+- id: caredian_schedule_medication
+  alias: CareDian · 복약 스케줄 시나리오
+  trigger:
+  - trigger: time
+    at: 07:00:00
+    id: morning
+  - trigger: time
+    at: '12:00:00'
+    id: noon
+  - trigger: time
+    at: '17:00:00'
+    id: evening
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_morning
+  mode: single
+- id: caredian_execute_medication
+  alias: CareDian · 복약 시나리오 실행
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.scn_morning
+    to: 'on'
+  conditions:
+  - condition: time
+    after: 06:00:00
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  actions:
+  - variables:
+      current_hour: '{{ now().hour }}'
+      slot: '{% if current_hour < 9 %}아침{% elif current_hour < 15 %}점심{% else %}저녁{%
+        endif %}'
+      precip_value: '{{ states(''sensor.precip_prob_next_12h'') | int(0) }}'
+      precip_threshold: '{{ states(''input_number.precip_probability_threshold'')
+        | int(50) }}'
+      umbrella: '{{ precip_value >= precip_threshold }}'
+      weather_desc: '{{ states(''weather.wn_jib'') | default(states(''weather.forecast_jib''))
+        }}'
+      base_msg: '{{ slot }} 약 복용 시간입니다. 현재 날씨는 {{ weather_desc }}입니다.'
+      umbrella_msg: '{{ '' 우산을 챙겨 주세요.'' if umbrella else '''' }}'
+      composed_msg: '{{ (base_msg + umbrella_msg).strip() }}'
+      spoken_msg: '{% set msg = composed_msg %} {{ msg if msg | length <= 140 else
+        slot ~ '' 약 복용 시간입니다. 약을 잊지 마세요.'' }}'
+  - action: tts.speak
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
+    data:
+      message: '{{ spoken_msg }}'
+      media_player_entity_id: media_player.uhyeonibang_2
+      cache: false
+  - action: notify.mobile_app_iphone
+    data:
+      title: '{{ slot }} 약 복용'
+      message: '{{ composed_msg }}'
+      data:
+        group: medication_reminder
+        color: '#3B82F6'
+  - action: system_log.write
+    data:
+      level: info
+      message: '{{ {''event'': ''medication_reminder'', ''slot'': slot, ''time'':
+        now().isoformat(), ''precip_prob'': precip_value, ''umbrella_needed'': umbrella,
+        ''message'': composed_msg} | tojson }}'
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_morning
+  mode: single
+- id: caredian_cooking_start
+  alias: CareDian · 조리 시나리오 시작
+  trigger:
+  - trigger: state
+    entity_id: valve.sihas_gas_valve
+    to: open
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_cooking
+  - action: switch.turn_on
+    target:
+      entity_id: switch.kitchen_hood
+  - variables:
+      windows_open: '{{ is_state(''group.all_windows'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not windows_open }}'
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.ventilator_power
+      - action: notify.mobile_app_iphone
+        data:
+          title: 조리 환기 시작
+          message: 창문이 닫혀 있어 전열교환기를 함께 가동합니다.
+    - conditions:
+      - condition: template
+        value_template: '{{ windows_open }}'
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 조리 환기 대기
+          message: 창문이 열려 있어 전열교환기는 대기합니다.
+  - action: system_log.write
+    data:
+      level: info
+      message: cooking_ventilation_start
+  mode: single
+- id: caredian_cooking_stop
+  alias: CareDian · 조리 시나리오 종료 준비
+  trigger:
+  - trigger: state
+    entity_id: valve.sihas_gas_valve
+    to: closed
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_cooking
+    state: 'on'
+  action:
+  - action: timer.start
+    target:
+      entity_id: timer.residual_ventilation
+  - action: notify.mobile_app_iphone
+    data:
+      title: 조리 종료
+      message: 환기를 10분 더 유지합니다.
+  mode: single
+- id: caredian_cooking_residual_finished
+  alias: CareDian · 조리 잔여 환기 종료
+  trigger:
+  - trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.residual_ventilation
+  action:
+  - action: switch.turn_off
+    target:
+      entity_id:
+      - switch.kitchen_hood
+      - switch.ventilator_power
+  - action: notify.mobile_app_iphone
+    data:
+      title: 환기 종료
+      message: 잔여 환기 시간을 마쳤습니다.
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_cooking
+  mode: single
+- id: caredian_fire_detected
+  alias: CareDian · 화재 감지
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.smoke_sensor
+    to: 'on'
+  actions:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_fire
+  - repeat:
+      count: 3
+      sequence:
+      - action: valve.close
+        target:
+          entity_id: valve.sihas_gas_valve
+      - action: system_log.write
+        data:
+          level: warning
+          message: gas_valve_close_attempt_{{ repeat.index }}
+      - delay:
+          seconds: 5
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - action: tts.speak
+        target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 연기가 감지되었습니다. 즉시 대피하세요.
+          cache: false
+          media_player_entity_id: media_player.uhyeonibang_2
+  - action: notify.mobile_app_iphone
+    data:
+      title: 화재 경보
+      message: 연기가 감지되었습니다. 즉시 확인하세요.
+      data:
+        priority: high
+        color: '#DC2626'
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.last_fire_event
+    data:
+      value: '{{ now().isoformat() }}'
+  mode: single
+- id: caredian_fire_escalation_2m
+  alias: CareDian · 화재 2분 지속 알림
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.smoke_sensor
+    to: 'on'
+    for:
+      minutes: 2
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'on'
+  action:
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: 화재 경보 (2분)
+      message: 연기가 2분 이상 지속됩니다. 즉시 확인하세요.
+      data:
+        priority: high
+        color: '#DC2626'
+  mode: single
+- id: caredian_fire_escalation_4m
+  alias: CareDian · 화재 4분 지속 알림
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.smoke_sensor
+    to: 'on'
+    for:
+      minutes: 4
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'on'
+  action:
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: 외부 연락 시도
+      message: 연기가 4분 이상 지속되어 보호자에게 알립니다.
+  - action: notify.mobile_app_iphone
+    data:
+      title: 외부 연락 시도
+      message: 연기가 계속되어 외부 연락을 시도했습니다.
+  mode: single
+- id: caredian_fire_clear
+  alias: CareDian · 화재 종료
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.smoke_sensor
+    to: 'off'
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'on'
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_fire
+  - action: notify.mobile_app_iphone
+    data:
+      title: 화재 경보 해제
+      message: 연기 감지가 해제되었습니다.
+  mode: single
+- id: caredian_emergency_priority
+  alias: CareDian · 긴급 시나리오 우선 처리
+  trigger:
+  - trigger: state
+    entity_id:
+    - input_boolean.scn_fire
+    - input_boolean.scn_sos
+    to: 'on'
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.scn_morning
+      - input_boolean.scn_cooking
+      - input_boolean.scn_dishwasher
+      - input_boolean.scn_away
+      - input_boolean.scn_fall
+      - input_boolean.scn_arrival
+      - input_boolean.scn_bedtime
+      - input_boolean.scn_inactivity
+      - input_boolean.scn_night
+  mode: single
+- id: caredian_dishwasher_start
+  alias: CareDian · 식기세척기 시나리오 시작
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.dishwasher_running
+    to: 'on'
+  condition: []
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_dishwasher
+  - action: counter.reset
+    target:
+      entity_id: counter.dishwasher_progress_count
+  - action: notify.mobile_app_iphone
+    data:
+      title: 식기세척기 시작
+      message: 식기세척기가 시작되었습니다.
+  mode: single
+- id: caredian_away_restore
+  alias: CareDian · 재실 복귀 시 외출 해제
+  trigger:
+  - trigger: state
+    entity_id: group.family_presence
+    to: 'on'
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_away
+  mode: single
+- id: caredian_away_toggle_on
+  alias: CareDian · 외출 시나리오 자동 활성화
+  trigger:
+  - trigger: state
+    entity_id: group.family_presence
+    to: 'off'
+    for:
+      minutes: 30
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_away
+  mode: single
+- id: caredian_away_window_check
+  alias: CareDian · 외출 전 창문 확인
+  trigger:
+  - trigger: state
+    entity_id: input_boolean.scn_away
+    to: 'on'
+  action:
+  - variables:
+      open_windows: '{{ expand(''group.all_windows'') | selectattr(''state'', ''eq'',
+        ''on'') | map(attribute=''name'') | list }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ open_windows | length > 0 }}'
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 외출 전 창문 확인
+          message: '열려 있는 창문: {{ open_windows | join('', '') }}'
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ has_service(''tts'', ''speak'') }}'
+          - condition: template
+            value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+              ''unavailable'', ''''] }}'
+          sequence:
+          - action: tts.speak
+            target:
+              entity_id: tts.tts_pipeline_voxcpm
+            data:
+              message: 외출 전에 창문을 모두 닫아 주세요.
+      - action: climate.turn_off
+        target:
+          entity_id: climate.seutaendeuhyeong_eeokeon
+      - action: timer.start
+        target:
+          entity_id: timer.ac_reenable_block
+      - action: system_log.write
+        data:
+          level: warning
+          message: ac_block_due_to_open_windows
+  mode: single
+- id: caredian_away_execute
+  alias: CareDian · 외출 에너지 절약 실행
+  trigger:
+  - trigger: state
+    entity_id: input_boolean.scn_away
+    to: 'on'
+  condition: []
+  action:
+  - variables:
+      door_locked: '{{ is_state(''lock.aqara_smart_lock_l100'', ''locked'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not door_locked }}'
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 도어락 잠금 확인
+          message: 로봇청소기는 도어락이 잠긴 후 시작합니다.
+      - wait_for_trigger:
+        - trigger: state
+          entity_id: lock.aqara_smart_lock_l100
+          to: locked
+        timeout:
+          minutes: 5
+  - action: switch.turn_on
+    target:
+      entity_id: switch.robot_vacuum_switch
+  - action: homeassistant.turn_off
+    target:
+      entity_id:
+      - group.common_area_lights
+      - group.standby_plugs
+      - climate.seutaendeuhyeong_eeokeon
+  - action: notify.mobile_app_iphone
+    data:
+      title: 외출 절전 모드
+      message: 로봇청소기를 시작하고 공용 조명 및 대기전력을 차단했습니다.
+  mode: single
+- id: caredian_fall_detected
+  alias: CareDian · 낙상 감지 시나리오
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.fall_detected
+    to: 'on'
+  - trigger: event
+    event_type: fall_detected
+  condition:
+  - condition: template
+    value_template: '{{ states(''timer.fall_false_positive_block'') == ''idle'' }}'
+  action:
+  - action: timer.start
+    target:
+      entity_id: timer.fall_false_positive_block
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.last_fall_location
+    data:
+      value: '{{ states(''sensor.last_motion_entity'') }}'
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_fall
+  - action: system_log.write
+    data:
+      level: warning
+      message: '{{ {''event'': ''fall_detected'', ''time'': now().isoformat(), ''location'':
+        states(''sensor.last_motion_entity'')} | tojson }}'
+  mode: single
+- id: caredian_fall_recovery
+  alias: CareDian · 낙상 경보 해제
+  trigger:
+  - trigger: state
+    entity_id: group.all_motion
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fall
+    state: 'on'
+  action:
+  - action: timer.cancel
+    target:
+      entity_id: timer.fall_false_positive_block
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_fall
+  mode: single
+- id: caredian_arrival_trigger
+  alias: CareDian · 귀가 시나리오 시작
+  trigger:
+  - trigger: state
+    entity_id: group.family_presence
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_arrival
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_away
+  mode: single
+- id: caredian_arrival_execute
+  alias: CareDian · 귀가 환경 구성
+  trigger:
+  - trigger: state
+    entity_id: input_boolean.scn_arrival
+    to: 'on'
+  action:
+  - variables:
+      is_dark: '{{ is_state(''sun.sun'', ''below_horizon'') }}'
+      brightness: '{{ 70 if is_dark else 80 }}'
+      kelvin: '{{ 3000 if is_dark else 4000 }}'
+      windows_open: '{{ is_state(''group.all_windows'', ''on'') }}'
+      target_temp: '{{ states(''input_number.arrival_target_temp'') | float(24) }}'
+  - action: light.turn_on
+    target:
+      entity_id: group.path_lights
+    data:
+      brightness_pct: 100
+  - action: light.turn_on
+    target:
+      entity_id: group.common_area_lights
+    data:
+      brightness_pct: '{{ brightness }}'
+      color_temp_kelvin: '{{ kelvin }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not windows_open }}'
+      sequence:
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.seutaendeuhyeong_eeokeon
+        data:
+          temperature: '{{ target_temp }}'
+      - action: climate.turn_on
+        target:
+          entity_id: climate.seutaendeuhyeong_eeokeon
+    default:
+    - action: notify.mobile_app_iphone
+      data:
+        title: 창문 열림
+        message: 창문이 열려 있어 냉방을 시작할 수 없습니다.
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_arrival
+  mode: single
+- id: caredian_bedtime_schedule
+  alias: CareDian · 취침 시나리오 스케줄
+  trigger:
+  - trigger: time
+    at: '23:00:00'
+  condition:
+  - condition: state
+    entity_id: group.family_presence
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_bedtime
+  mode: single
+- id: caredian_bedtime_execute
+  alias: CareDian · 취침 루틴 실행
+  triggers:
+  - trigger: state
+    entity_id: input_boolean.scn_bedtime
+    to: 'on'
+  actions:
+  - action: media_player.media_pause
+    target:
+      entity_id:
+      - media_player.music
+      - media_player.spotify_gimuhyeon
+      - media_player.paul_nest
+      - media_player.uhyeonibang
+      - media_player.gimuhyeonyi_macbook_pro
+  - action: switch.turn_off
+    target:
+      entity_id: switch.kitchen_hood
+  - action: climate.turn_off
+    target:
+      entity_id: climate.seutaendeuhyeong_eeokeon
+  - variables:
+      door_locked: '{{ is_state(''lock.aqara_smart_lock_l100'', ''locked'') }}'
+      air_quality_bad: '{{ is_state(''binary_sensor.air_quality_alarm'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not door_locked }}'
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 도어락 확인
+          message: 취침 전에 도어락을 잠궈 주세요.
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ has_service(''tts'', ''speak'') }}'
+          - condition: template
+            value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+              ''unavailable'', ''''] }}'
+          sequence:
+          - action: tts.speak
+            target:
+              entity_id: tts.tts_pipeline_voxcpm
+            data:
+              message: 도어락이 잠겨 있지 않습니다. 잠금을 확인해 주세요.
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ air_quality_bad }}'
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.ventilator_power
+      - action: timer.start
+        target:
+          entity_id: timer.residual_ventilation
+        data:
+          duration: 00:30:00
+      - action: notify.mobile_app_iphone
+        data:
+          title: 공기질 개선
+          message: 공기질이 좋지 않아 전열교환기를 30분간 가동합니다.
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - action: tts.speak
+        target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 취침 루틴을 시작했습니다. 편안한 밤 되세요.
+          media_player_entity_id: media_player.uhyeonibang_2
+          cache: false
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_bedtime
+    data: {}
+  mode: single
+- id: caredian_inactivity_monitor
+  alias: CareDian · 활동 부재 타이머 시작
+  trigger:
+  - trigger: state
+    entity_id: group.all_motion
+    to: 'off'
+    for:
+      seconds: 5
+  condition:
+  - condition: state
+    entity_id: group.family_presence
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.scn_inactivity
+    state: 'off'
+  action:
+  - variables:
+      minutes: '{{ states(''input_number.inactivity_minutes'') | float(0.25) }}'
+      total_seconds: '{{ (minutes * 60) | int }}'
+  - if:
+    - condition: template
+      value_template: '{{ total_seconds > 0 }}'
+    then:
+    - action: timer.start
+      target:
+        entity_id: timer.inactivity_detection_timer
+      data:
+        duration: '{{ ''%02d:%02d:%02d'' % (total_seconds // 3600, (total_seconds
+          % 3600) // 60, total_seconds % 60) }}'
+  mode: restart
+- id: caredian_inactivity_reset
+  alias: CareDian · 활동 감지 시 타이머 리셋
+  trigger:
+  - trigger: state
+    entity_id: group.all_motion
+    to: 'on'
+  - trigger: state
+    entity_id: group.all_windows
+    to: 'on'
+  action:
+  - action: timer.cancel
+    target:
+      entity_id: timer.inactivity_detection_timer
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_inactivity
+  mode: restart
+- id: caredian_night_start
+  alias: CareDian · 야간 시나리오 시작
+  trigger:
+  - trigger: state
+    entity_id: sensor.is_night_mode
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  action:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_night
+  mode: single
+- id: caredian_night_end
+  alias: CareDian · 야간 시나리오 종료
+  trigger:
+  - trigger: state
+    entity_id: sensor.is_night_mode
+    to: 'off'
+  action:
+  - action: input_boolean.turn_off
+    target:
+      entity_id: input_boolean.scn_night
+  mode: single
+- id: caredian_night_gas_valve
+  alias: CareDian · 야간 가스밸브 차단
+  trigger:
+  - trigger: time
+    at: '23:00:00'
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_night
+    state: 'on'
+  - condition: state
+    entity_id: valve.sihas_gas_valve
+    state: closed
+  action:
+  - repeat:
+      count: 2
+      sequence:
+      - action: valve.close
+        target:
+          entity_id: valve.sihas_gas_valve
+      - delay:
+          seconds: 3
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: valve.sihas_gas_valve
+        state: closed
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 가스밸브 차단
+          message: 야간 가스밸브를 차단했습니다.
+    - conditions:
+      - condition: state
+        entity_id: valve.sihas_gas_valve
+        state: open
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 가스밸브 차단 실패
+          message: 가스밸브 차단에 실패했습니다. 수동 확인 바랍니다.
+          data:
+            priority: high
+            color: '#DC2626'
+  mode: single
+- id: caredian_night_entry_alert
+  alias: CareDian · 야간 출입 감지
+  trigger:
+  - trigger: state
+    entity_id: group.all_windows
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: input_boolean.scn_night
+    state: 'on'
+  - condition: template
+    value_template: '{{ states(''sensor.is_night_mode'') == ''on'' }}'
+  action:
+  - variables:
+      open_list: '{{ expand(''group.all_windows'') | selectattr(''state'', ''eq'',
+        ''on'') | map(attribute=''name'') | list }}'
+  - action: notify.mobile_app_iphone
+    data:
+      title: 야간 출입 감지
+      message: '열린 센서: {{ open_list | join('', '') if open_list else ''확인 필요'' }}'
+      data:
+        priority: high
+        color: '#F97316'
+  - action: light.turn_on
+    target:
+      entity_id: group.path_lights
+    data:
+      brightness_pct: 30
+  - delay:
+      minutes: 3
+  - action: light.turn_off
+    target:
+      entity_id: group.path_lights
+  mode: single
+- id: caredian_sos_button
+  alias: CareDian · SOS 버튼 대응
+  triggers:
+  - trigger: event
+    event_type: smartthings.button
+    event_data:
+      value: held
+  actions:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_sos
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ has_service(''tts'', ''speak'') }}'
+      - condition: template
+        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unknown'',
+          ''unavailable'', ''''] }}'
+      sequence:
+      - action: tts.speak
+        target:
+          entity_id: tts.tts_pipeline_voxcpm
+        data:
+          message: 비상 호출이 접수되었습니다. 곧 도움이 도착합니다.
+          media_player_entity_id: media_player.uhyeonibang_2
+          cache: false
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: SOS 호출
+      message: 비상 버튼이 눌러졌습니다.
+      data:
+        priority: high
+        color: '#DC2626'
+        group: sos_alert
+  - action: switch.turn_on
+    target:
+      entity_id: group.path_lights
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.sos_unlock_allowed
+        state: 'on'
+      sequence:
+      - action: lock.unlock
+        target:
+          entity_id: lock.aqara_smart_lock_l100
+      - action: notify.mobile_app_iphone
+        data:
+          title: 도어락 해제
+          message: SOS 설정에 따라 도어락을 자동으로 해제했습니다.
+  - delay:
+      minutes: 1
+    enabled: false
+  - action: notify.mobile_app_iilhwanyi_iphone
+    data:
+      title: SOS 재알림
+      message: SOS 호출이 아직 활성 상태입니다.
+      data:
+        priority: high
+        color: '#DC2626'
+        group: sos_alert
+    enabled: false
+  mode: restart
+- id: caredian_sos_clear
+  alias: CareDian · SOS 해제
+  trigger:
+  - trigger: state
+    entity_id: input_boolean.scn_sos
+    to: 'off'
+  action:
+  - action: light.turn_off
+    target:
+      entity_id: group.path_lights
+  mode: single
+- id: '1761667352453'
+  alias: CareDian · 조리 시나리오 시작
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id: valve.sihas_gas_valve
+    to: open
+  conditions:
+  - condition: state
+    entity_id: input_boolean.scn_fire
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.scn_sos
+    state: 'off'
+  actions:
+  - action: input_boolean.turn_on
+    target:
+      entity_id: input_boolean.scn_cooking
+  - action: switch.turn_on
+    target:
+      entity_id: switch.kitchen_hood
+  - variables:
+      windows_open: '{{ is_state(''group.all_windows'', ''on'') }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not windows_open }}'
+      sequence:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.ventilator_power
+      - action: notify.mobile_app_iphone
+        data:
+          title: 조리 환기 시작
+          message: 창문이 닫혀 있어 전열교환기를 함께 가동합니다.
+    - conditions:
+      - condition: template
+        value_template: '{{ windows_open }}'
+      sequence:
+      - action: notify.mobile_app_iphone
+        data:
+          title: 조리 환기 대기
+          message: 창문이 열려 있어 전열교환기는 대기합니다.
+  - action: system_log.write
+    data:
+      level: info
+      message: cooking_ventilation_start
+  mode: single
+- id: fall_detected_alert_full
+  alias: "\U0001F6A8 낙상 감지: 다중 푸시 + 다크테마 팝업"
+  trigger:
+  - trigger: state
+    entity_id: binary_sensor.fall_detected
+    to: 'on'
+  action:
+  - action: notify.group_fall_alert_devices
+    data:
+      title: "\U0001F6A8 낙상 감지"
+      message: 즉시 상태를 확인해주세요.
+      data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1.0
+        channel: alarm_stream_max
+        ttl: 0
+        priority: high
+        importance: high
+        persistent: true
+        url: /lovelace/home
+        actions:
+        - action: ACK_FALL
+          title: 확인
+  - action: browser_mod.popup
+    data:
+      title: "\U0001F6A8 낙상 알림"
+      dismissable: true
+      large: true
+      content: "<style>\n  ha-dialog {\n    --mdc-dialog-surface-color: rgba(25, 25,
+        25, 0.95);\n    border: 3px solid rgba(255, 0, 0, 0.85);\n    border-radius:
+        18px;\n    animation: border-flash 1.5s infinite;\n    box-shadow: 0 0 20px
+        rgba(255, 0, 0, 0.5);\n  }\n  @keyframes border-flash {\n    0%, 100% {\n
+        \     border-color: rgba(255, 0, 0, 0.6);\n      box-shadow: 0 0 10px rgba(255,
+        0, 0, 0.5);\n    }\n    50% {\n      border-color: rgba(255, 50, 50, 1);\n
+        \     box-shadow: 0 0 25px rgba(255, 0, 0, 0.9);\n    }\n  }\n  h1 {\n    text-align:
+        center;\n    color: #ffffff;\n    font-size: 2em;\n    margin: 0 0 14px 0;\n
+        \   text-shadow: 0 0 8px rgba(255, 80, 80, 0.9);\n  }\n  p {\n    text-align:
+        center;\n    color: #cccccc;\n    font-size: 1.1em;\n    margin: 0;\n  }\n</style>\n\n<h1>\U0001F6A8
+        낙상이 감지되었습니다!</h1>\n<p>즉시 상태를 확인해주세요.</p>\n"
+      deviceID:
+      - this
+  mode: restart
+
+# ==============================================
+# 전력 관리 자동화
+# ==============================================
+
+# 높은 전력 소비 알림
+- id: high_power_consumption_alert_example
+  alias: "높은 전력 소비 알림"
+  description: "총 전력 소비가 임계값을 초과했을 때 알림"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.total_power_consumption
+      above: 500  # 500W 이상
+      for: "00:05:00"  # 5분간 지속
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "⚡ 전력 소비 주의"
+        message: >
+          현재 전력 소비량이 {{ states('sensor.total_power_consumption') }}W입니다.
+          에너지 절약을 위해 불필요한 기기를 확인해보세요.
+        notification_id: high_power_alert
+
+# 저전력 모드 (부재시)
+- id: energy_saving_mode_example
+  alias: "에너지 절약 모드"
+  description: "집에 아무도 없을 때 에너지 절약"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.someone_home
+      from: "on"
+      to: "off"
+      for: "00:30:00"  # 30분간 부재
+  actions:
+    - action: light.turn_off
+      target:
+        entity_id:
+          - light.zigbee_dimmer
+          - light.smart_bulb
+    - action: persistent_notification.create
+      data:
+        title: "🏠 에너지 절약 모드 활성화"
+        message: "부재 중이므로 조명을 자동으로 꺼두었습니다."
+
+# ==============================================
+# 건강 & 배터리 관리 자동화
+# ==============================================
+
+# 저배터리 디바이스 알림
+- id: low_battery_device_alert_example
+  alias: "저배터리 디바이스 알림"
+  description: "배터리가 부족한 디바이스가 있을 때 알림"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.low_battery_devices
+      from: "off"
+      to: "on"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "🔋 배터리 부족 주의"
+        message: >
+          배터리가 부족한 디바이스가 있습니다:
+          
+          {% set devices = [
+            ('Apple Watch', states('sensor.gimuhyeonyi_apple_watch_battery')),
+            ('MacBook Pro', states('sensor.gimuhyeonyi_macbook_pro_battery')),
+            ('iPad Pro', states('sensor.uhyeonyi_ipad_pro_battery')),
+            ('iPhone 17 Pro', states('sensor.iphone_battery_level'))
+          ] %}
+          {% for device, battery in devices %}
+          {% if battery|int < 20 %}
+          - {{ device }}: {{ battery }}%
+          {% endif %}
+          {% endfor %}
+        notification_id: low_battery_alert
+
+# 개별 디바이스 극저배터리 알림 (10% 이하)
+- id: critical_battery_alert_example
+  alias: "극저배터리 알림"
+  description: "배터리가 10% 이하일 때 즉시 알림"
+  triggers:
+    - trigger: numeric_state
+      entity_id: 
+        - sensor.gimuhyeonyi_apple_watch_battery
+        - sensor.gimuhyeonyi_macbook_pro_battery
+        - sensor.uhyeonyi_ipad_pro_battery
+        - sensor.uhyeonyi_iphone_xs_battery
+      below: 10
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "🚨 배터리 위험 수준"
+        message: >
+          {{ trigger.to_state.attributes.friendly_name }}의 
+          배터리가 {{ trigger.to_state.state }}%입니다. 즉시 충전하세요!
+        notification_id: critical_battery_{{ trigger.entity_id.split('.')[1] }}
+
+# 양치 알림 (저녁 시간)
+- id: evening_brushing_reminder_example
+  alias: "저녁 양치 알림"
+  description: "저녁에 양치를 하지 않았을 때 알림"
+  triggers:
+    - trigger: time
+      at: "22:00:00"  # 저녁 10시
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+    # 최근 2시간 내에 양치하지 않았을 때
+    - condition: template
+      value_template: >
+        {{ (now() - states.sensor.smart_series_7000_6f50.last_changed).total_seconds() > 7200 }}
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "🪥 양치 알림"
+        message: "최근 2시간 동안 양치 기록이 없습니다."
+        notification_id: brushing_reminder
+
+# 심박수 과도 상승 감지
+- id: high_heart_rate_alert_example
+  alias: "심박수 경고"
+  description: "심박수가 120bpm 이상일 때 경고"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.ble_heart_rate_e0e33e6221b5
+      above: 120
+      for: "00:01:00"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "❤️ 심박수 경고"
+        message: "심박수가 120bpm 이상으로 상승했습니다. 상태를 확인하세요."
+        notification_id: heart_rate_alert
+
+# 일일 걸음 수 목표 달성 축하
+- id: daily_steps_goal_achievement_example
+  alias: "일일 걸음수 목표 달성"
+  description: "하루 걸음수 목표를 달성했을 때 축하 메시지"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.ble_steps_e0e33e6221b5
+      above: 10000  # 일일 목표: 10,000보
+  conditions:
+    - condition: template
+      value_template: >
+        {{ (now().date() - states.sensor.ble_steps_e0e33e6221b5.last_changed.date()).days == 0 }}
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "🎉 걸음수 목표 달성!"
+        message: >
+          축하합니다! 오늘 {{ states('sensor.ble_steps_e0e33e6221b5') }}보를 걸으셨네요.
+          건강한 하루를 보내고 계시는군요! 👏
+        notification_id: steps_goal_achieved
+
+# 식기세척기 완료 알림
+- id: dishwasher_cycle_complete_example
+  alias: "식기세척기 완료 알림"
+  description: "식기세척기 세척이 완료되었을 때 알림"
+  triggers:
+    - trigger: state
+      entity_id: sensor.jubang_siggiseceoggi_remaining_time
+      to: "0"
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "🍽️ 식기세척기 완료"
+        message: >
+          식기세척기 세척이 완료되었습니다! 
+          식기를 꺼내주세요. 총 세척 시간: {{ states('sensor.jubang_siggiseceoggi_total_time') }}
+        notification_id: dishwasher_complete
+
+# 린스 보충 알림
+- id: rinse_aid_refill_reminder_example
+  alias: "린스 보충 알림"
+  description: "식기세척기 린스 보충이 필요할 때 알림"
+  triggers:
+    - trigger: state
+      entity_id: binary_sensor.jubang_siggiseceoggi_rinse_refill_needed
+      from: "off"
+      to: "on"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "🧴 린스 보충 필요"
+        message: >
+          식기세척기 린스 보충이 필요합니다. 
+          현재 잔여량: {{ states('sensor.jubang_siggiseceoggi_rinse_aid_dispenser_level') }}
+        notification_id: rinse_aid_reminder
+
+# ==============================================
+# 진단 자동화
+# ==============================================
+
+# Diagnostics - Notify unavailable entities
+- id: diagnostics_unavailable_entities
+  alias: Diagnostics - Notify unavailable entities
+  description: 주기적으로 'unavailable'/'unknown' 엔티티 목록을 알림으로 표시합니다.
+  triggers:
+    - trigger: homeassistant
+      event: start
+    - trigger: time_pattern
+      minutes: "/15"
+  conditions: []
+  actions:
+    - variables:
+        problem_list: >-
+          {{ states | selectattr('state', 'in', ['unavailable','unknown'])
+                     | map(attribute='entity_id') | list }}
+    - choose:
+        - conditions: "{{ problem_list | length > 0 }}"
+          sequence:
+            - action: persistent_notification.create
+              data:
+                title: >-
+                  Unavailable/Unknown entities ({{ problem_list | length }})
+                message: >-
+                  {{ problem_list | join('\n') }}
+                notification_id: unavailable_entities
+        - conditions: "{{ problem_list | length == 0 }}"
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: unavailable_entities
+  mode: restart
+
+# ==============================================
+# 날씨 & 일정 기반 자동화
+# ==============================================
+
+# 온도 기반 에어컨 자동 제어
+- id: smart_ac_temperature_control
+  alias: "스마트 에어컨 온도 제어"
+  description: "실내 온도에 따라 에어컨 자동 조절"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+      above: 28  # 28도 이상
+      for: "00:10:00"  # 10분간 지속
+    - trigger: numeric_state
+      entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+      below: 22  # 22도 이하
+      for: "00:10:00"  # 10분간 지속
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+    - condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "on"  # 근무일에만
+  actions:
+    - choose:
+        - conditions:
+            - condition: numeric_state
+              entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+              above: 28
+          sequence:
+            - action: climate.set_temperature
+              target:
+                entity_id: climate.seutaendeuhyeong_eeokeon
+              data:
+                temperature: 24
+                hvac_mode: "cool"
+            - action: persistent_notification.create
+              data:
+                title: "❄️ 에어컨 냉방 자동 시작"
+                message: "실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C로 높아져서 냉방을 시작했습니다."
+        - conditions:
+            - condition: numeric_state
+              entity_id: sensor.seutaendeuhyeong_eeokeon_temperature
+              below: 22
+          sequence:
+            - action: climate.turn_off
+              target:
+                entity_id: climate.seutaendeuhyeong_eeokeon
+            - action: persistent_notification.create
+              data:
+                title: "🌡️ 에어컨 자동 정지"
+                message: "실내 온도가 {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C로 적정해져서 에어컨을 껐습니다."
+
+# 습도 관리 알림
+- id: humidity_management_alert
+  alias: "습도 관리 알림"
+  description: "습도가 너무 높거나 낮을 때 알림"
+  triggers:
+    - trigger: numeric_state
+      entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+      above: 70  # 70% 이상
+      for: "00:30:00"
+    - trigger: numeric_state
+      entity_id: sensor.seutaendeuhyeong_eeokeon_humidity
+      below: 30  # 30% 이하
+      for: "00:30:00"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "💧 습도 관리 필요"
+        message: >
+          현재 습도가 {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%입니다.
+          {% if trigger.above is defined %}
+          습도가 높습니다. 제습을 고려해보세요.
+          {% else %}
+          습도가 낮습니다. 가습을 고려해보세요.
+          {% endif %}
+        notification_id: humidity_alert
+
+# ==============================================
+# 시간 기반 자동화
+# ==============================================
+
+# 일출 시간 조명 서서히 켜기
+- id: sunrise_gradual_lighting
+  alias: "일출 조명 서서히 켜기"
+  description: "일출 30분 전부터 조명을 서서히 켜서 자연스러운 기상 유도"
+  triggers:
+    - trigger: sun
+      event: sunrise
+      offset: "-00:30:00"  # 일출 30분 전
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+    - condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "on"  # 근무일에만
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.zigbee_dimmer
+      data:
+        brightness_pct: 10
+        transition: 300  # 5분에 걸쳐 서서히
+    - delay: "00:15:00"  # 15분 후
+    - action: light.turn_on
+      target:
+        entity_id: light.zigbee_dimmer
+      data:
+        brightness_pct: 50
+        transition: 900  # 15분에 걸쳐 서서히
+
+# 일몰 후 자동 조명 켜기
+- id: sunset_auto_lighting
+  alias: "일몰 후 자동 조명"
+  description: "일몰 후 집에 사람이 있으면 자동으로 조명 켜기"
+  triggers:
+    - trigger: sun
+      event: sunset
+      offset: "00:30:00"  # 일몰 30분 후
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.zigbee_dimmer
+          - light.smart_bulb
+      data:
+        brightness_pct: 80
+        color_temp_kelvin: 2500  # color_temp(미레드) → color_temp_kelvin(켈빈)로 변경
+
+# 취침 시간 조명 자동 끄기
+- id: bedtime_lights_off
+  alias: "취침 시간 조명 끄기"
+  description: "취침 시간에 조명 자동으로 끄기"
+  triggers:
+    - trigger: time
+      at: "23:30:00"  # 밤 11시 30분
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+  actions:
+    # 조명을 서서히 어둡게
+    - action: light.turn_on
+      target:
+        entity_id:
+          - light.zigbee_dimmer
+          - light.smart_bulb
+      data:
+        brightness_pct: 20
+        transition: 300  # 5분에 걸쳐
+    - delay: "00:05:00"
+    # 완전히 끄기
+    - action: light.turn_off
+      target:
+        entity_id:
+          - light.zigbee_dimmer
+          - light.smart_bulb
+    - action: persistent_notification.create
+      data:
+        title: "🌙 좋은 꿈 되세요"
+        message: "취침 시간이라 조명을 껐습니다. 좋은 밤 보내세요!"
+        notification_id: bedtime_lights
+
+# 근무일 아침 정보 브리핑
+- id: workday_morning_briefing
+  alias: "근무일 아침 브리핑"
+  description: "근무일 아침에 오늘의 정보 요약 제공"
+  triggers:
+    - trigger: time
+      at: "07:30:00"  # 아침 7시 30분
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "on"
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "☀️ 좋은 아침입니다!"
+        message: >
+          오늘의 정보를 확인해보세요:
+          
+          📅 {{ states('sensor.date') }}
+          🌡️ 실내 온도: {{ states('sensor.seutaendeuhyeong_eeokeon_temperature') }}°C
+          💧 실내 습도: {{ states('sensor.seutaendeuhyeong_eeokeon_humidity') }}%
+          ⚡ 현재 전력: {{ states('sensor.total_power_consumption') }}W
+          🔋 평균 배터리: {{ states('sensor.average_device_battery') }}%
+          
+          좋은 하루 되세요! 💪
+        notification_id: morning_briefing
+
+# ==============================================
+# 주말/휴일 특별 모드
+# ==============================================
+
+# 주말 늦잠 모드
+- id: weekend_sleep_mode
+  alias: "주말 늦잠 모드"
+  description: "주말에는 조명을 늦게 켜서 늦잠 배려"
+  triggers:
+    - trigger: sun
+      event: sunrise
+      offset: "02:00:00"  # 일출 2시간 후
+  conditions:
+    - condition: state
+      entity_id: binary_sensor.workday_sensor
+      state: "off"  # 휴일
+    - condition: state
+      entity_id: binary_sensor.someone_home
+      state: "on"
+  actions:
+    - action: light.turn_on
+      target:
+        entity_id: light.zigbee_dimmer
+      data:
+        brightness_pct: 30  # 더 어둡게
+        transition: 600    # 10분에 걸쳐 천천히
+    - action: persistent_notification.create
+      data:
+        title: "😴 주말 모드"
+        message: "주말이니까 천천히 일어나세요. 조명을 부드럽게 켰습니다."
+        notification_id: weekend_mode
+
+# 시스템 상태 주간 리포트
+- id: weekly_system_report
+  alias: "주간 시스템 리포트"
+  description: "매주 일요일 저녁에 시스템 상태 요약 보고"
+  triggers:
+    - trigger: time
+      at: "20:00:00"  # 저녁 8시
+  conditions:
+    - condition: time
+      weekday:
+        - sun  # 일요일
+  actions:
+    - action: persistent_notification.create
+      data:
+        title: "📊 주간 시스템 리포트"
+        message: >
+          이번 주 시스템 상태 요약:
+          
+          🏠 시스템 가동시간: {{ states('sensor.last_boot') }}
+          💻 평균 CPU 사용률: {{ states('sensor.processor_use') }}%
+          💾 메모리 사용률: {{ states('sensor.memory_use_percent') }}%
+          💽 디스크 사용률: {{ states('sensor.disk_use_percent') }}%
+          🌐 네트워크 연결 기기: {{ states('sensor.192_168_1_1_devices_connected') }}개
+          
+          모든 시스템이 정상 작동 중입니다! 👍
+        notification_id: weekly_report

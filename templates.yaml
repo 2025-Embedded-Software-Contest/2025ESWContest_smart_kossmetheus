@@ -1,0 +1,394 @@
+# ===========================
+# 템플릿 엔티티 분리 파일
+# ===========================
+
+- sensor:
+    # 총 전력 소비량
+    - name: "total_power_consumption"
+      unique_id: "total_power_consumption"
+      unit_of_measurement: "W"
+      state: >
+        {% set ac = states('sensor.seutaendeuhyeong_eeokeon_power') | float(0) %}
+        {% set kitchen = states('sensor.zigbee_dimmer_power') | float(0) %}
+        {% set desktop = states('sensor.deseukeutab_jeonweon_power') | float(0) %}
+        {{ (ac + kitchen + desktop) | round(2) }}
+      icon: mdi:lightning-bolt
+    # 평균 배터리 수준
+    - name: "average_device_battery"
+      unique_id: "average_device_battery"
+      unit_of_measurement: "%"
+      state: >
+        {% set watch = states('sensor.gimuhyeonyi_apple_watch_battery') | float(0) %}
+        {% set macbook = states('sensor.gimuhyeonyi_macbook_pro_battery') | float(0) %}
+        {% set ipad = states('sensor.uhyeonyi_ipad_pro_battery') | float(0) %}
+        {% set iphone = states('sensor.iphone_battery_level') | float(0) %}
+        {{ ((watch + macbook + ipad + iphone) / 4) | round(0) }}
+      icon: mdi:battery
+
+# ===========================
+# 평균 실내 온/습도 템플릿 센서
+# ===========================
+- sensor:
+    - name: "average_indoor_temperature"
+      unique_id: "average_indoor_temperature"
+      unit_of_measurement: "°C"
+      state: >
+        {%- set members = state_attr('group.temperature_sensors','entity_id') | default([]) -%}
+        {%- set values = members
+          | map('states')
+          | reject('in', ['unknown','unavailable','None','none',''])
+          | map('float', default=None)
+          | select('!=', None)
+          | list -%}
+        {% if values | length > 0 %}
+          {{ (values | sum / values | length) | round(1) }}
+        {% else %}
+          unknown
+        {% endif %}
+      icon: mdi:thermometer
+
+- sensor:
+    - name: "average_indoor_humidity"
+      unique_id: "average_indoor_humidity"
+      unit_of_measurement: "%"
+      state: >
+        {%- set members = state_attr('group.humidity_sensors','entity_id') | default([]) -%}
+        {%- set values = members
+          | map('states')
+          | reject('in', ['unknown','unavailable','None','none',''])
+          | map('float', default=None)
+          | select('!=', None)
+          | list -%}
+        {% if values | length > 0 %}
+          {{ (values | sum / values | length) | round(0) }}
+        {% else %}
+          unknown
+        {% endif %}
+      icon: mdi:water-percent
+
+# ===========================
+# Overview badges (환경/조명/보안/미디어)
+# ===========================
+- sensor:
+    - name: "overview_climate"
+      unique_id: "overview_climate"
+      state: >
+        {%- set group_members = state_attr('group.temperature_sensors', 'entity_id') | default([]) -%}
+        {%- set valid_temps = group_members
+          | map('states')
+          | map('float', default=None)
+          | select('!=', None)
+          | list -%}
+        {% if valid_temps | length == 1 %}
+          {{ valid_temps[0] }}°
+        {% elif valid_temps | length > 1 %}
+          {{ valid_temps | min }}~{{ valid_temps | max }}°
+        {% else %}
+          No valid sensors
+        {% endif %}
+
+- sensor:
+    - name: "count_lights_on"
+      unique_id: "count_lights_on"
+      state: >
+        {{ (state_attr('group.all_lights', 'entity_id') | default([]))
+             | select('is_state','on') | list | length }}
+
+- sensor:
+    - name: "overview_lights"
+      unique_id: "overview_lights"
+      state: >
+        {% set lights_entities = state_attr('group.all_lights','entity_id') %}
+        {% set lights = expand(lights_entities if lights_entities else states.light | map(attribute='entity_id') | list) %}
+        {% set on_count = lights | selectattr('state','eq','on') | list | length %}
+        {% if on_count == 0 %}
+          모두 꺼짐
+        {% else %}
+          조명 {{ on_count }}개 켜짐
+        {% endif %}
+
+- sensor:
+    - name: "overview_security"
+      unique_id: "overview_security"
+      state: >
+        {% set alarm = states('alarm_control_panel.camera_hub_g5pro_9489_security_system') %}
+        {% set doors = (state_attr('group.security_doors','entity_id')|default([])) | select('is_state','on') | list | length %}
+        {% set motion = (state_attr('group.security_motion','entity_id')|default([])) | select('is_state','on') | list | length %}
+        {% set occ = (state_attr('group.security_occupancy','entity_id')|default([])) | select('is_state','on') | list | length %}
+        {% if alarm in ['triggered','arming','pending'] %}
+          경보 동작 중
+        {% elif doors > 0 %}
+          문/창 {{ doors }}개 열림
+        {% elif motion > 0 %}
+          움직임 감지
+        {% elif alarm in ['disarmed','off','unknown','unavailable'] %}
+          경보 해제됨
+        {% else %}
+          이상 없음
+        {% endif %}
+
+- sensor:
+    - name: "count_media_playing"
+      unique_id: "count_media_playing"
+      state: >
+        {{ expand(state_attr('group.all_media_players','entity_id') | default([]))
+             | selectattr('state','eq','playing') | list | length }}
+
+- sensor:
+    - name: "persistent_notifications"
+      unique_id: "persistent_notifications"
+      state: >
+        {{ states.persistent_notification | list | length }}
+
+    # 진단: 'unavailable/unknown' 엔티티 개수
+    - name: "unavailable_entities_count"
+      unique_id: "unavailable_entities_count"
+      unit_of_measurement: "entities"
+      state: >
+        {{ states | selectattr('state', 'in', ['unavailable', 'unknown']) | list | length }}
+      icon: mdi:alert-circle-outline
+
+    # 진단: 문제 엔티티 상세(상태=개수, 목록은 attributes에 저장 → 상태 길이 255 제한 회피)
+    - name: "unavailable_entities"
+      unique_id: "unavailable_entities"
+      state: >
+        {{ states | selectattr('state', 'in', ['unavailable','unknown']) | list | length }}
+      attributes:
+        entities: >
+          {{ states | selectattr('state','in',['unavailable','unknown'])
+                     | map(attribute='entity_id') | list }}
+      icon: mdi:code-json
+
+# ===========================
+# Gas meter OCR 템플릿 센서
+# ===========================
+- sensor:
+    # 세탁기 상태 (스마트 플러그 전력 기반)
+    - name: "washing_machine_state"
+      unique_id: "washing_machine_state"
+      state: >-
+        {% set power = states('sensor.wi_fi_smart_plug_1_power_2') | float(0) %}
+        {% if power > 10 %}
+          켜짐
+        {% else %}
+          꺼짐
+        {% endif %}
+      icon: >-
+        {% set power = states('sensor.wi_fi_smart_plug_1_power_2') | float(0) %}
+        {% if power > 10 %}
+          mdi:washing-machine
+        {% else %}
+          mdi:power
+        {% endif %}
+
+- sensor:
+    - name: gas_meter_2
+      state: "{{ states('input_number.gas_meter_2') }}"
+      unit_of_measurement: m³
+      device_class: gas
+      state_class: total_increasing
+
+- binary_sensor:
+    # 저배터리 알림
+    - name: "low_battery_devices"
+      unique_id: "low_battery_devices"
+      state: >
+        {% set devices = [
+          states('sensor.gimuhyeonyi_apple_watch_battery') | float(100),
+          states('sensor.gimuhyeonyi_macbook_pro_battery') | float(100),
+          states('sensor.uhyeonyi_ipad_pro_battery') | float(100),
+          states('sensor.iphone_battery_level') | float(100)
+        ] %}
+        {{ devices | select('lt', 20) | list | length > 0 }}
+      icon: mdi:battery-alert
+
+    # 집에 사람 있음
+    - name: "someone_home"
+      unique_id: "someone_home"
+      state: >
+        {{ is_state('binary_sensor.iphone_presence', 'on') }}
+      icon: mdi:home-account
+
+    # 업데이트 필요 여부 (update.* 하나라도 on이면 true)
+    - name: "any_device_update_available"
+      unique_id: "any_device_update_available"
+      state: >
+        {% set updates = expand('group.device_updates') %}
+        {{ updates | selectattr('state','eq','on') | list | length > 0 }}
+      icon: >
+        {% if is_state('binary_sensor.any_device_update_available','on') %}
+          mdi:update
+        {% else %}
+          mdi:check
+        {% endif %}
+
+    # CO₂ 센서(모든 carbon_dioxide) 중 하나라도 허용 범위를 벗어나면 true
+    - name: "any_co2_out_of_range"
+      unique_id: "any_co2_out_of_range"
+      state: >
+        {% set co2_min = states('input_number.co2_min_ppm') | float(0) %}
+        {% set co2_max = states('input_number.co2_max_ppm') | float(1000) %}
+        {% set sensors = states.sensor | selectattr('attributes.device_class', 'eq', 'carbon_dioxide') | list %}
+        {% set ns = namespace(bad=false) %}
+        {% for s in sensors %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable', 'none', None] %}
+            {% set fv = v | float(0) %}
+            {% if fv < co2_min or fv > co2_max %}
+              {% set ns.bad = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.bad }}
+      icon: >
+        {% if is_state('binary_sensor.any_co2_out_of_range','on') %} mdi:molecule-co2-alert
+        {% else %} mdi:molecule-co2
+        {% endif %}
+      attributes:
+        out_of_range_entities: >
+          {% set co2_min = states('input_number.co2_min_ppm') | float(0) %}
+          {% set co2_max = states('input_number.co2_max_ppm') | float(1000) %}
+          {% set sensors = states.sensor | selectattr('attributes.device_class', 'eq', 'carbon_dioxide') | list %}
+          {% set bad = [] %}
+          {% for s in sensors %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable', 'none', None] %}
+              {% set fv = v | float(0) %}
+              {% if fv < co2_min or fv > co2_max %}
+                {% set bad = bad + [s.entity_id] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ bad }}
+
+    # 공기질 센서(AQI/PM) 중 하나라도 허용 범위를 벗어나면 true
+    - name: "any_air_quality_out_of_range"
+      unique_id: "any_air_quality_out_of_range"
+      state: >
+        {% set aqi_max  = states('input_number.aqi_max')  | float(100) %}
+        {% set pm25_max = states('input_number.pm25_max') | float(35) %}
+        {% set pm10_max = states('input_number.pm10_max') | float(50) %}
+        {% set sensors_aqi  = states.sensor | selectattr('attributes.device_class', 'eq', 'aqi') | list %}
+        {% set sensors_pm25 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm25') | list %}
+        {% set sensors_pm10 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm10') | list %}
+        {% set ns = namespace(bad=false) %}
+        {% for s in sensors_aqi %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > aqi_max %}
+            {% set ns.bad = true %}
+          {% endif %}
+        {% endfor %}
+        {% for s in sensors_pm25 %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm25_max %}
+            {% set ns.bad = true %}
+          {% endif %}
+        {% endfor %}
+        {% for s in sensors_pm10 %}
+          {% set v = s.state %}
+          {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm10_max %}
+            {% set ns.bad = true %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.bad }}
+      icon: >
+        {% if is_state('binary_sensor.any_air_quality_out_of_range','on') %} mdi:cloud-alert
+        {% else %} mdi:cloud
+        {% endif %}
+      attributes:
+        out_of_range_entities: >
+          {% set aqi_max  = states('input_number.aqi_max')  | float(100) %}
+          {% set pm25_max = states('input_number.pm25_max') | float(35) %}
+          {% set pm10_max = states('input_number.pm10_max') | float(50) %}
+          {% set sensors_aqi  = states.sensor | selectattr('attributes.device_class', 'eq', 'aqi') | list %}
+          {% set sensors_pm25 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm25') | list %}
+          {% set sensors_pm10 = states.sensor | selectattr('attributes.device_class', 'eq', 'pm10') | list %}
+          {% set bad = [] %}
+          {% for s in sensors_aqi %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > aqi_max %}
+              {% set bad = bad + [s.entity_id] %}
+            {% endif %}
+          {% endfor %}
+          {% for s in sensors_pm25 %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm25_max %}
+              {% set bad = bad + [s.entity_id] %}
+            {% endif %}
+          {% endfor %}
+          {% for s in sensors_pm10 %}
+            {% set v = s.state %}
+            {% if v not in ['unknown','unavailable','none', None] and (v | float(0)) > pm10_max %}
+              {% set bad = bad + [s.entity_id] %}
+            {% endif %}
+          {% endfor %}
+          {{ bad }}
+
+    # 환기 필요 여부(OR): CO₂ 또는 공기질 이상 시 true
+    - name: "ventilation_should_run"
+      unique_id: "ventilation_should_run"
+      state: >
+        {{ is_state('binary_sensor.any_co2_out_of_range','on') or is_state('binary_sensor.any_air_quality_out_of_range','on') }}
+      icon: >
+        {% if is_state('binary_sensor.ventilation_should_run','on') %} mdi:fan-alert
+        {% else %} mdi:fan
+        {% endif %}
+
+# ===========================
+# Bubble Card Modules storage
+# ===========================
+- trigger:
+    - trigger: event
+      event_type: bubble_card_update_modules
+  sensor:
+    - name: "Bubble Card Modules"
+      state: "saved"
+      icon: mdi:puzzle
+      attributes:
+        modules: "{{ trigger.event.data.modules }}"
+        last_updated: "{{ trigger.event.data.last_updated }}"
+
+# ===========================
+# kwh_to_won 통합을 위한 전기 사용량 템플릿
+# ===========================
+- sensor:
+    - name: "electricity_energy_prev_monthly"
+      unique_id: "electricity_energy_prev_monthly"
+      state: "{{ state_attr('sensor.electricity_energy_monthly','last_period') | round(1) }}"
+      unit_of_measurement: kWh
+      device_class: energy
+      attributes:
+        state_class: total
+
+# ===========================
+# 핵심 칩을 위한 보조 템플릿들
+# ===========================
+- sensor:
+    # 켜진 조명 개수
+    - name: "lights_on"
+      unique_id: "lights_on_count"
+      unit_of_measurement: "개"
+      state: >
+        {% if states('group.all_lights') in ['unknown','unavailable'] %}
+          0
+        {% else %}
+          {{ expand('group.all_lights') | selectattr('state','eq','on') | list | length }}
+        {% endif %}
+      icon: mdi:lightbulb-group
+
+- binary_sensor:
+    # 문이 일정 시간 이상 열려있을 때 경고
+    - name: "living_door_open_too_long"
+      unique_id: "living_door_open_too_long"
+      device_class: problem
+      state: "{{ is_state('binary_sensor.multipurpose_sensor_1_door','on') }}"
+      delay_on:
+        minutes: 3
+      delay_off:
+        seconds: 15
+      icon: >
+        {% if is_state('binary_sensor.living_door_open_too_long','on') %}
+          mdi:door-open
+        {% else %}
+          mdi:door
+        {% endif %}

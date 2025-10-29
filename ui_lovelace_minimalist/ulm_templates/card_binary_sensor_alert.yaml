@@ -1,0 +1,13 @@
+card_binary_sensor_alert:
+  template: ["ulm_language_variables"]
+  variables:
+    ulm_card_binary_sensor_alert: true
+  show_icon: true
+  show_name: true
+  show_state: true
+  styles:
+    card:
+      - padding: 12px
+    icon:
+      - width: 34px
+      - height: 34px

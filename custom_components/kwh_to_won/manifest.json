@@ -1,0 +1,15 @@
+{
+  "domain": "kwh_to_won",
+  "name": "kWh to Won (Home)",
+  "config_flow": true,
+  "documentation": "https://github.com/dugurs/kwh_to_won",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": ["@dugurs"],
+  "iot_class": "local_polling",
+  "version": "1",
+  "homeassistant": "2025.5.0"
+}

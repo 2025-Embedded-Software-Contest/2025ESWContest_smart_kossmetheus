@@ -1,0 +1,22 @@
+card_title:
+  template: "ulm_language_variables"
+  variables:
+    ulm_card_title_font_size: "1.2rem"
+    ulm_card_title_font_weight: "600"
+    ulm_card_title_label_font_size: "0.85rem"
+  show_icon: false
+  show_name: true
+  show_label: true
+  styles:
+    card:
+      - padding: 12px 12px 4px 12px
+      - box-shadow: none
+      - background: none
+    name:
+      - font-size: '[[[ return variables.ulm_card_title_font_size ]]]'
+      - font-weight: '[[[ return variables.ulm_card_title_font_weight ]]]'
+      - justify-self: start
+    label:
+      - font-size: '[[[ return variables.ulm_card_title_label_font_size ]]]'
+      - color: var(--secondary-text-color)
+      - justify-self: start

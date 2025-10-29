@@ -1,0 +1,423 @@
+# SmartThings Customize 설정
+# 디바이스 오류 발생 시 재시도 설정 및 안정성 향상
+globals:
+  # 토큰 재시도 설정
+  retry_count: 3
+  timeout: 30
+
+devices:
+  - device_id: "8eb9103b-3979-4334-a35e-f9621ca5e7a2"
+    switch:
+      - name: "주방 후드 전원"
+        entity_id_format: kitchen_hood
+        component: main
+        capability: switch
+        command:
+          "on": "on"
+          "off": "off"
+        argument:
+          "on": []
+          "off": []
+        state:
+          attribute: switch
+        on_state: ["on"]
+        parent_entity_id: light.zigbee_dimmer
+
+  - device_id: "a02c4d01-de26-4f04-93de-93c5f9878f1c"
+    switch:
+      - name: "데스크탑 전원"
+        entity_id_format: desktop_power
+        component: main
+        capability: switch
+        command:
+          "on": "on"
+          "off": "off"
+        argument:
+          "on": []
+          "off": []
+        state:
+          attribute: switch
+        on_state: ["on"]
+        parent_entity_id: light.deseukeutab_jeonweon
+
+  # IONIQ9 EV 차량
+  - device_id: "f4c5d65a-5639-44af-bc5a-d42da215d8bc"
+    # 배터리 레벨 센서
+    sensor:
+      - name: "Paul IONIQ9 배터리"
+        entity_id_format: paul_ioniq9_battery
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: batteryLevel
+        unit_of_measurement: "%"
+        device_class: battery
+
+      - name: "Paul IONIQ9 주행거리"
+        entity_id_format: paul_ioniq9_range
+        component: main
+        capability: vehicleRange
+        state:
+          attribute: estimatedRemainingRange
+        unit_of_measurement: "km"
+
+      - name: "Paul IONIQ9 오도미터"
+        entity_id_format: paul_ioniq9_odometer
+        component: main
+        capability: vehicleOdometer
+        state:
+          attribute: odometerReading
+        unit_of_measurement: "km"
+        icon: mdi:counter
+
+      - name: "Paul IONIQ9 충전 상태"
+        entity_id_format: paul_ioniq9_charging_state
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: chargingState
+
+      - name: "Paul IONIQ9 충전 플러그"
+        entity_id_format: paul_ioniq9_charging_plug
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: chargingPlug
+
+      - name: "Paul IONIQ9 충전 상세"
+        entity_id_format: paul_ioniq9_charging_detail
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: chargingDetail
+
+      - name: "Paul IONIQ9 충전 남은 시간"
+        entity_id_format: paul_ioniq9_charging_remain_time
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: chargingRemainTime
+
+      # HVAC 관련 센서들
+      - name: "Paul IONIQ9 HVAC 온도"
+        entity_id_format: paul_ioniq9_hvac_temperature
+        component: main
+        capability: vehicleHvac
+        state:
+          attribute: temperature
+        unit_of_measurement: "°C"
+        device_class: temperature
+
+      - name: "Paul IONIQ9 HVAC 상태"
+        entity_id_format: paul_ioniq9_hvac_state
+        component: main
+        capability: vehicleHvac
+        state:
+          attribute: hvacState
+
+      - name: "Paul IONIQ9 HVAC 속도"
+        entity_id_format: paul_ioniq9_hvac_speed
+        component: main
+        capability: vehicleHvac
+        state:
+          attribute: hvacSpeed
+
+      - name: "Paul IONIQ9 제방 상태"
+        entity_id_format: paul_ioniq9_defog_state
+        component: main
+        capability: vehicleHvac
+        state:
+          attribute: defogState
+
+      # 창문 상태 센서들
+      - name: "Paul IONIQ9 앞 왼쪽 창문"
+        entity_id_format: paul_ioniq9_front_left_window
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: frontLeftWindow
+
+      - name: "Paul IONIQ9 앞 오른쪽 창문"
+        entity_id_format: paul_ioniq9_front_right_window
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: frontRightWindow
+
+      - name: "Paul IONIQ9 뒤 왼쪽 창문"
+        entity_id_format: paul_ioniq9_rear_left_window
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: rearLeftWindow
+
+      - name: "Paul IONIQ9 뒤 오른쪽 창문"
+        entity_id_format: paul_ioniq9_rear_right_window
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: rearRightWindow
+
+      # 경고 상태 센서들
+      - name: "Paul IONIQ9 타이어 압력 앞 왼쪽"
+        entity_id_format: paul_ioniq9_tire_pressure_front_left
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: tirePressureFrontLeft
+
+      - name: "Paul IONIQ9 타이어 압력 앞 오른쪽"
+        entity_id_format: paul_ioniq9_tire_pressure_front_right
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: tirePressureFrontRight
+
+      - name: "Paul IONIQ9 타이어 압력 뒤 왼쪽"
+        entity_id_format: paul_ioniq9_tire_pressure_rear_left
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: tirePressureRearLeft
+
+      - name: "Paul IONIQ9 타이어 압력 뒤 오른쪽"
+        entity_id_format: paul_ioniq9_tire_pressure_rear_right
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: tirePressureRearRight
+
+      - name: "Paul IONIQ9 보조 배터리"
+        entity_id_format: paul_ioniq9_auxiliary_battery
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: auxiliaryBattery
+
+      - name: "Paul IONIQ9 와이퍼액"
+        entity_id_format: paul_ioniq9_washer_fluid
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: washerFluid
+
+      - name: "Paul IONIQ9 브레이크액"
+        entity_id_format: paul_ioniq9_brake_fluid
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: brakeFluid
+
+      - name: "Paul IONIQ9 램프 와이어"
+        entity_id_format: paul_ioniq9_lamp_wire
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: lampWire
+
+      - name: "Paul IONIQ9 전기차 배터리"
+        entity_id_format: paul_ioniq9_electric_vehicle_battery
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: electricVehicleBattery
+
+      - name: "Paul IONIQ9 스마트키 배터리"
+        entity_id_format: paul_ioniq9_smart_key_battery
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: smartKeyBattery
+
+      - name: "Paul IONIQ9 엔진오일"
+        entity_id_format: paul_ioniq9_engine_oil
+        component: main
+        capability: vehicleWarning
+        state:
+          attribute: engineOil
+
+    # 도어 잠금 상태
+    binary_sensor:
+      - name: "Paul IONIQ9 앞 왼쪽 문"
+        entity_id_format: paul_ioniq9_front_left_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: frontLeftDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      - name: "Paul IONIQ9 앞 오른쪽 문"
+        entity_id_format: paul_ioniq9_front_right_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: frontRightDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      - name: "Paul IONIQ9 뒤 왼쪽 문"
+        entity_id_format: paul_ioniq9_rear_left_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: rearLeftDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      - name: "Paul IONIQ9 뒤 오른쪽 문"
+        entity_id_format: paul_ioniq9_rear_right_door
+        component: main
+        capability: vehicleDoorState
+        state:
+          attribute: rearRightDoor
+        on_state: ["locked"]
+        device_class: lock
+
+      # 창문 상태 binary_sensor
+      - name: "Paul IONIQ9 앞 왼쪽 창문 열림"
+        entity_id_format: paul_ioniq9_front_left_window_open
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: frontLeftWindow
+        on_state: ["open"]
+        device_class: window
+
+      - name: "Paul IONIQ9 앞 오른쪽 창문 열림"
+        entity_id_format: paul_ioniq9_front_right_window_open
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: frontRightWindow
+        on_state: ["open"]
+        device_class: window
+
+      - name: "Paul IONIQ9 뒤 왼쪽 창문 열림"
+        entity_id_format: paul_ioniq9_rear_left_window_open
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: rearLeftWindow
+        on_state: ["open"]
+        device_class: window
+
+      - name: "Paul IONIQ9 뒤 오른쪽 창문 열림"
+        entity_id_format: paul_ioniq9_rear_right_window_open
+        component: main
+        capability: vehicleWindowState
+        state:
+          attribute: rearRightWindow
+        on_state: ["open"]
+        device_class: window
+
+      # 충전 플러그 상태
+      - name: "Paul IONIQ9 충전 플러그 연결"
+        entity_id_format: paul_ioniq9_charging_plug_connected
+        component: main
+        capability: vehicleBattery
+        state:
+          attribute: chargingPlug
+        on_state: ["connected"]
+        device_class: plug
+
+    # HVAC 스위치
+    switch:
+      - name: "Paul IONIQ9 에어컨"
+        entity_id_format: paul_ioniq9_hvac
+        component: main
+        capability: vehicleHvac
+        command:
+          "on": "setHvacState"
+          "off": "setHvacState"
+        argument:
+          "on": ["on"]
+          "off": ["off"]
+        state:
+          attribute: hvacState
+        on_state: ["on"]
+
+      - name: "Paul IONIQ9 HVAC 원격 제어"
+        entity_id_format: paul_ioniq9_hvac_remote_switch
+        component: main
+        capability: vehicleHvacRemoteSwitch
+        command:
+          "on": "on"
+          "off": "off"
+        argument:
+          "on": []
+          "off": []
+        state:
+          attribute: switch
+        on_state: ["on"]
+
+    # 차량 락/언락 (lock 엔티티)
+    lock:
+      - name: "Paul IONIQ9 도어락"
+        entity_id_format: paul_ioniq9_lock
+        component: main
+        capability: vehicleDoorState
+        command:
+          lock: "lock"
+          unlock: "unlock"
+        state:
+          attribute: lockState
+        locked_state: ["locked"]
+
+    # 버튼들
+    button:
+      - name: "Paul IONIQ9 새로고침"
+        entity_id_format: paul_ioniq9_refresh
+        component: main
+        capability: refresh
+        command: refresh
+
+      # HVAC 제어 버튼들
+      - name: "Paul IONIQ9 HVAC 온도 설정"
+        entity_id_format: paul_ioniq9_hvac_set_temperature
+        component: main
+        capability: vehicleHvac
+        command: setTemperature
+
+      - name: "Paul IONIQ9 HVAC 속도 설정"
+        entity_id_format: paul_ioniq9_hvac_set_speed
+        component: main
+        capability: vehicleHvac
+        command: setHvacSpeed
+
+      - name: "Paul IONIQ9 제방 켜기"
+        entity_id_format: paul_ioniq9_hvac_set_defog
+        component: main
+        capability: vehicleHvac
+        command: setDefogState
+
+      # 도어 제어 버튼들
+      - name: "Paul IONIQ9 모든 문 잠금"
+        entity_id_format: paul_ioniq9_lock_all_doors
+        component: main
+        capability: vehicleDoorState
+        command: lock
+
+      - name: "Paul IONIQ9 모든 문 잠금 해제"
+        entity_id_format: paul_ioniq9_unlock_all_doors
+        component: main
+        capability: vehicleDoorState
+        command: unlock
+
+# 사용하지 않는 플랫폼 무시 (성능 향상)
+ignore_platforms: []
+
+# 디바이스 무시 목록 (문제가 있는 디바이스 임시 비활성화)
+ignore_devices: []
+
+# 엔티티 ID 포맷
+default_entity_id_format: 'st_custom_%{device_id}_%{label}_%{component}_%{capability}_%{attribute}_%{command}_%{name}'
+
+# 오류 처리 설정
+error_handling:
+  # 연결 실패 시 재시도
+  max_retries: 3
+  # 재시도 간격 (초)
+  retry_delay: 5
+  # 디바이스 상태 업데이트 실패 시 무시
+  ignore_failed_devices: true

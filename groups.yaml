@@ -1,0 +1,381 @@
+# CareDian 그룹 설정
+# UI Lovelace Minimalist와 커스텀 카드를 위한 엔티티 그룹
+
+# 조명 그룹
+all_lights:
+  name: "모든 조명"
+  entities:
+    # 기존 light 도메인 하드웨어 조명
+    - light.smart_bulb
+    - light.smart_bulb_2
+    - light.smart_bulb_3
+
+    # switch→light 매핑 결과 (lights.yaml 정의 필수)
+    - light.geosil_jomyeong_1beon
+    - light.geosil_jomyeong_2beon
+    - light.geosil_jomyeong_3beon
+    - light.sihas_switch_1
+    - light.sihas_switch_2
+    - light.sihas_switch_3
+    - light.sihas_switch_4
+    - light.sihas_switch_5
+    - light.deureseurum_deung
+    - light.hwajangdae_deung
+    - light.anbang_hwajangsil_deung
+    - light.anbang_syaweosil_deung
+
+# 스위치 그룹  
+all_switches:
+  name: "모든 스위치"
+  entities:
+    # 존재하지 않는 geosil_jeondeung_* 스위치 제거
+    - switch.sihas_switch_2                    # 싱크대등
+    - switch.sihas_switch_3                    # 식탁등
+    - switch.sihas_switch_1                    # 가스레인지등
+    - switch.sihas_switch_4                    # 아현이방 등
+    - switch.sihas_switch_5                    # 우현이방 등
+    - switch.deureseurum_deung                 # 드레스룸 등
+    - switch.hwajangdae_deung                  # 화장대 등
+    - switch.anbang_hwajangsil_deung           # 안방 화장실 등
+    - switch.anbang_syaweosil_deung            # 안방 샤워실 등
+
+# 환기 그룹 (팬 기능)
+ventilation:
+  name: "환기 시설"
+  entities:
+    - switch.anbang_hwajangsil_hwangi          # 안방 화장실 환기
+    - switch.ventilator_power                  # 거실 환기 전원
+
+# 조명 제어 그룹 (기존 커튼 그룹 대체)
+lighting_control:
+  name: "조명 제어"
+  entities:
+    - light.camera_hub_g5pro_9489_lightbulb   # 카메라 허브 조명
+
+# 환경 기기 (팬/에어컨/가습기/커버)
+all_env_devices:
+  name: "환경 기기"
+  entities:
+    - climate.seutaendeuhyeong_eeokeon
+    # 내부/주변 환경 센서 (온/습도/공기질) - 냉장고 온도 제외, 조도 제외
+    - sensor.seutaendeuhyeong_eeokeon_temperature
+    - sensor.seutaendeuhyeong_eeokeon_humidity
+    - sensor.eeomoniteo_peulreoseu_temperature
+    - sensor.eeomoniteo_peulreoseu_humidity
+    - sensor.eeomoniteo_peulreoseu_carbon_dioxide
+    - sensor.eeomoniteo_peulreoseu_pm1
+    - sensor.eeomoniteo_peulreoseu_pm2_5
+    - sensor.eeomoniteo_peulreoseu_pm10
+    - sensor.eeomoniteo_peulreoseu_air_quality
+    - sensor.eeomoniteo_peulreoseu_odor_sensor
+    - sensor.gonggijil_ceugjeonggi_1528_temperature
+    - sensor.gonggijil_ceugjeonggi_1528_humidity
+    - sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide
+    - sensor.gonggijil_ceugjeonggi_1528_pm2_5
+    - sensor.gonggijil_ceugjeonggi_1528_pm10
+    - sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts
+    - sensor.wn_jib_temperature
+    - sensor.wn_jib_relative_humidity
+    - sensor.wn_jib_pm2_5
+    - sensor.wn_jib_pm10
+    - sensor.airquality_1528
+    - sensor.airquality_1528_alt
+    - sensor.airquality_airmonitor
+
+# 보안 그룹들
+security_doors:
+  name: "보안-문/창"
+  entities:
+    - binary_sensor.jubang_siggiseceoggi_door
+    - binary_sensor.naengjanggo_fridge_door
+    - binary_sensor.naengjanggo_freezer_door
+    - binary_sensor.naengjanggo_coolselect_door
+    - binary_sensor.multipurpose_sensor_1_door
+    - binary_sensor.multipurpose_sensor_2_door
+
+security_motion:
+  name: "보안-모션"
+  entities:
+    - binary_sensor.camera_hub_g5pro_9489_motion_sensor
+
+security_occupancy:
+  name: "보안-재실"
+  entities:
+    - binary_sensor.presence_sensor_fp2_1ea6_presence_sensor_1
+    - binary_sensor.aqara_fp2_1ea6_presence
+
+security_core:
+  name: "보안-핵심"
+  entities:
+    - alarm_control_panel.camera_hub_g5pro_9489_security_system
+    - lock.aqara_smart_lock_l100
+
+all_security:
+  name: "모든 보안"
+  entities:
+    - group.security_doors
+    - group.security_motion
+    - group.security_occupancy
+    - group.security_core
+
+# 스피커 및 TV (실사용 위주)
+all_media_players:
+  name: "스피커 및 TV"
+  entities:
+    - media_player.spotify_gimuhyeon
+    - media_player.vlc_telnet
+    - media_player.gimuhyeonyi_macbook_pro
+    - media_player.uhyeonibang
+    - media_player.paul_nest
+    - media_player.music_player_daemon
+
+# 디바이스 그룹
+all_devices:
+  name: "모든 디바이스"
+  entities:
+    - switch.wi_fi_smart_plug_1                # 세탁기 전원
+    - switch.wi_fi_smart_plug_2                # 서재 전원
+    - switch.naengjanggo_power_cool            # 냉장고 급속 냉장
+    - switch.naengjanggo_power_freeze          # 냉장고 급속 냉동
+    - switch.anbang_hwajangsil_hwangi          # 안방 화장실 환기
+    - switch.ventilator_power                  # 거실 환기 전원
+    - switch.robot_vacuum_switch               # 로봇청소기 전원
+    - media_player.spotify_gimuhyeon           # Spotify 김우현
+
+# 온도 센서 그룹
+temperature_sensors:
+  name: "온도 센서"
+  entities:
+    - sensor.seutaendeuhyeong_eeokeon_temperature         # 스탠드형 에어컨 온도
+    - sensor.gonggijil_ceugjeonggi_1528_temperature       # 공기질 측정기 온도
+    - sensor.multipurpose_sensor_1_temperature            # 거실 오른쪽 창문 온도
+    - sensor.eeomoniteo_peulreoseu_temperature            # 에어모니터 플러스 온도
+    - sensor.aqara_temperature_and_humidity_sensor_t1_temperature
+    - sensor.aqara_temperature_and_humidity_sensor_t1_1_temperature
+    - sensor.multipurpose_sensor_2_temperature            # 안방 베란다 창문 온도
+
+# 습도 센서 그룹  
+humidity_sensors:
+  name: "습도 센서"
+  entities:
+    - sensor.gonggijil_ceugjeonggi_1528_humidity          # 공기질 측정기 습도
+    - sensor.eeomoniteo_peulreoseu_humidity               # 에어모니터 플러스 습도
+    - sensor.aqara_temperature_and_humidity_sensor_t1_humidity
+    - sensor.aqara_temperature_and_humidity_sensor_t1_1_humidity
+    - sensor.seutaendeuhyeong_eeokeon_humidity            # 스탠드형 에어컨 습도
+
+# 모션 센서 그룹
+motion_sensors:
+  name: "모션 센서"
+  entities:
+    - binary_sensor.camera_hub_g5pro_9489_motion_sensor          # 카메라 허브 모션 센서
+    - binary_sensor.presence_sensor_fp2_1ea6_presence_sensor_1   # 존재 감지 센서
+
+# 보안 센서 그룹  
+security_sensors:
+  name: "보안 센서"
+  entities:
+    - binary_sensor.smoke_sensor                                 # 연기 감지기
+    - alarm_control_panel.camera_hub_g5pro_9489_security_system # 보안 시스템
+    - camera.camera_hub_g5pro_9489                              # 카메라 허브
+
+# 공기질 센서 그룹
+air_quality_sensors:
+  name: "공기질 센서"
+  entities:
+    - sensor.gonggijil_ceugjeonggi_1528_carbon_dioxide          # 공기질 측정기 이산화탄소
+    - sensor.gonggijil_ceugjeonggi_1528_pm10                    # 공기질 측정기 PM10
+    - sensor.gonggijil_ceugjeonggi_1528_pm2_5                   # 공기질 측정기 PM2.5
+    - sensor.gonggijil_ceugjeonggi_1528_volatile_organic_compounds_parts  # 공기질 측정기 VOC
+
+# 배터리 모니터링 그룹
+battery_monitoring:
+  name: "배터리 모니터링"
+  entities:
+    - sensor.gimuhyeonyi_apple_watch_battery
+    - sensor.gimuhyeonyi_macbook_pro_battery
+    - sensor.uhyeonyi_ipad_pro_battery
+    - sensor.iphone_battery_level
+    - sensor.average_device_battery
+    - binary_sensor.low_battery_devices
+
+# 시스템 모니터링 그룹  
+system_monitoring:
+  name: "시스템 모니터링"
+  entities:
+    - sensor.unavailable_entities_count
+    - sensor.unavailable_entities
+    - binary_sensor.someone_home
+    - binary_sensor.iphone_presence
+
+# BLE 센서 그룹
+ble_sensors:
+  name: "BLE 센서"
+  entities:
+    - sensor.ble_heart_rate_e0e33e6221b5
+    - sensor.ble_steps_e0e33e6221b5
+
+# 멀티퍼스 센서 그룹 (창문 센서)
+multipurpose_sensors:
+  name: "창문 센서"
+  entities:
+    - sensor.multipurpose_sensor_1_battery                # 거실 오른쪽 창문 배터리
+    - sensor.multipurpose_sensor_1_temperature            # 거실 오른쪽 창문 온도
+    - sensor.multipurpose_sensor_1_x_coordinate           # 거실 오른쪽 창문 X 좌표
+    - sensor.multipurpose_sensor_1_y_coordinate           # 거실 오른쪽 창문 Y 좌표
+    - sensor.multipurpose_sensor_1_z_coordinate           # 거실 오른쪽 창문 Z 좌표
+    - sensor.multipurpose_sensor_2_x_coordinate           # 안방 베란다 창문 X 좌표
+    - sensor.multipurpose_sensor_2_y_coordinate           # 안방 베란다 창문 Y 좌표
+    - sensor.multipurpose_sensor_2_z_coordinate           # 안방 베란다 창문 Z 좌표
+
+# 실험실 센서 그룹
+lab_sensors:
+  name: "실험실 센서"
+  entities:
+    - switch.jodo_senseo_silheomsil                       # 조도 센서 (실험실)
+    - switch.sori_senseo_silheomsil                       # 소리 센서 (실험실)
+
+# 조도 센서 그룹
+illuminance_sensors:
+  name: "조도 센서"
+  entities:
+    - sensor.presence_sensor_fp2_1ea6_light_sensor_light_level  # 존재 감지 센서 조도
+    - sensor.aqara_fp2_1ea6_illuminance                         # Aqara FP2 조도
+    - sensor.gonggijil_ceugjeonggi_1528_illuminance             # 공기질 측정기 조도
+
+# 가전제품 그룹
+appliances:
+  name: "가전제품"
+  entities:
+    - sensor.jubang_siggiseceoggi_remaining_time          # 식기세척기 남은 시간
+    - sensor.jubang_siggiseceoggi_current_course          # 식기세척기 현재 코스
+    - sensor.jubang_siggiseceoggi_run_state               # 식기세척기 실행 상태
+    - sensor.jubang_siggiseceoggi_process_state           # 식기세척기 프로세스 상태
+    - sensor.jubang_siggiseceoggi_error_message           # 식기세척기 오류 메시지
+    - binary_sensor.jubang_siggiseceoggi_rinse_refill_needed  # 린스 보충 필요
+    - valve.sihas_gas_valve                               # SiHAS 가스 밸브
+
+# 헬스케어 센서 그룹
+healthcare_sensors:
+  name: "헬스케어 센서"
+  entities:
+    - sensor.mi_body_composition_scale_fda2_weight           # 체중계
+    - sensor.mi_body_composition_scale_fda2_weight_non_stabilized  # 체중계 (비안정화)
+    - sensor.smart_series_7000_6f50                          # 전동칫솔
+    - sensor.smart_series_7000_6f50_battery                  # 전동칫솔 배터리
+    - sensor.smart_series_7000_6f50_brushing_mode            # 전동칫솔 브러싱 모드
+    - sensor.smart_series_7000_6f50_pressure                 # 전동칫솔 압력
+    - sensor.smart_series_7000_6f50_sector                   # 전동칫솔 섹터
+    - sensor.smart_series_7000_6f50_duration                 # 전동칫솔 지속시간
+    - sensor.smart_series_7000_6f50_sector_timer             # 전동칫솔 섹터 타이머
+    - sensor.smart_series_7000_6f50_number_of_sectors        # 전동칫솔 섹터 수
+
+# 전력 모니터링 그룹
+energy_monitoring:
+  name: "전력 모니터링"
+  entities:
+    - sensor.total_power_consumption
+    - sensor.seutaendeuhyeong_eeokeon_power
+    - sensor.zigbee_dimmer_power
+    - sensor.deseukeutab_jeonweon_power
+    - sensor.gas_meter_2
+
+# 업데이트 엔티티 그룹
+device_updates:
+  name: "디바이스 업데이트"
+  entities:
+    # 코어/슈퍼바이저/OS/애드온
+    - update.home_assistant_core_update
+    - update.home_assistant_supervisor_update
+    - update.home_assistant_operating_system_update
+    - update.matter_server_update
+    - update.home_assistant_matter_hub_update
+    - update.hacs_update
+    - update.esphome_device_builder_update
+    - update.mosquitto_broker_update
+    - update.nginx_proxy_manager_update
+    - update.uptime_kuma_update
+    - update.appdaemon_update
+    - update.influxdb_update
+    - update.grafana_update
+    - update.piper_update
+    - update.whisper_update
+    - update.openwakeword_update
+    - update.vlc_update
+    - update.spotify_connect_update
+    - update.advanced_ssh_web_terminal_update
+    - update.tailscale_update
+    - update.grocy_update
+    - update.mqtt_io_update
+    - update.unifi_network_application_update
+    - update.wyoming_hailo_whisper_update
+    - update.speech_to_phrase_update
+
+    # 커스텀 통합/프론트엔드 카드
+    - update.adaptive_lighting_update
+    - update.smartthinq_lge_sensors_update
+    - update.asusrouter_update
+    - update.browser_mod_update
+    - update.telegram_client_update
+    - update.ui_lovelace_minimalist_update
+    - update.mushroom_update
+    - update.mushroom_dashboard_strategy_update
+    - update.mushroom_better_sliders_update
+    - update.button_card_update
+    - update.card_mod_update
+    - update.vertical_stack_in_card_update
+    - update.stack_in_card_update
+    - update.layout_card_update
+    - update.state_switch_update
+    - update.multiple_entity_row_update
+    - update.auto_entities_update
+    - update.mini_media_player_update
+    - update.mini_graph_card_update
+    - update.apexcharts_card_update
+    - update.light_entity_card_update
+    - update.simple_weather_card_update
+    - update.weather_radar_card_update
+    - update.config_template_card_update
+    - update.simple_tabs_card_update
+    - update.timer_bar_card_update
+    - update.energy_entity_row_update
+    - update.battery_state_card_entity_row_update
+    - update.bubble_card_update
+    - update.horizon_card_update
+    - update.rounded_themes_update
+    - update.windy_webcams_update
+    - update.spotcast_update
+    - update.cloudflare_speed_test_update
+    - update.discord_game_update
+    - update.generate_readme_update
+    - update.spook_your_homie_update
+    - update.scheduler_card_update
+    - update.google_home_update
+    - update.wedeonyuseu_weathernews_update
+    - update.ytube_music_player_update
+    - update.flightradar24_update
+    - update.smartthings_customize_update
+    - update.f1_sensor_update
+    - update.aliexpress_package_tracker_update
+    - update.openrouter_fixed_update
+    - update.korea_bus_update
+    - update.voice_clone_wyoming_voxcpm_update
+    - update.cloudflare_speed_test_update
+
+    # 펌웨어 업데이트
+    - update.wi_fi_smart_plug_1_firmware
+    - update.wi_fi_smart_plug_2_firmware
+    - update.zigbee_dimmer_firmware
+    - update.multipurpose_sensor_firmware
+    - update.multipurpose_sensor_1_firmware
+    - update.multipurpose_sensor_2_firmware
+    - update.deseukeutab_jeonweon_firmware
+    - update.sihas_gas_valve_firmware
+    - update.sihas_energy_monitor_firmware
+    - update.button_firmware
+    - update.smartthings_station_firmware
+    - update.aqara_water_leak_sensor_firmware
+    - update.aqara_temperature_and_humidity_sensor_t1_firmware
+    - update.aqara_temperature_and_humidity_sensor_t1_1_firmware
+    - update.jodo_senseo_silheomsil_firmware
+    - update.sori_senseo_silheomsil_firmware

@@ -1,0 +1,151 @@
+title: Bubble
+views:
+  - title: Home
+    path: home
+    icon: mdi:home
+    badges: []
+    cards:
+      - type: custom:mushroom-chips-card
+        chips:
+          - type: weather
+            entity: weather.wn_jib
+          - type: entity
+            entity: sensor.time
+          - type: entity
+            entity: sensor.total_power_consumption
+            icon_color: orange
+          - type: entity
+            entity: binary_sensor.someone_home
+
+      - type: custom:bubble-card
+        card_type: horizontal-buttons-stack
+        auto_order: false
+        1_name: Switch
+        1_icon: mdi:toggle-switch
+        1_link: '#pop-switch'
+        1_entity: switch.wi_fi_smart_plug_1
+        2_name: Light
+        2_icon: mdi:lightbulb-group
+        2_link: '#pop-light'
+        2_entity: light.smart_bulb
+        3_name: Media
+        3_icon: mdi:cast-audio
+        3_link: '#pop-media'
+        3_entity: media_player.uhyeonibang
+        4_name: Climate
+        4_icon: mdi:air-conditioner
+        4_link: '#pop-climate'
+        4_entity: climate.seutaendeuhyeong_eeokeon
+        5_name: Gas
+        5_icon: mdi:fire
+        5_link: '#pop-gas'
+        5_entity: valve.sihas_gas_valve
+
+      # Switch pop-up
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: '#pop-switch'
+        name: Switch
+        icon: mdi:toggle-switch
+        cards:
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                name: 데스크탑 전원
+                entity: switch.desktop_power
+                tap_action:
+                  action: toggle
+              - type: custom:bubble-card
+                card_type: button
+                name: 플러그1
+                entity: switch.wi_fi_smart_plug_1
+                tap_action: { action: toggle }
+              - type: custom:bubble-card
+                card_type: button
+                name: 플러그2
+                entity: switch.wi_fi_smart_plug_2
+                tap_action: { action: toggle }
+              - type: custom:bubble-card
+                card_type: button
+                name: 후드
+                entity: switch.kitchen_hood
+                tap_action: { action: toggle }
+
+      # Light pop-up
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: '#pop-light'
+        name: Light
+        icon: mdi:lightbulb-group
+        cards:
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:bubble-card
+                card_type: button
+                name: 책상 조명
+                entity: light.smart_bulb
+                tap_action: { action: toggle }
+              - type: custom:bubble-card
+                card_type: button
+                name: 조명2
+                entity: light.smart_bulb_2
+                tap_action: { action: toggle }
+              - type: custom:bubble-card
+                card_type: button
+                name: 조명3
+                entity: light.smart_bulb_3
+                tap_action: { action: toggle }
+
+      # Media pop-up
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: '#pop-media'
+        name: Media
+        icon: mdi:cast-audio
+        cards:
+          - type: custom:bubble-card
+            card_type: media-player
+            name: 우현이방
+            entity: media_player.uhyeonibang
+            cover_background: true
+          - type: custom:bubble-card
+            card_type: media-player
+            name: Spotify
+            entity: media_player.spotify_gimuhyeon
+            cover_background: true
+
+      # Climate pop-up
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: '#pop-climate'
+        name: Climate
+        icon: mdi:air-conditioner
+        cards:
+          - type: custom:bubble-card
+            card_type: climate
+            entity: climate.seutaendeuhyeong_eeokeon
+
+      # Gas pop-up
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: '#pop-gas'
+        name: Gas
+        icon: mdi:fire
+        cards:
+          - type: custom:bubble-card
+            card_type: button
+            name: 가스 밸브
+            entity: valve.sihas_gas_valve
+            tap_action: { action: toggle }
+          - type: custom:bubble-card
+            card_type: button
+            name: 미터(m³)
+            entity: sensor.gas_meter_2
+            button_type: state
+
+

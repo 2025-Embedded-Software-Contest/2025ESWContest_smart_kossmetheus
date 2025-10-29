@@ -1,0 +1,59 @@
+template:
+  - sensor:
+    - name: "AirQuality AirMonitor"
+      unique_id: "airquality_airmonitor"
+      state: >
+        {% set co2_value = states('sensor.eeomoniteo_peulreoseu_carbon_dioxide') | float(default=4500) %}
+        {% set pm25_value = states('sensor.eeomoniteo_peulreoseu_pm2_5') | float(default=225.4) %}
+        {% set temp_value = states('sensor.eeomoniteo_peulreoseu_temperature') | float(default=21) %}
+        {% set humidity_value = states('sensor.eeomoniteo_peulreoseu_humidity') | float(default=45) %}
+        {% set voc_value = 500 %} {# VOC sensor not available, using default value #}
+
+        {# CO2 Score calculation #}
+        {% if co2_value >= 4500 %}
+          {% set co2_score = 0 %}
+        {% elif co2_value <= 400 %}
+          {% set co2_score = 100 %}
+        {% else %}
+          {% set co2_score = ((4500 - co2_value) / (4500 - 400)) * 100 %}
+        {% endif %}
+
+        {# PM2.5 Score calculation #}
+        {% if pm25_value >= 225.4 %}
+          {% set pm25_score = 0 %}
+        {% elif pm25_value <= 10 %}
+          {% set pm25_score = 100 %}
+        {% else %}
+          {% set pm25_score = ((225.4 - pm25_value) / (225.4 - 10)) * 100 %}
+        {% endif %}
+
+        {# VOC Score calculation - using default value #}
+        {% if voc_value >= 500 %}
+          {% set voc_score = 0 %}
+        {% elif voc_value <= 1 %}
+          {% set voc_score = 100 %}
+        {% else %}
+          {% set voc_score = ((500 - voc_value) / (500 - 1)) * 100 %}
+        {% endif %}
+
+        {# Temperature scoring #}
+        {% set ideal_temp = 21 %}
+        {% set temp_deviation = (temp_value - ideal_temp) | abs %}
+        {% if temp_deviation >= 10 %}
+          {% set temp_score = 0 %}
+        {% else %}
+          {% set temp_score = 100 - (temp_deviation * 10) %}
+        {% endif %}
+
+        {# Humidity scoring #}
+        {% if humidity_value < 30 %}
+          {% set humidity_score = (humidity_value / 30) * 100 %}
+        {% elif humidity_value > 60 %}
+          {% set humidity_score = ((100 - humidity_value) / 40) * 100 %}
+        {% else %}
+          {% set humidity_score = 100 %}
+        {% endif %}
+
+        {# Final weighted score - adjusted weights to include VOC #}
+        {{ ((co2_score * 0.25 + pm25_score * 0.25 + voc_score * 0.25 + temp_score * 0.125 + humidity_score * 0.125) | round(1)) }}
+

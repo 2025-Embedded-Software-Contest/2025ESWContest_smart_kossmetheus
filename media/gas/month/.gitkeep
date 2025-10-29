@@ -1,0 +1,2 @@
+# This file ensures the month directory is tracked by Git  
+# Git does not track empty directories, so this .gitkeep file allows the directory structure to be preserved
