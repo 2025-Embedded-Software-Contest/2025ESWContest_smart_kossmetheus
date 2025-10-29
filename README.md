@@ -169,45 +169,86 @@ gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker \
 ## 환경 변수(.env)
 
 ```ini
-# 앱/로깅/CORS
+# =========================
+# 1) 앱/로깅/CORS
+# =========================
 APP_NAME="CareDian Gateway"
-ENV=dev                         # dev|stg|prod
-LOG_LEVEL=INFO                  # DEBUG/INFO/WARNING/ERROR
-LOG_JSON=1                      # 1이면 json 로그
+ENV=dev
+LOG_LEVEL=INFO
+LOG_JSON=1
 ALLOWED_ORIGINS=["http://localhost:3000","https://gw-caredian.gleeze.com"]
 
-# 내부 API 키(옵션, JSON 딕셔너리)
-API_KEYS_JSON={"svc_ingestor":"<masked>"}
+# =========================
+# 2) API Key / M2M
+# =========================
+API_KEYS_JSON={"ingestor":"<LONG_RANDOM_SECRET>"}                # 헤더 기반 키 인증
+CC_CLIENTS_JSON={"esp32-01":"<LONG_RANDOM_SECRET>"}              # /auth/cc/token 발급 대상
 
-# Client-Credentials 허용 클라이언트(아이디/시크릿 저장소)
-CC_CLIENTS_JSON={"esp32-01":"<secret>"}
-
-# JWT(서버 발급 토큰)
+# =========================
+# 3) JWT (RS256)
+# =========================
 JWT_AUD="caredian-gw"
 JWT_ISS="urn:caredian:gw"
-JWT_PRIVATE_PEM_PATH="./keys/jwt_private.pem"  # RS256 Private
-JWT_PUBLIC_PEM_PATH="./keys/jwt_public.pem"    # RS256 Public (검증용)
-JWT_TTL_SECONDS=43200                          # 12시간
+JWT_PRIVATE_PEM_PATH="./keys/jwt_private.pem"
+JWT_PUBLIC_PEM_PATH="./keys/jwt_public.pem"
+JWT_TTL_SECONDS=43200  # 12h
 
-# 세션(관리자 콘솔 등 쿠키 기반일 때)
-SESSION_COOKIE_NAME="caredian_session"
-SESSION_SECRET="<random-32B>"
+# =========================
+# 4) 세션
+# =========================
+SESSION_COOKIE_NAME="session-name"
+SESSION_SECRET="<LONG_RANDOM_SECRET>"
 
-# TLS(직접 종단 시에만; 일반적으론 리버스 프록시 사용)
+# =========================
+# 5) TLS / mTLS
+# =========================
 TLS_CERT=./certs/server.crt
 TLS_KEY=./certs/server.key
 TLS_HOST=0.0.0.0
 TLS_PORT=8443
 
-# mTLS(선택)
 TLS_CA=./certs/ca.crt
-TLS_REQUIRE_CLIENT_CERT=false
+TLS_REQUIRE_CLIENT_CERT=false  # 프록시/내부망 구조에 맞게 true 고려
 
-# InfluxDB 1.x
-INFLUX_URL="http://<host>:8086"
-INFLUX_DB="sensors"
-INFLUX_USERNAME="<id>"
-INFLUX_PASSWORD="<pw>"
+# =========================
+# 6) InfluxDB 1.8
+# =========================
+INFLUX_URL="http://192.168.1.175:8086"
+INFLUX_DB="db"
+INFLUX_USERNAME="username"
+INFLUX_PASSWORD="<PASSWORD>"
+INFLUX_TIMEOUT_SEC=10
+INFLUX_VERIFY_TLS=0
+INFLUX_MEASUREMENT="fall_events"
+
+# =========================
+# 7) Home Assistant
+# =========================
+HA_BASE_URL="http://homeassistant.local:8123"
+HA_TOKEN="<HA_LONG_LIVED_ACCESS_TOKEN>"
+REQUEST_TIMEOUT_SEC=10
+
+# =========================
+# 8) 알림 타깃
+# =========================
+HA_NOTIFY_MOBILE="notify.mobile_app"
+HA_NOTIFY_PERSIST="notify.persistent_notification"
+LOCATION_DEFAULT="home"
+
+# =========================
+# 9) 낙상 감지 AI
+# =========================
+FALL_INFERENCE_ENABLED=true
+FALL_BACKEND="tflite"
+FALL_MODEL_PATH="app/models/fall_lstm_model_final_v2.tflite"
+FALL_SCALER_PATH="app/models/scaler_final_v2.pkl"
+FALL_META_PATH="app/models/fall_lstm_final_v2_meta.json"
+FALL_THRESHOLD=0.58
+FALL_SMOOTH_K=3
+FALL_DECISION_MODE="sensor_or_model"
+FALL_COOLDOWN_SEC=300
+FALL_AI_SUSTAIN_K=3
+FALL_SEQ_LEN=3
 ```
 
 > **권장**: 실제 서비스에서는 HTTPS 종단을 Nginx/NPM에서 수행하고, FastAPI는 내부 통신(예: 127.0.0.1:8080)만 사용하세요.
