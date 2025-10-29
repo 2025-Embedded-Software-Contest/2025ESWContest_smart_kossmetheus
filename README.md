@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CareDian Gateway – FastAPI 서버
 
 고령자 친화 스마트홈 프로젝트 **CareDian**의 백엔드 게이트웨이입니다.
@@ -435,3 +436,6 @@ TBD
 * Issue: GitHub Issues 또는 운영 채널
 
 > 이 문서는 레포지토리 구조와 배포 환경에 맞게 적절히 수정하여 사용하십시오.
+=======
+# 2025ESWContest_smart_kossmetheus
+>>>>>>> origin/fastapi
