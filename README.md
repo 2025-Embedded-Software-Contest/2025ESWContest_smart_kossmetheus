@@ -1,4 +1,4 @@
-# CareDian Backend - Home Assistant Configuration
+# CareDian - Home Assistant Configuration
 
 ## 프로젝트 개요
 
