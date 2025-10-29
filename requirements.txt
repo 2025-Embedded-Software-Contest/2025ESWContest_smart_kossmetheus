@@ -1,0 +1,24 @@
+﻿# Core runtime
+voxcpm==1.0.5
+wyoming==1.7.2
+numpy>=1.24
+soundfile>=0.13
+
+# Korean text frontend
+kiwipiepy==0.21.0
+kss==6.0.5
+g2p-en==2.1.0
+g2pK==0.9.4
+num2words==0.5.14
+
+# Optional extras (install as needed)
+# python-mecab-ko==1.3.7
+# python-mecab-ko-dic==2.1.1.post2
+
+# Web endpoints / utilities
+Flask>=2.3
+requests>=2.31
+pydub>=0.25.1
+
+# Torchaudio codec support
+torchcodec
