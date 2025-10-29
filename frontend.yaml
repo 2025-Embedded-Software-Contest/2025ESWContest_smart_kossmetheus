@@ -2653,7 +2653,7 @@ views:
                 cards:
                   - type: custom:voice-recorder-card
                     token: >
-                      eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyNzYxZmNhYTcxYTg0ZTI5YTRjOTUxNzRjMDhjNGJhMSIsImlhdCI6MTc1OTI5NjU4MSwiZXhwIjoyMDc0NjU2NTgxfQ.T_goDPAyFWbnwxG-weH25KMMvJIujHFJE6DgUzfqMUM
+                      {}
                     event_options:
                       - default
                     notify: false
