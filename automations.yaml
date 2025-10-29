@@ -356,18 +356,26 @@
 - id: '1759067786798'
   alias: 이산화탄소 자동 환기 제어
   description: 실내 이산화탄소 농도가 높아지면 환기 시스템을 자동으로 켭니다.
-  trigger:
+  triggers:
   - trigger: state
     entity_id:
     - binary_sensor.ventilation_should_run
     attribute: 켜짐
-  condition:
+  conditions:
   - condition: device
     type: is_off
     device_id: 98bda3e8ced3d5a12ee685841e367c15
     entity_id: 99f72fc2d843060f243cb0f5979fe38d
     domain: switch
-  action:
+  actions:
+  - action: tts.speak
+    metadata: {}
+    data:
+      cache: false
+      media_player_entity_id: media_player.uhyeonibang_2
+      message: 공기질이 나빠 전열교환기를 가동합니다
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
   - type: turn_on
     device_id: 98bda3e8ced3d5a12ee685841e367c15
     entity_id: 99f72fc2d843060f243cb0f5979fe38d
@@ -609,22 +617,13 @@
     entity_id: input_boolean.scn_morning
     state: 'on'
   actions:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ has_service(''tts'', ''speak'') }}'
-      - condition: template
-        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
-          ''unknown'', ''''] }}'
-      sequence:
-      - target:
-          entity_id: tts.tts_pipeline_voxcpm
-        data:
-          message: 좋은 아침입니다. 오늘 서울의 최고기온은 24도, 강수확률은 40%입니다. 우산을 챙기세요. 아침 약 복용 시간이에요.
-          media_player_entity_id: media_player.uhyeonibang_2
-          cache: false
-        action: tts.speak
-    default: []
+  - data:
+      message: 좋은 아침입니다. 오늘 서울의 최고기온은 24도, 강수확률은 40%입니다. 우산을 챙기세요. 아침 약 복용 시간이에요.
+      media_player_entity_id: media_player.uhyeonibang_2
+      cache: false
+    action: tts.speak
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
   - data:
       title: 오후 약 복용
       message: 약을 복용할 시간입니다.
@@ -1193,6 +1192,8 @@
   - target:
       entity_id: automation.siggiseceoggi_wanryo_alrim
     action: automation.trigger
+    data:
+      skip_condition: true
   - variables:
       is_night: '{{ states(''sensor.is_night_mode'') == ''on'' }}'
   - choose:
@@ -1204,13 +1205,15 @@
       - condition: template
         value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
           ''unknown'', ''''] }}'
-      sequence:
-      - target:
-          entity_id: tts.tts_pipeline_voxcpm
-        data:
-          message: 식기세척기가 완료되었습니다.
-        action: tts.speak
+      sequence: []
     default: []
+    enabled: false
+  - target:
+      entity_id: tts.tts_pipeline_voxcpm
+    data:
+      message: 식기세척기가 완료되었습니다. 식기를 정리하세요.
+      media_player_entity_id: media_player.uhyeonibang_2
+    action: tts.speak
   - data:
       title: 식기세척기 완료
       message: 식기세척기가 완료되었습니다. 식기를 정리하세요.
@@ -1630,11 +1633,11 @@
   mode: single
 - id: caredian_execute_medication
   alias: CareDian · 복약 시나리오 실행
-  trigger:
+  triggers:
   - trigger: state
     entity_id: input_boolean.scn_morning
     to: 'on'
-  condition:
+  conditions:
   - condition: time
     after: 06:00:00
   - condition: state
@@ -1643,7 +1646,7 @@
   - condition: state
     entity_id: input_boolean.scn_sos
     state: 'off'
-  action:
+  actions:
   - variables:
       current_hour: '{{ now().hour }}'
       slot: '{% if current_hour < 9 %}아침{% elif current_hour < 15 %}점심{% else %}저녁{%
@@ -1659,19 +1662,13 @@
       composed_msg: '{{ (base_msg + umbrella_msg).strip() }}'
       spoken_msg: '{% set msg = composed_msg %} {{ msg if msg | length <= 140 else
         slot ~ '' 약 복용 시간입니다. 약을 잊지 마세요.'' }}'
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ has_service(''tts'', ''speak'') }}'
-      - condition: template
-        value_template: '{{ states(''tts.tts_pipeline_voxcpm'') not in [''unavailable'',
-          ''unknown'', ''''] }}'
-      sequence:
-      - action: tts.speak
-        target:
-          entity_id: tts.tts_pipeline_voxcpm
-        data:
-          message: '{{ spoken_msg }}'
+  - action: tts.speak
+    target:
+      entity_id: tts.tts_pipeline_voxcpm
+    data:
+      message: '{{ spoken_msg }}'
+      media_player_entity_id: media_player.uhyeonibang_2
+      cache: false
   - action: notify.mobile_app_iphone
     data:
       title: '{{ slot }} 약 복용'
@@ -2465,6 +2462,7 @@
           message: SOS 설정에 따라 도어락을 자동으로 해제했습니다.
   - delay:
       minutes: 1
+    enabled: false
   - action: notify.mobile_app_iilhwanyi_iphone
     data:
       title: SOS 재알림
@@ -2473,6 +2471,7 @@
         priority: high
         color: '#DC2626'
         group: sos_alert
+    enabled: false
   mode: restart
 - id: caredian_sos_clear
   alias: CareDian · SOS 해제
