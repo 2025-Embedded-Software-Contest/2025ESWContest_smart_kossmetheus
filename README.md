@@ -25,7 +25,7 @@ CareDian은 Home Assistant를 기반으로 한 스마트 홈 케어 시스템입
 ## 프로젝트 구조
 
 ```
-CareDian-backend/
+homeassistant/
 ├── configuration.yaml          # 메인 설정 파일
 ├── automations.yaml            # 자동화 규칙
 ├── scripts.yaml               # 스크립트 정의
@@ -58,14 +58,14 @@ pip install homeassistant
 
 ### 2. 프로젝트 클론
 ```bash
-git clone -b backend https://github.com/2025-Embedded-Software-Contest/2025ESWContest_smart_kossmetheus.git
+git clone -b homeassistant https://github.com/2025-Embedded-Software-Contest/2025ESWContest_smart_kossmetheus.git
 cd 2025ESWContest_smart_kossmetheus
 ```
 
 ### 3. 설정 파일 복사
 ```bash
 # Home Assistant 설정 디렉토리에 파일 복사
-cp -r CareDian-backend/* /config/
+cp -r homeassistant/* /config/
 ```
 
 ### 4. 의존성 설치
